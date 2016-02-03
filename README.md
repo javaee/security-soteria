@@ -1,6 +1,6 @@
 # Soteria
 
-Java EE Security (JSR 375) upstream API and RI implementation
+Java EE Security (JSR 375) upstream API and RI
 
 Notes
 -----
