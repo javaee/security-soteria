@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application-bnd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://websphere.ibm.com/xml/ns/javaee http://websphere.ibm.com/xml/ns/javaee/ibm-application-bnd_1_2.xsd"
+    xmlns="http://websphere.ibm.com/xml/ns/javaee"
+    version="1.2">
+
+    <security-role name="foo"> 
+        <group name="foo" />
+    </security-role>
+    
+    <security-role name="bar"> 
+        <group name="bar" />
+    </security-role>
+    
+    <security-role name="kaz"> 
+        <group name="kaz" />
+    </security-role>
+    
+
+</application-bnd>
