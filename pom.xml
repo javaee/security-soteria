@@ -1,0 +1,125 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.glassfish.soteria</groupId>
+	<artifactId>parent</artifactId>
+	<version>1.0-m01-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	
+    <inceptionYear>2015</inceptionYear>
+
+	<modules>
+        <module>api</module>
+        <module>impl</module>
+	</modules>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+        </dependency>
+    </dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.18.1</version>
+				</plugin>
+
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>2.11</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<header>../../../src/license/header.txt</header>
+						<properties>
+							<owner>Oracle</owner>
+							<currentYear>2015</currentYear>
+						</properties>
+						<excludes>
+							<exclude>**/*.adoc</exclude>
+							<exclude>**/pom.xml</exclude>
+							<exclude>**/README</exclude>
+							<exclude>**/settings.xml</exclude>
+							<exclude>src/test/resources/**</exclude>
+							<exclude>src/main/resources/**</exclude>
+						</excludes>
+						<headerDefinitions>
+							<headerDefinition>../../../src/license/headers.xml</headerDefinition>
+						</headerDefinitions>
+						<mapping>
+							<java>JAVA_STYLE</java>
+						</mapping>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<optimize>true</optimize>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+            
+            <!-- Configure the jar with the sources (or rather, convince Maven that we want sources at all) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Configure the jar with the javadoc (or rather, convince Maven that we want javadoc at all) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <configuration>
+                    <javadocVersion>1.8</javadocVersion>
+                    <notimestamp>true</notimestamp>
+                    <splitindex>true</splitindex>
+                    <doctitle>Soteria API documentation</doctitle>
+                    <links>
+                        <link>https://docs.oracle.com/javaee/7/api/</link>
+                    </links>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+        
+	</build>
+</project>
