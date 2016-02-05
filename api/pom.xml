@@ -8,7 +8,7 @@
        <version>1.0-m01-SNAPSHOT</version>
     </parent>
 
-    <artifactId>api</artifactId>
+    <artifactId>javax.security-api</artifactId>
 
     <name>Java EE Security upstream API</name>
     

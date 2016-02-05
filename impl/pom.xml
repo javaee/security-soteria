@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>javax.security-api</artifactId>
             <version>1.0-m01-SNAPSHOT</version>
         </dependency>
     </dependencies>
