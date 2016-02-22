@@ -18,6 +18,7 @@
         <module>app-mem</module>
         <module>app-db</module>
         <module>app-ldap</module>
+        <module>app-ldap2</module>
         <module>app-custom</module>
         
         <module>app-mem-basic</module>
