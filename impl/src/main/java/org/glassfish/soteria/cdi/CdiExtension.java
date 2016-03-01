@@ -1,5 +1,6 @@
 package org.glassfish.soteria.cdi;
 
+import static org.glassfish.soteria.cdi.CdiUtils.addAnnotatedTypes;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 import java.util.Optional;
@@ -34,8 +35,11 @@ public class CdiExtension implements Extension {
     private boolean httpAuthenticationMechanismFound;
     
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
-        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(AutoApplySessionInterceptor.class), null);
-        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(RememberMeInterceptor.class), null);
+        addAnnotatedTypes(beforeBean, beanManager, 
+            AutoApplySessionInterceptor.class,
+            RememberMeInterceptor.class,
+            LoginToContinueInterceptor.class
+        );
     }
 
     public <T> void processBean(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {

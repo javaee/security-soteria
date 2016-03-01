@@ -2,6 +2,7 @@ package org.glassfish.soteria.mechanisms;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
+import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
 import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -18,9 +19,11 @@ import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.soteria.Utils;
 import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
 /**
@@ -151,12 +154,48 @@ public class HttpMessageContextImpl implements HttpMessageContext {
         return (HttpServletRequest) messageInfo.getRequestMessage();
     }
     
+    @Override
+    public void setRequest(HttpServletRequest request) {
+        messageInfo.setRequestMessage(request);
+    }
+    
+    @Override
+    public HttpMessageContext withRequest(HttpServletRequest request) {
+        setRequest(request);
+        return this;
+    }
+    
     /* (non-Javadoc)
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#getResponse()
      */
     @Override
     public HttpServletResponse getResponse() {
         return (HttpServletResponse) messageInfo.getResponseMessage();
+    }
+    
+    @Override
+    public void setResponse(HttpServletResponse response) {
+        messageInfo.setResponseMessage(response);
+    }
+    
+    @Override
+    public AuthStatus redirect(String location) {
+        Utils.redirect(getResponse(), location);
+        
+        return SEND_CONTINUE;
+    }
+    
+    @Override
+    public AuthStatus forward(String path) {
+        try {
+            getRequest().getRequestDispatcher(path)
+                        .forward(getRequest(), getResponse());
+        } catch (IOException | ServletException e) {
+            throw new IllegalStateException(e);
+        }
+
+        // After forward MUST NOT invoke the resource, so CAN NOT return SUCCESS here.
+        return SEND_CONTINUE;
     }
     
     /* (non-Javadoc)

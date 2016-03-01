@@ -144,6 +144,10 @@ public interface HttpMessageContext {
      * @return the request object associated with the current request.
      */
     HttpServletRequest getRequest();
+    
+    void setRequest(HttpServletRequest request);
+    
+    HttpMessageContext withRequest(HttpServletRequest request);
 
     /**
      * Returns the response object associated with the current request.
@@ -151,6 +155,21 @@ public interface HttpMessageContext {
      * @return the response object associated with the current request.
      */
     HttpServletResponse getResponse();
+    
+    void setResponse(HttpServletResponse response);
+    
+    /**
+     * Sets the response status to SC_FOUND 302 (Found)
+     * <p>
+     * As a convenience this method returns SEND_CONTINUE, so this method can be used in
+     * one fluent return statement from an {@link HttpAuthenticationMechanism}
+     * 
+     * @return {@link AuthStatus#SEND_CONTINUE}
+     */
+    AuthStatus redirect(String location);
+    
+    AuthStatus forward(String path);
+    
 
     /**
      * Sets the response status to 401 (not found).

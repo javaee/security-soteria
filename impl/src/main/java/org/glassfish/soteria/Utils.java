@@ -30,6 +30,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.interceptor.InvocationContext;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
@@ -114,6 +115,11 @@ public final class Utils {
 		}
 
 		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+    public static <T> T getParam(InvocationContext invocationContext, int param) {
+	    return (T) invocationContext.getParameters()[param];
 	}
 
 	public static String getBaseURL(HttpServletRequest request) {
