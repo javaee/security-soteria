@@ -3,22 +3,38 @@ package org.glassfish.soteria.cdi;
 import static org.glassfish.soteria.cdi.CdiUtils.addAnnotatedTypes;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.Optional;
+import java.util.Set;
 
+import javax.decorator.Delegate;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanAttributes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Decorator;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessBean;
+import javax.inject.Inject;
+import javax.security.auth.message.AuthException;
+import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.BasicAuthenticationMechanismDefinition;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
 import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
@@ -38,7 +54,8 @@ public class CdiExtension implements Extension {
         addAnnotatedTypes(beforeBean, beanManager, 
             AutoApplySessionInterceptor.class,
             RememberMeInterceptor.class,
-            LoginToContinueInterceptor.class
+            LoginToContinueInterceptor.class,
+            HttpAuthenticationBaseDecorator.class
         );
     }
 
@@ -94,7 +111,10 @@ public class CdiExtension implements Extension {
         
     }
 
-    public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery) {
+    public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+        
+        // afterBeanDiscovery.addBean(new DynamicHttpAuthenticationDecorator(beanManager));
+        
         if (identityStoreBean != null) {
             afterBeanDiscovery.addBean(identityStoreBean);
         }
