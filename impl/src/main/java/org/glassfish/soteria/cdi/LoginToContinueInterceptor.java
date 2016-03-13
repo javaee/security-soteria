@@ -1,8 +1,10 @@
 package org.glassfish.soteria.cdi;
 
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
+import static javax.security.auth.message.AuthStatus.FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static org.glassfish.soteria.Utils.getBaseURL;
 import static org.glassfish.soteria.Utils.getParam;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.notNull;
@@ -21,6 +23,7 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
@@ -29,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
 import org.glassfish.soteria.servlet.HttpServletRequestDelegator;
 import org.glassfish.soteria.servlet.RequestData;
 
@@ -64,6 +68,11 @@ public class LoginToContinueInterceptor implements Serializable {
     
     private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
+        // 0. Caller aborted earlier flow and does a new request to protected resource
+        if (isOnProtectedURLWithStaleData(httpMessageContext)) {
+            removeSavedRequest(request);
+        }
+        
         // 1. Protected resource requested and no request saved before
         if (isOnInitialProtectedURL(httpMessageContext)) {
             // TODO: request.authenticate() is captured by this as well
@@ -75,7 +84,7 @@ public class LoginToContinueInterceptor implements Serializable {
             // TODO: option to redirect instead of forward?
             // TODO: Use modified request/response for forward to set method to GET and filter out "if-" headers?
             return httpMessageContext.forward(
-                getLoginToContinueAnnotation().loginPage());
+                getLoginToContinueAnnotation(invocationContext).loginPage());
         }
         
         
@@ -86,9 +95,19 @@ public class LoginToContinueInterceptor implements Serializable {
         //          to authenticate though.
         if (isOnLoginPostback(request)) {
             // Try to authenticate with the next interceptor or actual authentication mechanism
-            AuthStatus authstatus = (AuthStatus) invocationContext.proceed();
+            AuthStatus authstatus = null;
+            
+            try {
+                authstatus = (AuthStatus) invocationContext.proceed();
+            } catch (AuthException e) {
+                authstatus = FAILURE;
+            }
           
-            if (authstatus == SUCCESS && httpMessageContext.getCallerPrincipal() != null) {
+            if (authstatus == SUCCESS) {
+                
+                if (httpMessageContext.getCallerPrincipal() == null) {
+                    return SUCCESS;
+                }
                 
                 // Authentication was successful and an actual caller principal was set 
                 RequestData savedRequest = getSavedRequest(request);
@@ -105,9 +124,15 @@ public class LoginToContinueInterceptor implements Serializable {
                         httpMessageContext.getGroups()));
                     
                     return httpMessageContext.redirect(savedRequest.getFullRequestURL());
-                }
+                } // else return success
                 
-            } // else ! SUCCESS -> redirect/forward to error page
+            } else {
+                return httpMessageContext.redirect( // TODO: or forward?
+                        // TODO: option for error parameter instead, e.g. /login?error=true
+                       
+                        getBaseURL(request) +
+                        getLoginToContinueAnnotation(invocationContext).errorPage());
+            }
              
         }
         
@@ -130,6 +155,17 @@ public class LoginToContinueInterceptor implements Serializable {
         }
        
         return httpMessageContext.doNothing();
+    }
+    
+    private boolean isOnProtectedURLWithStaleData(HttpMessageContext httpMessageContext) {
+        return
+            httpMessageContext.isProtected() && 
+            getSavedRequest(httpMessageContext.getRequest()) != null &&
+            getSavedAuthentication(httpMessageContext.getRequest()) == null &&
+            // Some servers consider the Servlet special URL "/j_security_check" as
+            // a protected URL
+            
+            !httpMessageContext.getRequest().getRequestURI().endsWith("j_security_check");
     }
     
     private boolean isOnInitialProtectedURL(HttpMessageContext httpMessageContext) {
@@ -155,7 +191,12 @@ public class LoginToContinueInterceptor implements Serializable {
         
     }
     
-    private LoginToContinue getLoginToContinueAnnotation() {
+    private LoginToContinue getLoginToContinueAnnotation(InvocationContext invocationContext) {
+        
+        if (invocationContext.getTarget() instanceof LoginToContinueHolder) {
+            return ((LoginToContinueHolder) invocationContext.getTarget()).getLoginToContinue();
+        }
+        
         Optional<LoginToContinue> optionalLoginToContinue = getAnnotation(beanManager, interceptedBean.getBeanClass(), LoginToContinue.class);
         if (optionalLoginToContinue.isPresent()) {
             return optionalLoginToContinue.get();

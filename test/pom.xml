@@ -22,6 +22,7 @@
         <module>app-custom</module>
         
         <module>app-mem-basic</module>
+        <module>app-mem-form</module>
         <module>app-custom-session</module>
         <module>app-custom-rememberme</module>
     </modules>

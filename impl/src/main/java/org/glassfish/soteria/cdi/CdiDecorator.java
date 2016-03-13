@@ -16,12 +16,15 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Decorator;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 
+// WIP - Builder for dynanic decorators. May not be needed and/or replaced by
+// CDI 2.0 bean builder
+// See http://weld.cdi-spec.org/news/2015/02/25/weld-300Alpha5/#_bean_builder_api
 public class CdiDecorator<T> extends CdiProducer<T> implements Decorator<T> {
     
-    private Type delegateType; // HttpAuthenticationMechanism.class;
-    private Set<Type> decoratedTypes; // singleton(HttpAuthenticationMechanism.class);
+    private Class<T> decorator;
+    private Type delegateType;
+    private Set<Type> decoratedTypes;
     
     private BeanManager beanManager;
     private InjectionPoint decoratorInjectionPoint;
@@ -32,7 +35,7 @@ public class CdiDecorator<T> extends CdiProducer<T> implements Decorator<T> {
     
     @Override
     public T create(CreationalContext<T> creationalContext) {
-        return create.apply(creationalContext,  beanManager.getInjectableReference(decoratorInjectionPoint, creationalContext));
+        return create.apply(creationalContext, beanManager.getInjectableReference(decoratorInjectionPoint, creationalContext));
     }
     
     @Override
@@ -52,17 +55,23 @@ public class CdiDecorator<T> extends CdiProducer<T> implements Decorator<T> {
         return emptySet();
     }
     
+    public CdiDecorator<T> decorator(Class<T> decorator) {
+        this.decorator = decorator;
+        beanClassAndType(decorator);
+        return this;
+    }
+    
     public CdiDecorator<T> delegateAndDecoratedType(Type type) {
         delegateType = type;
         decoratedTypes = asSet(type);
         return this;
     }
     
-    protected CdiProducer<T> create(BeanManager beanManager, BiFunction<CreationalContext<T>, Object, T> create) {
+    public CdiProducer<T> create(BeanManager beanManager, BiFunction<CreationalContext<T>, Object, T> create) {
         
         decoratorInjectionPoint = new DecoratorInjectionPoint(
-                HttpAuthenticationMechanism.class, 
-                beanManager.createAnnotatedType(HttpAuthenticationBaseDecorator.class).getFields().iterator().next(), 
+                getDelegateType(), 
+                beanManager.createAnnotatedType(decorator).getFields().iterator().next(), 
                 this);
             
             injectionPoints = singleton(decoratorInjectionPoint);

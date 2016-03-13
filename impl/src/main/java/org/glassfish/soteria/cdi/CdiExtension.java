@@ -3,43 +3,30 @@ package org.glassfish.soteria.cdi;
 import static org.glassfish.soteria.cdi.CdiUtils.addAnnotatedTypes;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.Optional;
-import java.util.Set;
 
-import javax.decorator.Delegate;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanAttributes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Decorator;
+import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessBean;
-import javax.inject.Inject;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.BasicAuthenticationMechanismDefinition;
+import javax.security.authentication.mechanism.http.annotation.FormAuthenticationMechanismDefinition;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
 import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
 import org.glassfish.soteria.identitystores.LDapIdentityStore;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
+import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
 
 public class CdiExtension implements Extension {
 
@@ -55,7 +42,8 @@ public class CdiExtension implements Extension {
             AutoApplySessionInterceptor.class,
             RememberMeInterceptor.class,
             LoginToContinueInterceptor.class,
-            HttpAuthenticationBaseDecorator.class
+            HttpAuthenticationBaseDecorator.class,
+            FormAuthenticationMechanism.class
         );
     }
 
@@ -104,6 +92,20 @@ public class CdiExtension implements Extension {
                 .create(e -> new BasicAuthenticationMechanism(optionalBasicMechanism.get().realmName()));
         }
         
+        Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
+        if (optionalFormMechanism.isPresent()) {
+            authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
+                .scope(ApplicationScoped.class)
+                .types(HttpAuthenticationMechanism.class)
+                .addToId(FormAuthenticationMechanismDefinition.class)
+                .create(e -> 
+                    CDI.current()
+                       .select(FormAuthenticationMechanism.class)
+                       .get()
+                       .loginToContinue(optionalFormMechanism.get().loginToContinue())
+                );
+        }
+        
         if (event.getBean().getTypes().contains(HttpAuthenticationMechanism.class)) {
             // enabled bean implementing the HttpAuthenticationMechanism found
             httpAuthenticationMechanismFound = true;
@@ -113,7 +115,11 @@ public class CdiExtension implements Extension {
 
     public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
         
-        // afterBeanDiscovery.addBean(new DynamicHttpAuthenticationDecorator(beanManager));
+        afterBeanDiscovery.addBean(
+            new CdiDecorator<HttpAuthenticationBaseDecorator>()
+                .decorator(HttpAuthenticationBaseDecorator.class)
+                .delegateAndDecoratedType(HttpAuthenticationMechanism.class)
+                .create(beanManager, (e, i) -> new AutoApplySessionDecorator((HttpAuthenticationMechanism)i)));
         
         if (identityStoreBean != null) {
             afterBeanDiscovery.addBean(identityStoreBean);

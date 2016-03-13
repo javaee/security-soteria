@@ -21,6 +21,10 @@ import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+// WIP decorator variant of AutoApplySessionInterceptor.
+// TODO: Need to consider whether to have this variant or not.
+//       Depends on dynamic interceptor story
+
 @Decorator
 @Priority(PLATFORM_BEFORE + 200)
 public class AutoApplySessionDecorator extends HttpAuthenticationBaseDecorator {
@@ -32,6 +36,7 @@ public class AutoApplySessionDecorator extends HttpAuthenticationBaseDecorator {
     private HttpAuthenticationMechanism delegateMechanism;
 
     public AutoApplySessionDecorator() {
+        // noop
     }
 
     public AutoApplySessionDecorator(HttpAuthenticationMechanism delegateMechanism) {
