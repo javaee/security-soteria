@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,45 +39,93 @@
  */
 package javax.security.authentication.mechanism.http;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.security.identitystore.credential.Credential;
 
 /**
- * Mockup for a series of parameters that could potentially
- * be provided alongside a call to 
- * {@link HttpServletRequest#authenticate(javax.servlet.http.HttpServletResponse)}
- * 
- * <p>
- * Status: This is an early draft of a possible API and has not been extensively
- * discussed yet.
- * 
+ * Parameters that are provided along with an authentication request.
+ *
  * @author Arjan Tijms
  *
  */
-public interface AuthenticationParameters {
+public class AuthenticationParameters {
 
-    AuthenticationParameters username(String username);
-    AuthenticationParameters password(String passWord);
-    AuthenticationParameters rememberMe(boolean rememberMe);
-    AuthenticationParameters noPassword(boolean noPassword);
-    AuthenticationParameters authMethod(String authMethod);
-    AuthenticationParameters redirectUrl(String redirectUrl);
+    private Credential credential;
 
-    String getUsername();
-    void setUsername(String username);
+	private Boolean rememberMe;
+	private Boolean noPassword;
+	private String authMethod;
 
-    String getPassword();
-    void setPassword(String password);
+	private String redirectUrl;
+	
+	public static AuthenticationParameters withParams() {
+	    return new AuthenticationParameters();
+	}
+	
+	public AuthenticationParameters credential(Credential credential) {
+	    setCredential(credential);
+	    return this;
+	}
 
-    Boolean getRememberMe();
-    void setRememberMe(Boolean rememberMe);
+    public AuthenticationParameters rememberMe(boolean rememberMe) {
+		setRememberMe(rememberMe);
+		return this;
+	}
+	
+    public AuthenticationParameters noPassword(boolean noPassword) {
+		setNoPassword(noPassword);
+		return this;
+	}
 
-    String getAuthMethod();
-    void setAuthMethod(String authMethod);
+    public AuthenticationParameters authMethod(String authMethod) {
+		setAuthMethod(authMethod);
+		return this;
+	}
 
-    String getRedirectUrl();
-    void setRedirectUrl(String redirectUrl);
+    public AuthenticationParameters redirectUrl(String redirectUrl) {
+		setRedirectUrl(redirectUrl);
+		return this;
+	}
 
-    Boolean getNoPassword();
-    void setNoPassword(Boolean noPassword);
+	// Getters/setters
+	
+    public Credential getCredential() {
+        return credential;
+    }
+
+    public void setCredential(Credential credential) {
+        this.credential = credential;
+    }
+
+    public Boolean getRememberMe() {
+		return rememberMe;
+	}
+
+    public void setRememberMe(Boolean rememberMe) {
+		this.rememberMe = rememberMe;
+	}
+
+    public String getAuthMethod() {
+		return authMethod;
+	}
+
+    public void setAuthMethod(String authMethod) {
+		this.authMethod = authMethod;
+	}
+
+    public String getRedirectUrl() {
+		return redirectUrl;
+	}
+
+    public void setRedirectUrl(String redirectUrl) {
+		this.redirectUrl = redirectUrl;
+	}
+
+    public Boolean getNoPassword() {
+		return noPassword;
+	}
+
+    public void setNoPassword(Boolean noPassword) {
+		this.noPassword = noPassword;
+	}
 
 }

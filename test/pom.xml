@@ -15,14 +15,19 @@
     <name>Soteria ${project.version} Integration tests and examples</name>
 
     <modules>
+        <!-- app-[identity-store] -->
         <module>app-mem</module>
         <module>app-db</module>
         <module>app-ldap</module>
         <module>app-ldap2</module>
         <module>app-custom</module>
         
+        <!-- app-[identity-store]-[authentication mechanism] -->
         <module>app-mem-basic</module>
         <module>app-mem-form</module>
+        <module>app-mem-customform</module>
+        
+        <!-- app-[identity-store]-[service] -->
         <module>app-custom-session</module>
         <module>app-custom-rememberme</module>
     </modules>

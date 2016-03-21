@@ -43,12 +43,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.security.CallerPrincipal;
+import javax.security.SecurityContext;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.config.ServerAuthContext;
 import javax.security.auth.message.module.ServerAuthModule;
+import javax.security.identitystore.CredentialValidationResult;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -70,6 +73,15 @@ public interface HttpMessageContext {
      */
     boolean isProtected();
 
+    /**
+     * Checks if the current call to an authentication mechanism is the result from the 
+     * application calling {@link SecurityContext#authenticate(HttpServletResponse, AuthenticationParameters)}.
+     * <p>
+     * If SecurityContext#authenticate was not called, the authentication mechanism may have been invoked by the 
+     * container at the start of a request.
+     * 
+     * @return true if SecurityContext#authenticate was called, false if not.
+     */
     boolean isAuthenticationRequest();
 
     /**
@@ -212,6 +224,8 @@ public interface HttpMessageContext {
     AuthStatus notifyContainerAboutLogin(String username, List<String> roles);
     
     AuthStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, List<String> roles);
+    
+    AuthStatus notifyContainerAboutLogin(CredentialValidationResult result) throws AuthException;
 
     /**
      * Instructs the container to "do nothing".

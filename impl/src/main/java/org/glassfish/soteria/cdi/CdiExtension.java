@@ -55,16 +55,19 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.annotation.BasicAuthenticationMechanismDefinition;
+import javax.security.authentication.mechanism.http.annotation.CustomFormAuthenticationMechanismDefinition;
 import javax.security.authentication.mechanism.http.annotation.FormAuthenticationMechanismDefinition;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
 import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 
+import org.glassfish.soteria.SecurityContextImpl;
 import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
 import org.glassfish.soteria.identitystores.LDapIdentityStore;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
+import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
 
 public class CdiExtension implements Extension {
@@ -82,7 +85,9 @@ public class CdiExtension implements Extension {
             RememberMeInterceptor.class,
             LoginToContinueInterceptor.class,
             HttpAuthenticationBaseDecorator.class,
-            FormAuthenticationMechanism.class
+            FormAuthenticationMechanism.class,
+            CustomFormAuthenticationMechanism.class,
+            SecurityContextImpl.class
         );
     }
 
@@ -142,6 +147,20 @@ public class CdiExtension implements Extension {
                        .select(FormAuthenticationMechanism.class)
                        .get()
                        .loginToContinue(optionalFormMechanism.get().loginToContinue())
+                );
+        }
+        
+        Optional<CustomFormAuthenticationMechanismDefinition> optionalCustomFormMechanism = getAnnotation(beanManager, event.getAnnotated(), CustomFormAuthenticationMechanismDefinition.class);
+        if (optionalCustomFormMechanism.isPresent()) {
+            authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
+                .scope(ApplicationScoped.class)
+                .types(HttpAuthenticationMechanism.class)
+                .addToId(CustomFormAuthenticationMechanismDefinition.class)
+                .create(e -> 
+                    CDI.current()
+                       .select(CustomFormAuthenticationMechanism.class)
+                       .get()
+                       .loginToContinue(optionalCustomFormMechanism.get().loginToContinue())
                 );
         }
         

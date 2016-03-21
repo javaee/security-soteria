@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,30 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package javax.security.authentication.mechanism.http.annotation;
+package org.glassfish.soteria;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static javax.security.auth.message.AuthStatus.FAILURE;
+import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastStatus;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import javax.inject.Inject;
+import javax.security.SecurityContext;
+import javax.security.auth.message.AuthStatus;
+import javax.security.authentication.mechanism.http.AuthenticationParameters;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import javax.enterprise.util.Nonbinding;
-import javax.resource.spi.AuthenticationMechanism;
+import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
-/**
- * Annotation used to define a container {@link AuthenticationMechanism} that implements
- * FORM authentication mechanism as defined by the Servlet spec and make that implementation
- * available as an enabled CDI bean.
- * 
- * @author Arjan Tijms
- *
- */
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface FormAuthenticationMechanismDefinition {
- 
-    @Nonbinding
-    LoginToContinue loginToContinue();
+public class SecurityContextImpl implements SecurityContext {
+    
+    @Inject
+    private HttpServletRequest request;
+
+    @Override
+    public AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {
+        try {
+            if (Jaspic.authenticate(request, response, parameters)) {
+                // All servers return true when authentication actually took place 
+                return SUCCESS;
+            }
+            
+            // GlassFish returns false when either authentication is in progress or authentication
+            // failed (or was not done at all). 
+            // Therefore we need to rely on the status we saved as a request attribute
+            return getLastStatus(request);
+        } catch (IllegalArgumentException e) { // TODO: exception type not ideal
+            // JBoss returns false when authentication is in progress, but throws exception when
+            // authentication fails (or was not done at all).
+            return FAILURE;
+        }
+    }
     
 }

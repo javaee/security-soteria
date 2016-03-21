@@ -39,8 +39,6 @@
  */
 package org.glassfish.soteria.mechanisms;
 
-import static org.glassfish.soteria.Utils.notNull;
-
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.security.auth.message.AuthException;
@@ -50,8 +48,6 @@ import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
 import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
 import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Password;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -65,8 +61,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 @AutoApplySession // For "is user already logged-in"
 @LoginToContinue  // Redirects to form page if protected resource and not-logged in
-@Typed(FormAuthenticationMechanism.class) // Omit HttpAuthenticationMechanism type so it won't qualify directly as mechanism
-public class FormAuthenticationMechanism implements HttpAuthenticationMechanism, LoginToContinueHolder {
+@Typed(CustomFormAuthenticationMechanism.class) // Omit HttpAuthenticationMechanism type so it won't qualify directly as mechanism
+public class CustomFormAuthenticationMechanism implements HttpAuthenticationMechanism, LoginToContinueHolder {
 	
     private LoginToContinue loginToContinue;
 
@@ -75,23 +71,20 @@ public class FormAuthenticationMechanism implements HttpAuthenticationMechanism,
     
 	@Override
 	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
-		
-	    if (isValidFormPostback(request)) {
+        
+        if (hasCredential(httpMessageContext)) {
             return httpMessageContext.notifyContainerAboutLogin(
                 identityStore.validate(
-                    new UsernamePasswordCredential(
-                        request.getParameter("j_username"), 
-                        new Password(request.getParameter("j_password")))));
-	    }
+                    httpMessageContext.getAuthParameters()
+                                      .getCredential()));
+        }
 		
 		return httpMessageContext.doNothing();
 	}
 	
-	private static boolean isValidFormPostback(HttpServletRequest request) {
+	private static boolean hasCredential(HttpMessageContext httpMessageContext) {
 	    return 
-            "POST".equals(request.getMethod()) &&
-            request.getRequestURI().endsWith("/j_security_check") &&
-            notNull(request.getParameter("j_username"), request.getParameter("j_password"));
+            httpMessageContext.getAuthParameters().getCredential() != null;
 	}
 	
     public LoginToContinue getLoginToContinue() {
@@ -102,7 +95,7 @@ public class FormAuthenticationMechanism implements HttpAuthenticationMechanism,
         this.loginToContinue = loginToContinue;
     }
     
-    public FormAuthenticationMechanism loginToContinue(LoginToContinue loginToContinue) {
+    public CustomFormAuthenticationMechanism loginToContinue(LoginToContinue loginToContinue) {
         setLoginToContinue(loginToContinue);
         return this;
     }

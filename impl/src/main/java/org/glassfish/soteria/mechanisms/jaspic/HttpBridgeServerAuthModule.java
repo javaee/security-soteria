@@ -39,6 +39,8 @@
  */
 package org.glassfish.soteria.mechanisms.jaspic;
 
+import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.setLastStatus;
+
 import java.util.Map;
 
 import javax.enterprise.inject.spi.CDI;
@@ -88,9 +90,13 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
 	public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
 	    HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, clientSubject);
 		
-		return CDI.current()
+	    AuthStatus status = CDI.current()
 		          .select(HttpAuthenticationMechanism.class).get()
 		          .validateRequest(msgContext.getRequest(), msgContext.getResponse(), msgContext);
+	    
+	    setLastStatus(msgContext.getRequest(), status);
+	    
+	    return status;
 	}
 
 	@Override

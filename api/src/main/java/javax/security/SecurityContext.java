@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,30 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package javax.security.authentication.mechanism.http.annotation;
+package javax.security;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.security.auth.message.AuthStatus;
+import javax.security.authentication.mechanism.http.AuthenticationParameters;
+import javax.servlet.http.HttpServletResponse;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import javax.enterprise.util.Nonbinding;
-import javax.resource.spi.AuthenticationMechanism;
-
-/**
- * Annotation used to define a container {@link AuthenticationMechanism} that implements
- * FORM authentication mechanism as defined by the Servlet spec and make that implementation
- * available as an enabled CDI bean.
- * 
- * @author Arjan Tijms
- *
- */
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface FormAuthenticationMechanismDefinition {
- 
-    @Nonbinding
-    LoginToContinue loginToContinue();
+public interface SecurityContext {
     
+    AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters);
+
 }

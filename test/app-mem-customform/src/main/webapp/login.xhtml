@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+>
+    <h:head/>
+    
+    <h:messages />
+    
+    <body>
+    
+         <form jsf:id="form">
+            <p>
+                <strong>Username </strong> 
+                <input type="text" jsf:value="#{loginBacking.username}" />
+            </p>
+            <p>
+                <strong>Password </strong> 
+                <input type="password" jsf:value="#{loginBacking.password}" />
+            </p>
+            <p>
+                <input type="submit" value="Login" jsf:action="#{loginBacking.login}" />
+            </p>
+        </form>
+    
+    </body>
+
+</html>

@@ -62,8 +62,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.glassfish.soteria.mechanisms.AuthenticationParametersImpl;
-
 /**
  * A set of utility methods for using the JASPIC API
  * 
@@ -96,6 +94,12 @@ public final class Jaspic {
 	
 	public static boolean authenticate(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters authParameters) {
 		try {
+		    // JASPIC 1.1 does not have any way to distinguish between a
+		    // SAM called at start of a request or following request#authenticate.
+		    // See https://java.net/jira/browse/JASPIC_SPEC-5
+		    
+		    // We now add this as a request attribute instead, but should better
+		    // be the MessageInfo map
 			request.setAttribute(IS_AUTHENTICATION, true);
 			if (authParameters != null) {
 				request.setAttribute(AUTH_PARAMS, authParameters);
@@ -129,7 +133,7 @@ public final class Jaspic {
 	public static AuthenticationParameters getAuthParameters(HttpServletRequest request) {
 		AuthenticationParameters authParameters = (AuthenticationParameters) request.getAttribute(AUTH_PARAMS);
 		if (authParameters == null) {
-			authParameters = new AuthenticationParametersImpl();
+			authParameters = new AuthenticationParameters();
 		}
 		
 		return authParameters;

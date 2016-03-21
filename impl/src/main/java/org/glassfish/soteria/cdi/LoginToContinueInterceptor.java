@@ -45,6 +45,7 @@ import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.getBaseURL;
 import static org.glassfish.soteria.Utils.getParam;
+import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.notNull;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
@@ -166,11 +167,15 @@ public class LoginToContinueInterceptor implements Serializable {
                 } // else return success
                 
             } else {
-                return httpMessageContext.redirect( // TODO: or forward?
-                        // TODO: option for error parameter instead, e.g. /login?error=true
-                       
-                        getBaseURL(request) +
-                        getLoginToContinueAnnotation(invocationContext).errorPage());
+                
+                String errorPage = getLoginToContinueAnnotation(invocationContext).errorPage();
+                
+                if (isEmpty(errorPage)) {
+                    return authstatus;
+                }
+                
+                return httpMessageContext.redirect( // TODO: optionally forward?
+                    getBaseURL(request) + errorPage);
             }
              
         }
@@ -199,11 +204,16 @@ public class LoginToContinueInterceptor implements Serializable {
     private boolean isOnProtectedURLWithStaleData(HttpMessageContext httpMessageContext) {
         return
             httpMessageContext.isProtected() && 
+            
+            // When HttpServletRequest#authenticate is called, it counts as "mandated" authentication
+            // which here means isProtected() is true. But we want to use HttpServletRequest#authenticate
+            // to resume a dialog started by accessing a protected page, so therefore exclude it here.
+            !httpMessageContext.isAuthenticationRequest() &&
             getSavedRequest(httpMessageContext.getRequest()) != null &&
             getSavedAuthentication(httpMessageContext.getRequest()) == null &&
+           
             // Some servers consider the Servlet special URL "/j_security_check" as
             // a protected URL
-            
             !httpMessageContext.getRequest().getRequestURI().endsWith("j_security_check");
     }
     

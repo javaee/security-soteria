@@ -47,18 +47,20 @@ import java.lang.annotation.Target;
 
 import javax.enterprise.util.Nonbinding;
 import javax.resource.spi.AuthenticationMechanism;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Annotation used to define a container {@link AuthenticationMechanism} that implements
- * FORM authentication mechanism as defined by the Servlet spec and make that implementation
- * available as an enabled CDI bean.
+ * authentication mechanism resembling the Servlet FORM one. Instead of posting back
+ * to a predefined action, this variant depends on the application calling
+ * {@link HttpServletRequest#authenticate(javax.servlet.http.HttpServletResponse)}.  
  * 
  * @author Arjan Tijms
  *
  */
 @Retention(RUNTIME)
 @Target(TYPE)
-public @interface FormAuthenticationMechanismDefinition {
+public @interface CustomFormAuthenticationMechanismDefinition {
  
     @Nonbinding
     LoginToContinue loginToContinue();

@@ -44,6 +44,7 @@ import static java.util.Collections.unmodifiableMap;
 import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
 import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
@@ -54,10 +55,12 @@ import java.util.Map;
 import javax.security.CallerPrincipal;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
+import javax.security.identitystore.CredentialValidationResult;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -276,6 +279,18 @@ public class HttpMessageContextImpl implements HttpMessageContext {
         } 
         
         return notifyContainerAboutLogin(callerPrincipal, groups);
+    }
+    
+    @Override
+    public AuthStatus notifyContainerAboutLogin(CredentialValidationResult result) throws AuthException {
+        if (result.getStatus() == VALID) {
+            return notifyContainerAboutLogin(
+                result.getCallerPrincipal(), 
+                result.getCallerGroups());
+            
+        } else {
+            throw new AuthException("Authentication failed with status" + result.getStatus());
+        }
     }
     
     @Override
