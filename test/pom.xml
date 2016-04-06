@@ -34,9 +34,10 @@
     
     <dependencies>
         <dependency>
-	       <groupId>org.glassfish.soteria</groupId>
-           <artifactId>soteria</artifactId>
-	       <version>1.0-m01-SNAPSHOT</version>
+            <groupId>javax.security</groupId>
+            <artifactId>javax.security-api</artifactId>
+            <version>1.0-m01-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     

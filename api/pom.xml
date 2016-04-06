@@ -8,8 +8,62 @@
        <version>1.0-m01-SNAPSHOT</version>
     </parent>
 
+    <groupId>javax.security</groupId>
     <artifactId>javax.security-api</artifactId>
+    <packaging>bundle</packaging>
 
     <name>Java EE Security upstream API</name>
+
+    <properties>
+        <packages.export>!javax.security.auth.*,!javax.security.jacc.*,javax.security.*</packages.export>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>spec-version-maven-plugin</artifactId>
+                <configuration>
+                    <spec>
+                        <nonFinal>false</nonFinal>
+                        <jarType>api</jarType>
+                        <specVersion>${spec_version}</specVersion>
+                        <specImplVersion>${spec_impl_version}</specImplVersion>
+                        <apiPackage>${api_package}</apiPackage>
+                    </spec>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>set-spec-properties</goal>
+                            <!--<goal>check-module</goal>-->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+             This plugin is reponsible for packaging artifacts
+             as OSGi bundles.  Please refer to
+             http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html
+             for more information about how to use this plugin.
+            -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Version>${spec.bundle.version}</Bundle-Version>
+                        <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
+                        <Extension-Name>${spec.extension.name}</Extension-Name>
+                        <Implementation-Version>${spec.implementation.version}</Implementation-Version>
+                        <Specification-Version>${spec.specification.version}</Specification-Version>
+                        <Export-Package>${packages.export}</Export-Package>
+                        <Embed-StripVersion>true</Embed-StripVersion>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     
 </project>

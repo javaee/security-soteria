@@ -173,12 +173,6 @@ public class CdiExtension implements Extension {
 
     public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
         
-        afterBeanDiscovery.addBean(
-            new CdiDecorator<HttpAuthenticationBaseDecorator>()
-                .decorator(HttpAuthenticationBaseDecorator.class)
-                .delegateAndDecoratedType(HttpAuthenticationMechanism.class)
-                .create(beanManager, (e, i) -> new AutoApplySessionDecorator((HttpAuthenticationMechanism)i)));
-        
         if (identityStoreBean != null) {
             afterBeanDiscovery.addBean(identityStoreBean);
         }
