@@ -15,7 +15,7 @@
     <name>Java EE Security upstream API</name>
 
     <properties>
-        <packages.export>javax.security.*</packages.export>
+        <packages.export>!javax.security.auth.*,!javax.security.jacc.*,javax.security.*</packages.export>
     </properties>
 
     <build>
