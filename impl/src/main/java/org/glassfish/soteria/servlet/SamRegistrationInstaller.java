@@ -43,6 +43,8 @@ import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.deregisterServerAut
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.registerServerAuthModule;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.servlet.ServletContainerInitializer;
@@ -50,10 +52,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebListener;
 
 import org.glassfish.soteria.cdi.CdiExtension;
 import org.glassfish.soteria.mechanisms.jaspic.HttpBridgeServerAuthModule;
+import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
 /**
  * If an HttpAuthenticationMechanism implementation has been found on the classpath, this 
@@ -67,16 +69,29 @@ import org.glassfish.soteria.mechanisms.jaspic.HttpBridgeServerAuthModule;
  * @author Arjan Tijms
  *
  */
-@WebListener
 public class SamRegistrationInstaller implements ServletContainerInitializer, ServletContextListener {
+    
+    private static final Logger logger =  Logger.getLogger(SamRegistrationInstaller.class.getName());
 
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
 
         // Obtain a reference to the CdiExtension that was used to see if
         // there's an enabled bean
-
-        CdiExtension cdiExtension = CDI.current().select(CdiExtension.class).get();
+        
+        CDI<Object> cdi = null;
+        try {
+            cdi = CDI.current();
+        } catch (IllegalStateException e) {
+            // On GlassFish 4.1.1/Payara 4.1.1.161 CDI is not initialized (org.jboss.weld.Container#initialize is not called), 
+            // and calling CDI.current() will throw an exception. It's no use to continue then.
+            // TODO: Do we need to find out *why* the default module does not have CDI initialized?
+            logger.log(Level.FINEST, "CDI not available for app context id: " + Jaspic.getAppContextID(ctx), e);
+            
+            return;
+        }
+        
+        CdiExtension cdiExtension = cdi.select(CdiExtension.class).get();
 
         if (cdiExtension.isHttpAuthenticationMechanismFound()) {
 
