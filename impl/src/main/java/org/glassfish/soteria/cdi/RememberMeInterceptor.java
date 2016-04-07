@@ -56,10 +56,10 @@ import java.util.Optional;
 
 import javax.annotation.Priority;
 import javax.el.ELProcessor;
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -80,9 +80,6 @@ import javax.servlet.http.HttpServletResponse;
 public class RememberMeInterceptor implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
-    @Inject 
-    private Instance<RememberMeIdentityStore> rememberMeIdentityStoreInstance;
     
     @Inject
     private BeanManager beanManager;
@@ -115,7 +112,7 @@ public class RememberMeInterceptor implements Serializable {
     
     private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
-        RememberMeIdentityStore rememberMeIdentityStore = rememberMeIdentityStoreInstance.get(); // TODO ADD CHECKS
+        RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
         
         Cookie rememberMeCookie = getCookie(request, "JREMEMBERMEID");
         
@@ -174,7 +171,7 @@ public class RememberMeInterceptor implements Serializable {
     
     private void cleanSubject(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
     
-        RememberMeIdentityStore rememberMeIdentityStore = rememberMeIdentityStoreInstance.get(); // TODO ADD CHECKS
+        RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
         
         Cookie rememberMeCookie = getCookie(request, "JREMEMBERMEID");
         
