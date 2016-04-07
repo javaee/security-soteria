@@ -42,6 +42,7 @@ package org.glassfish.soteria.mechanisms;
 import static org.glassfish.soteria.Utils.notNull;
 
 import javax.enterprise.inject.Typed;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
@@ -69,14 +70,14 @@ import javax.servlet.http.HttpServletResponse;
 public class FormAuthenticationMechanism implements HttpAuthenticationMechanism, LoginToContinueHolder {
 	
     private LoginToContinue loginToContinue;
-
-    @Inject
-    private IdentityStore identityStore;
     
 	@Override
 	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 		
 	    if (isValidFormPostback(request)) {
+	        
+	        IdentityStore identityStore = CDI.current().select(IdentityStore.class).get();
+	        
             return httpMessageContext.notifyContainerAboutLogin(
                 identityStore.validate(
                     new UsernamePasswordCredential(

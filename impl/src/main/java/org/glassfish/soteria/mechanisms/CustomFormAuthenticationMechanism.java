@@ -40,7 +40,7 @@
 package org.glassfish.soteria.mechanisms;
 
 import javax.enterprise.inject.Typed;
-import javax.inject.Inject;
+import javax.enterprise.inject.spi.CDI;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
@@ -65,14 +65,14 @@ import javax.servlet.http.HttpServletResponse;
 public class CustomFormAuthenticationMechanism implements HttpAuthenticationMechanism, LoginToContinueHolder {
 	
     private LoginToContinue loginToContinue;
-
-    @Inject
-    private IdentityStore identityStore;
     
 	@Override
 	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
         
         if (hasCredential(httpMessageContext)) {
+            
+            IdentityStore identityStore = CDI.current().select(IdentityStore.class).get();
+            
             return httpMessageContext.notifyContainerAboutLogin(
                 identityStore.validate(
                     httpMessageContext.getAuthParameters()
