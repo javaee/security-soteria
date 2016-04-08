@@ -49,6 +49,7 @@ import java.io.Serializable;
 import java.security.Principal;
 
 import javax.annotation.Priority;
+import javax.el.ELProcessor;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -56,6 +57,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
+import javax.servlet.http.HttpServletRequest;
 
 @Interceptor
 @AutoApplySession
@@ -71,7 +73,8 @@ public class AutoApplySessionInterceptor implements Serializable {
         if (isImplementationOf(invocationContext.getMethod(), validateRequestMethod)) {
             
             HttpMessageContext httpMessageContext = (HttpMessageContext)invocationContext.getParameters()[2];
-            Principal userPrincipal = httpMessageContext.getRequest().getUserPrincipal();
+            
+            Principal userPrincipal = getPrincipal(httpMessageContext.getRequest());
             
             if (userPrincipal != null) {
                 
@@ -92,6 +95,22 @@ public class AutoApplySessionInterceptor implements Serializable {
         }
         
         return invocationContext.proceed();
+    }
+    
+    // TEMP workaround for https://github.com/payara/Payara/issues/290#issuecomment-207136005
+    // TODO: THIS HAS TO BE FIXED AND SHOULD NOT STAY IN THE CODE LIKE THIS
+    private Principal getPrincipal(HttpServletRequest request) {
+        
+        try {
+            ELProcessor elProcessor = new ELProcessor();
+            elProcessor.defineBean("request", request);
+            return (Principal) elProcessor.eval("request.getUnwrappedCoyoteRequest().getUserPrincipal()");
+        } catch (Exception e) {
+            // ignore
+        }
+        
+        return request.getUserPrincipal();
+        
     }
     
 }
