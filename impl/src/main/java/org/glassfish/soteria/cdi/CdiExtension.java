@@ -84,7 +84,6 @@ public class CdiExtension implements Extension {
             AutoApplySessionInterceptor.class,
             RememberMeInterceptor.class,
             LoginToContinueInterceptor.class,
-            HttpAuthenticationBaseDecorator.class,
             FormAuthenticationMechanism.class,
             CustomFormAuthenticationMechanism.class,
             SecurityContextImpl.class
