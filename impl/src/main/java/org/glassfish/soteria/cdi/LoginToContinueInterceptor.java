@@ -40,7 +40,7 @@
 package org.glassfish.soteria.cdi;
 
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
-import static javax.security.auth.message.AuthStatus.FAILURE;
+import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.getBaseURL;
@@ -140,9 +140,11 @@ public class LoginToContinueInterceptor implements Serializable {
             try {
                 authstatus = (AuthStatus) invocationContext.proceed();
             } catch (AuthException e) {
-                authstatus = FAILURE;
+                authstatus = SEND_FAILURE;
             }
           
+            // (Following the JASPIC spec (3.8.3.1) validateRequest before service invocation can only return 
+            // SUCCESS, SEND_CONTINUE, SEND_FAILURE or throw an exception
             if (authstatus == SUCCESS) {
                 
                 if (httpMessageContext.getCallerPrincipal() == null) {
@@ -166,7 +168,7 @@ public class LoginToContinueInterceptor implements Serializable {
                     return httpMessageContext.redirect(savedRequest.getFullRequestURL());
                 } // else return success
                 
-            } else {
+            } else if (authstatus == SEND_FAILURE)  {
                 
                 String errorPage = getLoginToContinueAnnotation(invocationContext).errorPage();
                 
@@ -176,6 +178,9 @@ public class LoginToContinueInterceptor implements Serializable {
                 
                 return httpMessageContext.redirect( // TODO: optionally forward?
                     getBaseURL(request) + errorPage);
+            } else {
+            	// Basically SEND_CONTINUE
+            	return authstatus;
             }
              
         }
