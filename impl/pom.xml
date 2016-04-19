@@ -25,7 +25,6 @@
             <groupId>javax.security</groupId>
             <artifactId>javax.security-api</artifactId>
             <version>1.0-m01-SNAPSHOT</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
