@@ -70,6 +70,11 @@ public @interface LoginToContinue {
     @Nonbinding
     String loginPage() default "/login";
     
+    // Use a forward to reach the page set by loginPage if true, otherwise use a redirect
+    // TODO: if redirect, set status code?
+    @Nonbinding
+    boolean useForwardToLogin() default true;
+    
     // TODO: add parameters?
     // TODO: choice between redirect/forward?
     

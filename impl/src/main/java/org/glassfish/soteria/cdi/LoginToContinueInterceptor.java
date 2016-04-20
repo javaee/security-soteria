@@ -121,10 +121,17 @@ public class LoginToContinueInterceptor implements Serializable {
             // Save request details and redirect/forward to /login page
             saveRequest(request);
             
-            // TODO: option to redirect instead of forward?
+            LoginToContinue loginToContinueAnnotation =	getLoginToContinueAnnotation(invocationContext);
+            
             // TODO: Use modified request/response for forward to set method to GET and filter out "if-" headers?
-            return httpMessageContext.forward(
-                getLoginToContinueAnnotation(invocationContext).loginPage());
+            
+            if (loginToContinueAnnotation.useForwardToLogin()) {
+                return httpMessageContext.forward(
+                    loginToContinueAnnotation.loginPage());
+            } else {
+                return httpMessageContext.redirect(
+                    loginToContinueAnnotation.loginPage());
+            }
         }
         
         
@@ -203,7 +210,7 @@ public class LoginToContinueInterceptor implements Serializable {
             
         }
        
-        return httpMessageContext.doNothing();
+        return (AuthStatus) invocationContext.proceed();
     }
     
     private boolean isOnProtectedURLWithStaleData(HttpMessageContext httpMessageContext) {
@@ -224,8 +231,14 @@ public class LoginToContinueInterceptor implements Serializable {
     
     private boolean isOnInitialProtectedURL(HttpMessageContext httpMessageContext) {
         return 
-            httpMessageContext.isProtected() && 
-            getSavedRequest(httpMessageContext.getRequest()) == null;
+            httpMessageContext.isProtected() &&
+            
+            // When HttpServletRequest#authenticate is called, it counts as "mandated" authentication
+            // which here means isProtected() is true. But we want to use HttpServletRequest#authenticate
+            // to resume a dialog started by accessing a protected page, so therefore exclude it here.
+            !httpMessageContext.isAuthenticationRequest() &&
+            getSavedRequest(httpMessageContext.getRequest()) == null && 
+            getSavedAuthentication(httpMessageContext.getRequest()) == null;
     }
     
     private boolean isOnLoginPostback(HttpServletRequest request) {
