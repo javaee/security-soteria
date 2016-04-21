@@ -84,6 +84,30 @@ public class CredentialValidationResult {
 	};
 	
 	/**
+     * Constructor for a VALID result
+     * 
+     * @param callerName
+     *            Name of the validated caller
+     * @param groups
+     *            Groups associated with the caller from the identity store
+     */
+    public CredentialValidationResult(String callerName, List<String> groups) {
+        this(new CallerPrincipal(callerName), groups);
+    }
+	
+	/**
+     * Constructor for a VALID result
+     * 
+     * @param callerPrincipal
+     *            Validated caller
+     * @param groups
+     *            Groups associated with the caller from the identity store
+     */
+	public CredentialValidationResult(CallerPrincipal callerPrincipal, List<String> groups) {
+	    this(VALID, callerPrincipal, groups);
+	}
+	
+	/**
 	 * Constructor
 	 *
 	 * @param status
