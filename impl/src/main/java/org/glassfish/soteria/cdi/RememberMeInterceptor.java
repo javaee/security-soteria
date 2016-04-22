@@ -43,6 +43,7 @@ import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.cleanSubjectMethod;
+import static org.glassfish.soteria.Utils.getParam;
 import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
@@ -93,18 +94,20 @@ public class RememberMeInterceptor implements Serializable {
         
         // If intercepting HttpAuthenticationMechanism#validateRequest
         if (isImplementationOf(invocationContext.getMethod(), validateRequestMethod)) {
-            return validateRequest(invocationContext,   
-                (HttpServletRequest)invocationContext.getParameters()[0],
-                (HttpServletResponse)invocationContext.getParameters()[1],
-                (HttpMessageContext)invocationContext.getParameters()[2]);
+            return validateRequest(
+                invocationContext, 
+                getParam(invocationContext, 0),  
+                getParam(invocationContext, 1),
+                getParam(invocationContext, 2));
         }
         
         // If intercepting HttpAuthenticationMechanism#cleanSubject
         if (isImplementationOf(invocationContext.getMethod(), cleanSubjectMethod)) {
-            cleanSubject(invocationContext,   
-                (HttpServletRequest)invocationContext.getParameters()[0],
-                (HttpServletResponse)invocationContext.getParameters()[1],
-                (HttpMessageContext)invocationContext.getParameters()[2]);
+            cleanSubject(
+                invocationContext, 
+                getParam(invocationContext, 0),  
+                getParam(invocationContext, 1),
+                getParam(invocationContext, 2));
         }
         
         return invocationContext.proceed();
@@ -113,12 +116,13 @@ public class RememberMeInterceptor implements Serializable {
     private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
+        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted();
         
-        Cookie rememberMeCookie = getCookie(request, "JREMEMBERMEID");
+        Cookie rememberMeCookie = getCookie(request, rememberMeAnnotation.cookieName());
         
         if (rememberMeCookie != null) {
             
-            // There's a JREMEMBERMEID cookie, see if we can use it to authenticate
+            // There's a remember me cookie, see if we can use it to authenticate
             
             CredentialValidationResult result = rememberMeIdentityStore.validate(
                 new RememberMeCredential(rememberMeCookie.getValue())
@@ -132,7 +136,7 @@ public class RememberMeInterceptor implements Serializable {
             } else {
                 // The token appears to be no longer valid, or perhaps wasn't valid
                 // to begin with. Remove the cookie.
-                removeCookie(request, response, "JREMEMBERMEID");
+                removeCookie(request, response, rememberMeAnnotation.cookieName());
             }
         }
         
@@ -147,8 +151,6 @@ public class RememberMeInterceptor implements Serializable {
             // and send a cookie with a token that can be used
             // to retrieve this stored identity later
             
-            RememberMe rememberMeAnnotation = getRememberMeFromIntercepted();
-            
             Boolean isRememberMe = true;
             if (!isEmpty(rememberMeAnnotation.isRememberMeExpression())) {
                 ELProcessor elProcessor = getElProcessor(invocationContext, httpMessageContext);
@@ -162,7 +164,7 @@ public class RememberMeInterceptor implements Serializable {
                     httpMessageContext.getGroups()
                 );
                 
-                saveCookie(request, response, "JREMEMBERMEID", token, rememberMeAnnotation.cookieMaxAgeSeconds());
+                saveCookie(request, response, rememberMeAnnotation.cookieName(), token, rememberMeAnnotation.cookieMaxAgeSeconds());
             }
         }
         
@@ -172,13 +174,14 @@ public class RememberMeInterceptor implements Serializable {
     private void cleanSubject(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
     
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
+        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted();
         
-        Cookie rememberMeCookie = getCookie(request, "JREMEMBERMEID");
+        Cookie rememberMeCookie = getCookie(request, rememberMeAnnotation.cookieName());
         
         if (rememberMeCookie != null) {
             
-            // There's a JREMEMBERMEID cookie, remove the cookie
-            removeCookie(request, response, "JREMEMBERMEID");
+            // There's a remember me cookie, remove the cookie
+            removeCookie(request, response, rememberMeAnnotation.cookieName());
             
             // And remove the token (and with it the authenticated identity) from the store
             rememberMeIdentityStore.removeLoginToken(rememberMeCookie.getValue());

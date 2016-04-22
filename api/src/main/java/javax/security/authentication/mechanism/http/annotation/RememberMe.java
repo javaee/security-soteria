@@ -109,6 +109,16 @@ public @interface RememberMe {
     int cookieMaxAgeSeconds() default 86400; // 1 day
     
     /**
+     * Name of the remember me cookie.
+     * 
+     * @see Cookie#getName()
+     * 
+     * @return The name of the cookie
+     */
+    @Nonbinding
+    String cookieName() default "JREMEMBERMEID";
+    
+    /**
      * EL expression to determine if remember me should be used. This is evaluated
      * for every request requiring authentication. The expression needs to evaluate
      * to a boolean outcome. All named CDI beans are available to the expression
