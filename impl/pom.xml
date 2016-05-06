@@ -17,7 +17,6 @@
         <packages.export>
             !javax.security.auth.*,!javax.security.jacc.*,javax.security.*,org.glassfish.soteria.*
         </packages.export>
-
     </properties>
     
     <dependencies>
