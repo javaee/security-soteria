@@ -43,11 +43,13 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
 
 import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.naming.InitialContext;
@@ -91,7 +93,7 @@ public class CdiUtils {
     
     public static void addAnnotatedTypes(BeforeBeanDiscovery beforeBean, BeanManager beanManager, Class<?>... types) {
         for (Class<?> type : types) {
-            beforeBean.addAnnotatedType(beanManager.createAnnotatedType(type), null);
+            beforeBean.addAnnotatedType(beanManager.createAnnotatedType(type), "Soteria " + type.getName());
         }
     }
     
@@ -120,6 +122,33 @@ public class CdiUtils {
         }
 
         return empty();
+    }
+    
+    // 
+    public static <T> T getBeanReference(Class<T> type, Annotation... qualifiers) {
+        return type.cast(getBeanReferenceByType(jndiLookup("java:comp/BeanManager"), type, qualifiers));
+    }
+    
+    /**
+     * @param beanManager the bean manager
+     * @param type the required bean type the reference must have
+     * @param qualifier the required qualifiers the reference must have
+     * @return a bean reference adhering to the required type and qualifiers
+     */
+    public static <T> T getBeanReference(BeanManager beanManager, Class<T> type, Annotation... qualifiers) {
+        return type.cast(getBeanReferenceByType(beanManager, type, qualifiers));
+    }
+
+    public static Object getBeanReferenceByType(BeanManager beanManager, Type type, Annotation... qualifiers) {
+
+        Object beanReference = null;
+
+        Bean<?> bean = beanManager.resolve(beanManager.getBeans(type, qualifiers));
+        if (bean != null) {
+            beanReference = beanManager.getReference(bean, type, beanManager.createCreationalContext(bean));
+        }
+
+        return beanReference;
     }
     
     @SuppressWarnings("unchecked")

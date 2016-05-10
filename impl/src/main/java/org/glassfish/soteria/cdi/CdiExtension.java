@@ -103,7 +103,8 @@ public class CdiExtension implements Extension {
         if (optionalEmbeddedStore.isPresent()) {
             identityStoreBean = new CdiProducer<IdentityStore>()
                 .scope(ApplicationScoped.class)
-                .types(IdentityStore.class)
+                .beanClass(IdentityStore.class)
+                .types(Object.class, IdentityStore.class, EmbeddedIdentityStore.class)
                 .addToId(EmbeddedIdentityStoreDefinition.class)
                 .create(e -> new EmbeddedIdentityStore(optionalEmbeddedStore.get().value()));
         }
@@ -112,7 +113,8 @@ public class CdiExtension implements Extension {
         if (optionalDBStore.isPresent()) {
             identityStoreBean = new CdiProducer<IdentityStore>()
                 .scope(ApplicationScoped.class)
-                .types(IdentityStore.class)
+                .beanClass(IdentityStore.class)
+                .types(Object.class, IdentityStore.class, DataBaseIdentityStore.class)
                 .addToId(DataBaseIdentityStoreDefinition.class)
                 .create(e -> new DataBaseIdentityStore(optionalDBStore.get()));
         }
@@ -121,7 +123,8 @@ public class CdiExtension implements Extension {
         if (optionalLdapStore.isPresent()) {
             identityStoreBean = new CdiProducer<IdentityStore>()
                 .scope(ApplicationScoped.class)
-                .types(IdentityStore.class)
+                .beanClass(IdentityStore.class)
+                .types(Object.class, IdentityStore.class, LDapIdentityStore.class)
                 .addToId(LdapIdentityStoreDefinition.class)
                 .create(e -> new LDapIdentityStore(optionalLdapStore.get()));
         }
@@ -130,7 +133,8 @@ public class CdiExtension implements Extension {
         if (optionalBasicMechanism.isPresent()) {
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                 .scope(ApplicationScoped.class)
-                .types(HttpAuthenticationMechanism.class)
+                .beanClass(BasicAuthenticationMechanism.class)
+                .types(Object.class, HttpAuthenticationMechanism.class, BasicAuthenticationMechanism.class)
                 .addToId(BasicAuthenticationMechanismDefinition.class)
                 .create(e -> new BasicAuthenticationMechanism(optionalBasicMechanism.get().realmName()));
         }
@@ -139,28 +143,38 @@ public class CdiExtension implements Extension {
         if (optionalFormMechanism.isPresent()) {
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                 .scope(ApplicationScoped.class)
-                .types(HttpAuthenticationMechanism.class)
+                .beanClass(HttpAuthenticationMechanism.class)
+                .types(Object.class, HttpAuthenticationMechanism.class)
                 .addToId(FormAuthenticationMechanismDefinition.class)
-                .create(e -> 
-                    CDI.current()
+                .create(e -> {
+                    FormAuthenticationMechanism formAuthenticationMechanism = CDI.current()
                        .select(FormAuthenticationMechanism.class)
-                       .get()
-                       .loginToContinue(optionalFormMechanism.get().loginToContinue())
-                );
+                       .get();
+                    
+                    formAuthenticationMechanism.setLoginToContinue(
+                        optionalFormMechanism.get().loginToContinue());
+                    
+                    return formAuthenticationMechanism;
+                });
         }
         
         Optional<CustomFormAuthenticationMechanismDefinition> optionalCustomFormMechanism = getAnnotation(beanManager, event.getAnnotated(), CustomFormAuthenticationMechanismDefinition.class);
         if (optionalCustomFormMechanism.isPresent()) {
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                 .scope(ApplicationScoped.class)
-                .types(HttpAuthenticationMechanism.class)
+                .beanClass(HttpAuthenticationMechanism.class)
+                .types(Object.class, HttpAuthenticationMechanism.class)
                 .addToId(CustomFormAuthenticationMechanismDefinition.class)
-                .create(e -> 
-                    CDI.current()
+                .create(e -> { 
+                    CustomFormAuthenticationMechanism customFormAuthenticationMechanism = CDI.current()
                        .select(CustomFormAuthenticationMechanism.class)
-                       .get()
-                       .loginToContinue(optionalCustomFormMechanism.get().loginToContinue())
-                );
+                       .get();
+                    
+                    customFormAuthenticationMechanism.setLoginToContinue(
+                        optionalCustomFormMechanism.get().loginToContinue());
+                    
+                    return customFormAuthenticationMechanism;
+                });
         }
         
         if (event.getBean().getTypes().contains(HttpAuthenticationMechanism.class)) {

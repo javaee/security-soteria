@@ -42,6 +42,7 @@ package org.glassfish.soteria.cdi;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static java.util.Collections.unmodifiableSet;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -63,7 +64,7 @@ public class CdiProducer<T> implements Bean<T>, PassivationCapable {
     private String name;
     private Class<?> beanClass = Object.class;
     private Set<Type> types = singleton(Object.class);
-    private Set<Annotation> qualifiers = singleton(new DefaultAnnotationLiteral());
+    private Set<Annotation> qualifiers = unmodifiableSet(asSet(new DefaultAnnotationLiteral(), new AnyAnnotationLiteral()));
     private Class<? extends Annotation> scope = Dependent.class;
     private Function<CreationalContext<T>, T> create;
     

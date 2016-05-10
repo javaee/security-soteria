@@ -109,6 +109,7 @@ public class LoginToContinueInterceptor implements Serializable {
     private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
         // 0. Caller aborted earlier flow and does a new request to protected resource
+
         if (isOnProtectedURLWithStaleData(httpMessageContext)) {
             removeSavedRequest(request);
         }
@@ -238,7 +239,11 @@ public class LoginToContinueInterceptor implements Serializable {
             // to resume a dialog started by accessing a protected page, so therefore exclude it here.
             !httpMessageContext.isAuthenticationRequest() &&
             getSavedRequest(httpMessageContext.getRequest()) == null && 
-            getSavedAuthentication(httpMessageContext.getRequest()) == null;
+            getSavedAuthentication(httpMessageContext.getRequest()) == null &&
+                    
+            // Some servers consider the Servlet special URL "/j_security_check" as
+            // a protected URL
+            !httpMessageContext.getRequest().getRequestURI().endsWith("j_security_check");
     }
     
     private boolean isOnLoginPostback(HttpServletRequest request) {

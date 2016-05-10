@@ -65,7 +65,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class BasicAuthenticationMechanism implements HttpAuthenticationMechanism {
 	
-    private final String basicHeaderValue;
+    private String basicHeaderValue;
+    
+    public BasicAuthenticationMechanism() {
+    }
     
     public BasicAuthenticationMechanism(String realmName) {
         this.basicHeaderValue = format("Basic realm=\"%s\"", realmName);
