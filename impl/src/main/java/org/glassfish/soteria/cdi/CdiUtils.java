@@ -132,7 +132,7 @@ public class CdiUtils {
     /**
      * @param beanManager the bean manager
      * @param type the required bean type the reference must have
-     * @param qualifier the required qualifiers the reference must have
+     * @param qualifiers the required qualifiers the reference must have
      * @return a bean reference adhering to the required type and qualifiers
      */
     public static <T> T getBeanReference(BeanManager beanManager, Class<T> type, Annotation... qualifiers) {
