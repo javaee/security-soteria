@@ -39,6 +39,7 @@
  */
 package org.glassfish.soteria.cdi;
 
+import static java.lang.Boolean.TRUE;
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
 import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
@@ -108,12 +109,68 @@ public class LoginToContinueInterceptor implements Serializable {
     
     private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
-        // 0. Caller aborted earlier flow and does a new request to protected resource
-
+        // Check if there's any state lingering behind from a previous aborted authentication dialog
+        tryClean(httpMessageContext);
+        
+        if (isCallerInitiatedAuthentication(request)) {
+            // The caller explicitly initiated the authentication dialog, i.e. by clicking on a login button,
+            // in response to which the application called HttpServletRequest#authenticate
+            return processCallerInitiatedAuthentication(invocationContext, request, response, httpMessageContext);
+        } else {
+            // If the caller didn't initiated the dialog, the container did, i.e. after the caller tried to access
+            // a protected resource.
+            return processContainerInitiatedAuthentication(invocationContext, request, response, httpMessageContext);
+        }
+    }
+    
+    private void tryClean(HttpMessageContext httpMessageContext) {
+        
+        // 1. Check if caller aborted earlier flow and does a new request to protected resource
         if (isOnProtectedURLWithStaleData(httpMessageContext)) {
-            removeSavedRequest(request);
+            removeSavedRequest(httpMessageContext.getRequest());
+            removeCallerInitiatedAuthentication(httpMessageContext.getRequest());
         }
         
+        // 2. Check if caller aborted earlier flow and explicitly initiated a new authentication dialog 
+        if (httpMessageContext.getAuthParameters().isNewAuthentication()) {
+            saveCallerInitiatedAuthentication(httpMessageContext.getRequest());
+            removeSavedRequest(httpMessageContext.getRequest());
+            removeSavedAuthentication(httpMessageContext.getRequest());
+        }
+    }
+    
+    private AuthStatus processCallerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
+        // Try to authenticate with the next interceptor or actual authentication mechanism
+        AuthStatus authstatus = null;
+        
+        try {
+            authstatus = (AuthStatus) invocationContext.proceed();
+        } catch (AuthException e) {
+            authstatus = SEND_FAILURE;
+        }
+        
+        if (authstatus == SUCCESS) {
+            
+            if (httpMessageContext.getCallerPrincipal() == null) {
+                return SUCCESS;
+            }
+            
+            // Actually authenticated now, so we remove the authentication dialog marker
+            removeCallerInitiatedAuthentication(httpMessageContext.getRequest());
+            
+            // TODO: for some mechanisms, such as OAuth the caller would now likely be at an
+            // application OAuth landing page, and should likely be returned to "some other" location
+            // (e.g. the page from which a login link was clicked in say a top menu bar)
+            //
+            // Do we add support for this, e.g. via a watered down savedRequest (saving only a caller provided URL)
+            // Or do we leave this as an application responsibility?
+        }
+        
+        return authstatus;
+    }
+    
+    private AuthStatus processContainerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
+
         // 1. Protected resource requested and no request saved before
         if (isOnInitialProtectedURL(httpMessageContext)) {
             // TODO: request.authenticate() is captured by this as well
@@ -122,7 +179,7 @@ public class LoginToContinueInterceptor implements Serializable {
             // Save request details and redirect/forward to /login page
             saveRequest(request);
             
-            LoginToContinue loginToContinueAnnotation =	getLoginToContinueAnnotation(invocationContext);
+            LoginToContinue loginToContinueAnnotation = getLoginToContinueAnnotation(invocationContext);
             
             // TODO: Use modified request/response for forward to set method to GET and filter out "if-" headers?
             
@@ -187,8 +244,8 @@ public class LoginToContinueInterceptor implements Serializable {
                 return httpMessageContext.redirect( // TODO: optionally forward?
                     getBaseURL(request) + errorPage);
             } else {
-            	// Basically SEND_CONTINUE
-            	return authstatus;
+                // Basically SEND_CONTINUE
+                return authstatus;
             }
              
         }
@@ -212,6 +269,11 @@ public class LoginToContinueInterceptor implements Serializable {
         }
        
         return (AuthStatus) invocationContext.proceed();
+
+    }
+    
+    private boolean isCallerInitiatedAuthentication(HttpServletRequest request) {
+        return TRUE.equals(getCallerInitiatedAuthentication(request));
     }
     
     private boolean isOnProtectedURLWithStaleData(HttpMessageContext httpMessageContext) {
@@ -279,6 +341,24 @@ public class LoginToContinueInterceptor implements Serializable {
     
     private static final String ORIGINAL_REQUEST_DATA_SESSION_NAME = "org.glassfish.soteria.original.request";
     private static final String AUTHENTICATION_DATA_SESSION_NAME = "org.glassfish.soteria.authentication";
+    private static final String CALLER_INITIATED_AUTHENTICATION_SESSION_NAME = "org.glassfish.soteria.caller_initiated_authentication";
+    
+    private void saveCallerInitiatedAuthentication(HttpServletRequest request) {
+        request.getSession().setAttribute(CALLER_INITIATED_AUTHENTICATION_SESSION_NAME, TRUE);
+    }
+    
+    private Boolean getCallerInitiatedAuthentication(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        
+        return (Boolean) session.getAttribute(CALLER_INITIATED_AUTHENTICATION_SESSION_NAME);
+    }
+    
+    private void removeCallerInitiatedAuthentication(HttpServletRequest request) {
+        request.getSession().removeAttribute(CALLER_INITIATED_AUTHENTICATION_SESSION_NAME);
+    }
 
     private void saveRequest(HttpServletRequest request) {
         request.getSession().setAttribute(ORIGINAL_REQUEST_DATA_SESSION_NAME, copy(request));
