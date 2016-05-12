@@ -40,7 +40,7 @@
 package javax.security.identitystore.credential;
 
 /**
- * Represents the credentials typically used by standard username/password authentication.
+ * Represents the credentials typically used by standard caller name/password authentication.
  */
 public class UsernamePasswordCredential extends AbstractClearableCredential {
 
@@ -50,7 +50,18 @@ public class UsernamePasswordCredential extends AbstractClearableCredential {
     /**
      * Constructor.
      *
-     * @param callerName The user name
+     * @param callerName The caller name
+     * @param password The password, as a String
+     */
+    public UsernamePasswordCredential(String callerName, String password) {
+        this.caller = callerName;
+        this.password = new Password(password);
+    }
+    
+    /**
+     * Constructor.
+     *
+     * @param callerName The caller name
      * @param password The password
      */
     public UsernamePasswordCredential(String callerName, Password password) {
@@ -64,6 +75,14 @@ public class UsernamePasswordCredential extends AbstractClearableCredential {
      */
     public Password getPassword() {
         return password;
+    }
+    
+    /**
+     * Determines the password.
+     * @return The password, as a String.
+     */
+    public String getPasswordAsString() {
+        return String.valueOf(getPassword().getValue());
     }
 
     /**
