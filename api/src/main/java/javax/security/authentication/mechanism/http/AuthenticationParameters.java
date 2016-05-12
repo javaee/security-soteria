@@ -43,6 +43,8 @@ import javax.security.identitystore.credential.Credential;
 
 /**
  * Parameters that are provided along with an authentication request.
+ * 
+ * NOTICE: DESIGN MOCKUP / EARLY DRAFT
  *
  * @author Arjan Tijms
  *
@@ -51,43 +53,52 @@ public class AuthenticationParameters {
 
     private Credential credential;
 
-	private Boolean rememberMe;
-	private Boolean noPassword;
-	private String authMethod;
+    // Signal to authentication mechanism an explicit new authentication dialog is wanted, as opposed to
+    // continuing a potentially existing one
+    private boolean newAuthentication;
 
-	private String redirectUrl;
-	
-	public static AuthenticationParameters withParams() {
-	    return new AuthenticationParameters();
-	}
-	
-	public AuthenticationParameters credential(Credential credential) {
-	    setCredential(credential);
-	    return this;
-	}
+    private boolean rememberMe; // draft idea; to let the caller indicate right away remember me is required. Or is this too specific?
+    private boolean noPassword; // draft idea; for runAs and/or refresh authenticated identity purposes
+    private String authMethod;
+
+    private String redirectUrl; // draft idea; optional URL to redirect to after authentication succeeded
+
+    public static AuthenticationParameters withParams() {
+        return new AuthenticationParameters();
+    }
+
+    public AuthenticationParameters credential(Credential credential) {
+        setCredential(credential);
+        return this;
+    }
+
+    public AuthenticationParameters newAuthentication(boolean newAuthentication) {
+        setNewAuthentication(newAuthentication);
+        return this;
+    }
 
     public AuthenticationParameters rememberMe(boolean rememberMe) {
-		setRememberMe(rememberMe);
-		return this;
-	}
-	
+        setRememberMe(rememberMe);
+        return this;
+    }
+
     public AuthenticationParameters noPassword(boolean noPassword) {
-		setNoPassword(noPassword);
-		return this;
-	}
+        setNoPassword(noPassword);
+        return this;
+    }
 
     public AuthenticationParameters authMethod(String authMethod) {
-		setAuthMethod(authMethod);
-		return this;
-	}
+        setAuthMethod(authMethod);
+        return this;
+    }
 
     public AuthenticationParameters redirectUrl(String redirectUrl) {
-		setRedirectUrl(redirectUrl);
-		return this;
-	}
+        setRedirectUrl(redirectUrl);
+        return this;
+    }
 
-	// Getters/setters
-	
+    // Getters/setters
+
     public Credential getCredential() {
         return credential;
     }
@@ -96,36 +107,44 @@ public class AuthenticationParameters {
         this.credential = credential;
     }
 
-    public Boolean getRememberMe() {
-		return rememberMe;
-	}
+    public boolean isNewAuthentication() {
+        return newAuthentication;
+    }
 
-    public void setRememberMe(Boolean rememberMe) {
-		this.rememberMe = rememberMe;
-	}
+    public void setNewAuthentication(boolean newAuthentication) {
+        this.newAuthentication = newAuthentication;
+    }
+
+    public boolean isRememberMe() {
+        return rememberMe;
+    }
+
+    public void setRememberMe(boolean rememberMe) {
+        this.rememberMe = rememberMe;
+    }
 
     public String getAuthMethod() {
-		return authMethod;
-	}
+        return authMethod;
+    }
 
     public void setAuthMethod(String authMethod) {
-		this.authMethod = authMethod;
-	}
+        this.authMethod = authMethod;
+    }
 
     public String getRedirectUrl() {
-		return redirectUrl;
-	}
+        return redirectUrl;
+    }
 
     public void setRedirectUrl(String redirectUrl) {
-		this.redirectUrl = redirectUrl;
-	}
+        this.redirectUrl = redirectUrl;
+    }
 
-    public Boolean getNoPassword() {
-		return noPassword;
-	}
+    public boolean isNoPassword() {
+        return noPassword;
+    }
 
-    public void setNoPassword(Boolean noPassword) {
-		this.noPassword = noPassword;
-	}
+    public void setNoPassword(boolean noPassword) {
+        this.noPassword = noPassword;
+    }
 
 }
