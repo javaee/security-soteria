@@ -43,6 +43,8 @@ import static javax.security.auth.message.AuthStatus.FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastStatus;
 
+import java.io.Serializable;
+
 import javax.inject.Inject;
 import javax.security.SecurityContext;
 import javax.security.auth.message.AuthStatus;
@@ -52,7 +54,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
-public class SecurityContextImpl implements SecurityContext {
+public class SecurityContextImpl implements SecurityContext, Serializable {
+    
+    private static final long serialVersionUID = 1L;
     
     @Inject
     private HttpServletRequest request;
