@@ -13,6 +13,16 @@
 	<packaging>pom</packaging>
 
     <inceptionYear>2015</inceptionYear>
+    
+    <licenses>
+        <license>
+            <name>
+                Dual license consisting of the CDDL v1.1 and GPL v2
+            </name>
+            <url>https://glassfish.java.net/public/CDDL+GPL_1_1.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
 	<modules>
         <module>api</module>
