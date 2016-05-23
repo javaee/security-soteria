@@ -5,7 +5,7 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-m01-SNAPSHOT</version>
+       <version>1.0-m01</version>
     </parent>
     
     <groupId>org.glassfish.soteria.test</groupId>
@@ -37,7 +37,7 @@
         <!-- 
             This profile assumes a target that already has the Soteria libraries. 
             In Java EE 8 that would be the default. E.g. in the case of GlassFish/Payara
-            a soteria-1.0-m01-SNAPSHOT.jar in [gf_home]/glassfish/modules 
+            a soteria-1.0-m01.jar in [gf_home]/glassfish/modules 
           -->
         <profile>
             <id>provided</id>
@@ -48,7 +48,7 @@
                 <dependency>
                    <groupId>javax.security</groupId>
                    <artifactId>javax.security-api</artifactId>
-                   <version>1.0-m01-SNAPSHOT</version>
+                   <version>1.0-m01</version>
                    <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -58,7 +58,7 @@
             This profile assumes a target that does not have the Soteria libraries. 
             E.g. a Java EE 7 server or Servlet container such as Tomcat or Jetty.
             
-            With this profile e.g. soteria-1.0-m01-SNAPSHOT.jar will end up in WEB-INF/lib
+            With this profile e.g. soteria-1.0-m01.jar will end up in WEB-INF/lib
         -->
         <profile>
             <id>bundled</id>
@@ -66,7 +66,7 @@
                 <dependency>
                    <groupId>org.glassfish.soteria</groupId>
                     <artifactId>soteria</artifactId>
-                    <version>1.0-m01-SNAPSHOT</version>
+                    <version>1.0-m01</version>
                 </dependency>
             </dependencies>
         </profile> 

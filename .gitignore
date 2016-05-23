@@ -31,3 +31,7 @@ target/
 
 /.project
 nb-configuration.xml
+
+# mac
+.DS_Store
+

@@ -39,11 +39,12 @@
  */
 package org.glassfish.soteria.servlet;
 
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.INFO;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.deregisterServerAuthModule;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.registerServerAuthModule;
 
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.CDI;
@@ -82,11 +83,19 @@ public class SamRegistrationInstaller implements ServletContainerInitializer, Se
         CDI<Object> cdi = null;
         try {
             cdi = CDI.current();
+            
+            if (logger.isLoggable(INFO)) {
+                logger.log(INFO, 
+                    // TODO: Get version from build
+                    "Initializing Soteria 1.0-m01 for context ''{0}''", 
+                    ctx.getContextPath());
+            }
+            
         } catch (IllegalStateException e) {
             // On GlassFish 4.1.1/Payara 4.1.1.161 CDI is not initialized (org.jboss.weld.Container#initialize is not called), 
             // and calling CDI.current() will throw an exception. It's no use to continue then.
             // TODO: Do we need to find out *why* the default module does not have CDI initialized?
-            logger.log(Level.FINEST, "CDI not available for app context id: " + Jaspic.getAppContextID(ctx), e);
+            logger.log(FINEST, "CDI not available for app context id: " + Jaspic.getAppContextID(ctx), e);
             
             return;
         }
@@ -111,8 +120,7 @@ public class SamRegistrationInstaller implements ServletContainerInitializer, Se
     
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        // noop
-        
+       // noop
     }
     
     @Override
