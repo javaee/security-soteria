@@ -27,6 +27,14 @@
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>bintray-javaee-security-spec-maven</id>
+            <name>javaee-security-spec-maven</name>
+            <url>https://api.bintray.com/maven/javaee-security-spec/maven/org.glassfish.soteria:soteria/;publish=1</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
