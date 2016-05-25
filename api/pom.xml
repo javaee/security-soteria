@@ -18,6 +18,14 @@
         <packages.export>!javax.security.auth.*,!javax.security.jacc.*,javax.security.*</packages.export>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>bintray-javaee-security-spec-maven</id>
+            <name>javaee-security-spec-maven</name>
+            <url>https://api.bintray.com/maven/javaee-security-spec/maven/javax.security:javax.security-api/;publish=1</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
