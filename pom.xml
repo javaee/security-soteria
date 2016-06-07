@@ -41,6 +41,14 @@
 		<impl_version>1.0-SNAPSHOT</impl_version>
     </properties>
 
+	<distributionManagement>
+		<repository>
+			<id>bintray-javaee-security-spec-maven</id>
+			<name>javaee-security-spec-maven</name>
+			<url>https://api.bintray.com/maven/javaee-security-spec/maven/org.glassfish.soteria:parent/;publish=1</url>
+		</repository>
+	</distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
