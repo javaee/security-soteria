@@ -1,4 +1,4 @@
-package test;
+package org.glassfish.soteria.test;
 
 import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;

@@ -87,7 +87,7 @@ public class SamRegistrationInstaller implements ServletContainerInitializer, Se
             if (logger.isLoggable(INFO)) {
                 logger.log(INFO, 
                     // TODO: Get version from build
-                    "Initializing Soteria 1.0-m01 for context ''{0}''", 
+                    "Initializing Soteria 1.0-m02-SNAPSHOT for context ''{0}''", 
                     ctx.getContextPath());
             }
             

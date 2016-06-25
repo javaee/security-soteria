@@ -5,7 +5,7 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-m01</version>
+       <version>1.0-m02-SNAPSHOT</version>
     </parent>
 
     <artifactId>soteria</artifactId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>javax.security</groupId>
             <artifactId>javax.security-api</artifactId>
-            <version>1.0-m01</version>
+            <version>1.0-m02-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

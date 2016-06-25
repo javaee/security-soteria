@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-m01</version>
+        <version>1.0-m02-SNAPSHOT</version>
     </parent>
 	
 	<artifactId>app-custom-rememberme</artifactId>

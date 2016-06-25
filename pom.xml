@@ -9,7 +9,7 @@
 
 	<groupId>org.glassfish.soteria</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.0-m01</version>
+	<version>1.0-m02-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
     <inceptionYear>2015</inceptionYear>
@@ -29,9 +29,13 @@
         <module>impl</module>
         <module>test</module>
 	</modules>
-
+       
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
 		<api_package>javax.security</api_package>
 		<impl_namespace>org.glassfish.soteria</impl_namespace>
@@ -104,16 +108,6 @@
 		</pluginManagement>
 
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<optimize>true</optimize>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
 
             <!-- Configure the jar with the sources (or rather, convince Maven that we want sources at all) -->
             <plugin>
