@@ -1,9 +1,9 @@
-package test;
+package org.glassfish.soteria.test;
 
 import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
+import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,10 +16,10 @@ import javax.servlet.http.HttpServletResponse;
  * 
  *
  */
-@DataBaseIdentityStoreDefinition(
-    dataSourceLookup="java:global/MyDS", 
-    callerQuery="select password from caller where name = ?",
-    groupsQuery="select group_name from caller_groups where caller_name = ?"
+@LdapIdentityStoreDefinition(
+    url = "ldap://localhost:33389/",
+    callerBaseDn = "ou=caller,dc=jsr375,dc=net",
+    groupBaseDn  = "ou=group,dc=jsr375,dc=net"
 )
 @DeclareRoles({ "foo", "bar", "kaz" })
 @WebServlet("/servlet")

@@ -1,4 +1,4 @@
-package test;
+package org.glassfish.soteria.test;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 
 
 @RunWith(Arquillian.class)
-public class CustomIT extends ArquillianBase {
+public class AppDBIT extends ArquillianBase {
     
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {

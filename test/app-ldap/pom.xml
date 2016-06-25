@@ -11,23 +11,22 @@
 	<artifactId>app-ldap</artifactId>
 	<packaging>war</packaging>
 	
-	<dependencies>
-         <dependency>
+    <properties>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.soteria.test</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-m02-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
             <groupId>com.unboundid</groupId>
             <artifactId>unboundid-ldapsdk</artifactId>
             <version>3.0.0</version>
         </dependency>
-	</dependencies>
-	
-	<build>
-        <finalName>app-ldap</finalName>
-	</build>
-    
-	<properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <failOnMissingWebXml>false</failOnMissingWebXml>
-    </properties>
+    </dependencies>
     
 </project>

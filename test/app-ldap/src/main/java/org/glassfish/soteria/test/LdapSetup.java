@@ -1,4 +1,4 @@
-package test;
+package org.glassfish.soteria.test;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
