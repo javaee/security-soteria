@@ -1,4 +1,4 @@
-package test;
+package org.glassfish.soteria.test;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;

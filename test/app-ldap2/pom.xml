@@ -10,38 +10,28 @@
     </parent>
 
     <artifactId>app-ldap2</artifactId>
-
     <packaging>war</packaging>
-
+    
+    <build>
+        <finalName>app-ldap2</finalName>
+    </build>
+    
+    <properties>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+    </properties>
+    
     <dependencies>
         <dependency>
+            <groupId>org.glassfish.soteria.test</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-m02-SNAPSHOT</version>
+        </dependency>
+        
+         <dependency>
             <groupId>com.unboundid</groupId>
             <artifactId>unboundid-ldapsdk</artifactId>
             <version>3.0.0</version>
         </dependency>
     </dependencies>
 
-    <build>
-
-        <finalName>app-ldap2</finalName>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.6</version>
-                <configuration>
-                    <warName>app-ldap</warName>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -1,4 +1,4 @@
-package test;
+package org.glassfish.soteria.test;
 
 import javax.annotation.security.DeclareRoles;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;

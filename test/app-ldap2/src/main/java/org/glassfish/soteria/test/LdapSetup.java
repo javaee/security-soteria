@@ -1,4 +1,4 @@
-package test;
+package org.glassfish.soteria.test;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;

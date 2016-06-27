@@ -15,7 +15,7 @@
         <finalName>app-db</finalName>
 	</build>
     
-      <properties>
+    <properties>
         <failOnMissingWebXml>false</failOnMissingWebXml>
     </properties>
     
