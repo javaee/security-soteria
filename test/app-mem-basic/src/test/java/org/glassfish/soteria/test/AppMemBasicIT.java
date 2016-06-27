@@ -39,49 +39,67 @@
  */
 package org.glassfish.soteria.test;
 
-import java.io.IOException;
-import java.net.URL;
+import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
+import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
+import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
 
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.After;
-import org.junit.Before;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
 
-public class ArquillianBase {
+
+@RunWith(Arquillian.class)
+public class AppMemBasicIT extends ArquillianBase {
     
-    private WebClient webClient;
-
-	@ArquillianResource
-    private URL base;
-
-    @Before
-    public void setUp() {
-        webClient = new WebClient();
-        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+    @Deployment(testable = false)
+    public static Archive<?> createDeployment() {
+        return mavenWar();
     }
 
-    @After
-    public void tearDown() {
-        webClient.getCookieManager().clearCookies();
-        webClient.closeAllWindows();
+    @Test
+    public void testAuthenticated() {
+    	
+    	DefaultCredentialsProvider credentialsProvider = new DefaultCredentialsProvider();
+    	credentialsProvider.addCredentials("reza", "secret1");
+    	
+    	getWebClient().setCredentialsProvider(credentialsProvider);
+    	
+        assertDefaultAuthenticated(
+            readFromServer("/servlet"));
     }
     
-    protected String readFromServer(String path) {
-        try {
-            return webClient
-                    .getPage(base + path)
-                    .getWebResponse()
-                    .getContentAsString();
-            
-        } catch (FailingHttpStatusCodeException | IOException e) {
-            throw new IllegalStateException(e);
-        }
+    @Test
+    public void testNotAuthenticated() {
+        assertDefaultNotAuthenticated(
+            readFromServer("/servlet"));
     }
     
-    protected WebClient getWebClient() {
- 		return webClient;
- 	}
+    @Test
+    public void testNotAuthenticatedWrongName() {
+    	
+    	DefaultCredentialsProvider credentialsProvider = new DefaultCredentialsProvider();
+    	credentialsProvider.addCredentials("romo", "secret1");
+    	
+    	getWebClient().setCredentialsProvider(credentialsProvider);
+    	
+        assertDefaultNotAuthenticated(
+            readFromServer("/servlet"));
+    }
     
+    @Test
+    public void testNotAuthenticatedWrongPassword() {
+    	
+      	DefaultCredentialsProvider credentialsProvider = new DefaultCredentialsProvider();
+    	credentialsProvider.addCredentials("reza", "wrongpassword");
+    	
+    	getWebClient().setCredentialsProvider(credentialsProvider);
+    	
+        assertDefaultNotAuthenticated(
+            readFromServer("/servlet?name=reza&password=wrongpassword"));
+    }
+
 }
