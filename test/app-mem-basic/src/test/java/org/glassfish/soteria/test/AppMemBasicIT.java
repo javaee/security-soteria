@@ -42,6 +42,8 @@ package org.glassfish.soteria.test;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,6 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
+import com.gargoylesoftware.htmlunit.WebResponse;
 
 
 @RunWith(Arquillian.class)
@@ -74,8 +77,17 @@ public class AppMemBasicIT extends ArquillianBase {
     
     @Test
     public void testNotAuthenticated() {
+        
+        WebResponse response = responseFromServer("/servlet");
+        
+        assertEquals(401, response.getStatusCode());
+        
+        assertTrue(
+            "Response did not contain the \"WWW-Authenticate\" header, but should have", 
+            response.getResponseHeaderValue("WWW-Authenticate") != null);
+        
         assertDefaultNotAuthenticated(
-            readFromServer("/servlet"));
+            response.getContentAsString());
     }
     
     @Test
@@ -86,8 +98,16 @@ public class AppMemBasicIT extends ArquillianBase {
     	
     	getWebClient().setCredentialsProvider(credentialsProvider);
     	
-        assertDefaultNotAuthenticated(
-            readFromServer("/servlet"));
+    	WebResponse response = responseFromServer("/servlet");
+          
+    	assertEquals(401, response.getStatusCode());
+          
+    	assertTrue(
+	        "Response did not contain the \"WWW-Authenticate\" header, but should have", 
+	        response.getResponseHeaderValue("WWW-Authenticate") != null);
+          
+    	assertDefaultNotAuthenticated(
+	        response.getContentAsString());
     }
     
     @Test
@@ -98,8 +118,16 @@ public class AppMemBasicIT extends ArquillianBase {
     	
     	getWebClient().setCredentialsProvider(credentialsProvider);
     	
+        WebResponse response = responseFromServer("/servlet");
+        
+        assertEquals(401, response.getStatusCode());
+          
+        assertTrue(
+            "Response did not contain the \"WWW-Authenticate\" header, but should have", 
+            response.getResponseHeaderValue("WWW-Authenticate") != null);
+          
         assertDefaultNotAuthenticated(
-            readFromServer("/servlet?name=reza&password=wrongpassword"));
+            response.getContentAsString());
     }
 
 }
