@@ -47,6 +47,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
@@ -70,22 +71,19 @@ public class ArquillianBase {
     }
     
     protected String readFromServer(String path) {
-        try {
-            return webClient
-                    .getPage(base + path)
-                    .getWebResponse()
-                    .getContentAsString();
-            
-        } catch (FailingHttpStatusCodeException | IOException e) {
-            throw new IllegalStateException(e);
-        }
+    	return responseFromServer(path)
+    			.getContentAsString();
     }
     
     protected WebResponse responseFromServer(String path) {
+    	return pageFromServer(path)
+    			.getWebResponse();    	
+    }
+    
+    protected <P extends Page> P pageFromServer(String path) {
         try {
             return webClient
-                    .getPage(base + path)
-                    .getWebResponse();
+                    .getPage(base + path);
             
         } catch (FailingHttpStatusCodeException | IOException e) {
             throw new IllegalStateException(e);
