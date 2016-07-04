@@ -10,15 +10,18 @@
     <h:messages />
     
     <body>
+        <p>
+            Login to continue
+        </p>
     
          <form jsf:id="form">
             <p>
                 <strong>Username </strong> 
-                <input type="text" jsf:value="#{loginBacking.username}" />
+                <input jsf:id="username" type="text" jsf:value="#{loginBacking.username}" />
             </p>
             <p>
                 <strong>Password </strong> 
-                <input type="password" jsf:value="#{loginBacking.password}" />
+                <input jsf:id="password" type="password" jsf:value="#{loginBacking.password}" />
             </p>
             <p>
                 <input type="submit" value="Login" jsf:action="#{loginBacking.login}" />
