@@ -60,7 +60,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @CustomFormAuthenticationMechanismDefinition(
     loginToContinue = @LoginToContinue(
-        loginPage="/login.xhtml",
+        loginPage="/login.jsf",
         errorPage="" // DRAFT API - must be set to empty for now
     )
 )
