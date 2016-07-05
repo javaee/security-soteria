@@ -16,7 +16,8 @@ import javax.sql.DataSource;
     // global to circumvent https://java.net/jira/browse/GLASSFISH-21447
     name = "java:global/MyDS",
     className = "org.h2.jdbcx.JdbcDataSource",
-    url="jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE"
+    // :mem:test would be better, but TomEE insists on this being a file
+    url="jdbc:h2:~/test;DB_CLOSE_ON_EXIT=FALSE"
 )
 @Singleton
 @Startup
@@ -27,6 +28,7 @@ public class DatabaseSetup {
 
     @PostConstruct
     public void init() {
+        
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller");
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller_groups");
         

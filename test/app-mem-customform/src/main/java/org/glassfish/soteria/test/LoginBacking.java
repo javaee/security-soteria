@@ -54,6 +54,7 @@ import javax.security.auth.message.AuthStatus;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.Password;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -79,6 +80,7 @@ public class LoginBacking {
         Credential credential = new UsernamePasswordCredential(username, new Password(password));
         
         AuthStatus status = securityContext.authenticate(
+            getRequest(context),
             getResponse(context), 
             withParams()
                 .credential(credential));
@@ -97,6 +99,12 @@ public class LoginBacking {
         return (HttpServletResponse) context
             .getExternalContext()
             .getResponse();
+    }
+    
+    private static HttpServletRequest getRequest(FacesContext context) {
+        return (HttpServletRequest) context
+            .getExternalContext()
+            .getRequest();
     }
     
     private static void addError(FacesContext context, String message) {

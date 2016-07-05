@@ -19,7 +19,7 @@
         <glassfish.version>4.1.1</glassfish.version>
         <payara.version>4.1.1.162</payara.version>
         <wildfly.version>10.0.0.Final</wildfly.version>
-        <tomee.version>7.0.0</tomee.version>
+        <tomee.version>7.0.1</tomee.version>
         <liberty.version>8.5.5.9</liberty.version>
     </properties>
 
@@ -229,6 +229,60 @@
                     <scope>test</scope>
                 </dependency>
             </dependencies>
+        </profile>
+        
+        
+        <profile>
+            <id>tomee</id>
+            
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.tomee</groupId>
+                    <artifactId>apache-tomee</artifactId>
+                    <version>${tomee.version}</version>
+                    <scope>test</scope>
+                    <type>zip</type>
+                    <classifier>plus</classifier>
+                </dependency>
+                
+                <dependency>
+                    <groupId>org.apache.tomee</groupId>
+                    <artifactId>arquillian-tomee-remote</artifactId>
+                    <version>${tomee.version}</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.apache.tomee</groupId>
+                            <artifactId>arquillian-openejb-transaction-provider</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+            
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-DTOMEE_LOCK_FILE=${user.dir}/.tomee-ports.lock</argLine>
+                            <systemPropertyVariables>
+                                <tomee.stopPort>-1</tomee.stopPort>
+                                <tomee.httpPort>-1</tomee.httpPort>
+                                <tomee.httpsPort>-1</tomee.httpsPort>
+                                <tomee.ajpPort>-1</tomee.ajpPort>
+                                
+                                <tomee.dir>target/tomee/server</tomee.dir>
+                                <tomee.appWorkingDir>target/tomee/arquillian</tomee.appWorkingDir>
+                                <tomee.cleanOnStartUp>true</tomee.cleanOnStartUp>
+                                <tomee.classifier>plus</tomee.classifier>
+                                <tomee.properties>
+                                    openejb.environment.default=true
+                                </tomee.properties>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     
     </profiles>

@@ -58,11 +58,17 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     
     private static final long serialVersionUID = 1L;
     
-    @Inject
+    @Inject // Injection of HttpServletRequest doesn't work for TomEE
     private HttpServletRequest request;
-
+    
     @Override
     public AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {
+        return authenticate(request, response, parameters);
+    }
+
+    @Override
+    public AuthStatus authenticate(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters parameters) {
+        
         try {
             if (Jaspic.authenticate(request, response, parameters)) {
                 // All servers return true when authentication actually took place 
