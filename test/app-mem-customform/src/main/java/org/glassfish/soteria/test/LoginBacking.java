@@ -40,6 +40,7 @@
 package org.glassfish.soteria.test;
 
 import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
+import static javax.security.auth.message.AuthStatus.FAILURE;
 import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
 import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
 import static javax.security.authentication.mechanism.http.AuthenticationParameters.withParams;
@@ -89,7 +90,8 @@ public class LoginBacking {
             // Authentication mechanism has send a redirect, should not
             // send anything to response from JSF now.
             context.responseComplete();
-        } else if (status.equals(SEND_FAILURE)) {
+        } else if (status.equals(SEND_FAILURE) || status.equals(FAILURE)) {
+            // TODO: only 1 status should be returned. Change to enum or fix source.
             addError(context, "Authentication failed");
         }
         
