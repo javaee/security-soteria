@@ -1,5 +1,7 @@
 # Soteria
 
+[![Build Status](https://travis-ci.org/javaee-security-spec/soteria.svg?branch=master)](https://travis-ci.org/javaee-security-spec/soteria)
+
 Java EE Security (JSR 375) upstream API and RI
 
 Notes
