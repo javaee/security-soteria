@@ -51,7 +51,23 @@
 			<name>javaee-security-spec-maven</name>
 			<url>https://api.bintray.com/maven/javaee-security-spec/maven/org.glassfish.soteria:parent/;publish=1</url>
 		</repository>
+         <snapshotRepository>
+            <id>bintray-snapshot</id>
+            <name>oss-jfrog-artifactory-snapshot</name>
+            <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+        </snapshotRepository>
 	</distributionManagement>
+    
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>bintray-snapshot</id>
+            <name>libs-snapshot</name>
+            <url>http://oss.jfrog.org/artifactory/libs-snapshot</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>

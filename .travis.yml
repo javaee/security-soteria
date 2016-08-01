@@ -5,3 +5,5 @@ env:
   - SERVER=payara
   - SERVER=wildfly
 script: mvn clean package -P $SERVER -P bundled
+after_success:
+  - mvn deploy -Dmaven.test.skip -s settings.xml
