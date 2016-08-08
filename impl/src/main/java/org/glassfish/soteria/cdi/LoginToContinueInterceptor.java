@@ -188,7 +188,7 @@ public class LoginToContinueInterceptor implements Serializable {
                     loginToContinueAnnotation.loginPage());
             } else {
                 return httpMessageContext.redirect(
-                    loginToContinueAnnotation.loginPage());
+                    getBaseURL(request) + loginToContinueAnnotation.loginPage());
             }
         }
         
