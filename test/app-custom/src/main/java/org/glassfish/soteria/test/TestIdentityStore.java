@@ -3,7 +3,6 @@ package org.glassfish.soteria.test;
 import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
 import javax.enterprise.context.RequestScoped;
 import javax.security.CallerPrincipal;
@@ -29,7 +28,6 @@ public class TestIdentityStore implements IdentityStore {
             usernamePasswordCredential.getPassword().compareTo("secret1")) {
             
             return new CredentialValidationResult(
-                VALID, 
                 new CallerPrincipal("reza"), 
                 asList("foo", "bar")
             );

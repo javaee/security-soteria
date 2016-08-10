@@ -43,7 +43,6 @@ import static java.lang.Boolean.TRUE;
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
 import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.getBaseURL;
 import static org.glassfish.soteria.Utils.getParam;
 import static org.glassfish.soteria.Utils.isEmpty;
@@ -226,7 +225,6 @@ public class LoginToContinueInterceptor implements Serializable {
                     // URL. This is needed since the underlying JASPIC runtime does not
                     // remember the authenticated identity if we redirect.
                     saveAuthentication(request, new CredentialValidationResult(
-                        VALID,
                         httpMessageContext.getCallerPrincipal(),
                         httpMessageContext.getGroups()));
                     
