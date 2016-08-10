@@ -60,12 +60,6 @@ public class CallerOnlyCredential implements Credential {
         this.caller = caller;
     }
     
-    /**
-     * Determines the caller associated with this credential. This value would
-     * usually be the unique value identifying the caller, like a login name.
-     *
-     * @return The caller associated with this credential
-     */
     @Override
     public String getCaller() {
         return caller;
