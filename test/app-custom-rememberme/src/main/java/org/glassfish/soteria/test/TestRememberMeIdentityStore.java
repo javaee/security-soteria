@@ -1,7 +1,6 @@
 package org.glassfish.soteria.test;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ public class TestRememberMeIdentityStore implements RememberMeIdentityStore {
 		
 		// NOTE: FOR EXAMPLE ONLY. AS TOKENKEY WOULD EFFECTIVELY BECOME THE REPLACEMENT PASSWORD
 		// IT SHOULD NORMALLY NOT BE STORED DIRECTLY BUT EG USING STRONG HASHING
-		identities.put(token, new CredentialValidationResult(VALID, callerPrincipal, groups));
+		identities.put(token, new CredentialValidationResult(callerPrincipal, groups));
 		
 		return token;
 	}
