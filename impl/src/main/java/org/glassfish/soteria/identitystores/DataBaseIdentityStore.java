@@ -41,7 +41,6 @@ package org.glassfish.soteria.identitystores;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
 import java.sql.Connection;
@@ -88,7 +87,6 @@ public class DataBaseIdentityStore implements IdentityStore {
         
         if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
             return new CredentialValidationResult(
-                VALID, 
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
                 executeQuery(
                     dataSource, 

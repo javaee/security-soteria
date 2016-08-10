@@ -44,7 +44,6 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
 import java.util.Map;
 
@@ -80,7 +79,6 @@ public class EmbeddedIdentityStore implements IdentityStore {
 
         if (credentials != null && usernamePasswordCredential.getPassword().compareTo(credentials.password())) {
             return new CredentialValidationResult(
-                VALID, 
                 new CallerPrincipal(credentials.callerName()), 
                 asList(credentials.groups())
             );

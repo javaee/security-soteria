@@ -60,7 +60,6 @@ import static java.util.Collections.list;
 import static javax.naming.Context.*;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
 public class LDapIdentityStore implements IdentityStore {
 
@@ -121,7 +120,6 @@ public class LDapIdentityStore implements IdentityStore {
             closeContext(ldapContext);
 
             return new CredentialValidationResult(
-                    VALID,
                     new CallerPrincipal(usernamePasswordCredential.getCaller()),
                     groups
             );
@@ -170,7 +168,6 @@ public class LDapIdentityStore implements IdentityStore {
         closeContext(ldapContext);
 
         return new CredentialValidationResult(
-                VALID,
                 new CallerPrincipal(usernamePasswordCredential.getCaller()),
                 groups
         );
