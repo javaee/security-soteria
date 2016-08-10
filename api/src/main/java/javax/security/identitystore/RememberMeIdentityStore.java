@@ -41,9 +41,9 @@ package javax.security.identitystore;
 
 import java.util.List;
 
-import javax.resource.spi.AuthenticationMechanism;
 import javax.security.CallerPrincipal;
 import javax.security.auth.message.module.ServerAuthModule;
+import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.annotation.RememberMe;
 import javax.security.identitystore.credential.RememberMeCredential;
 
@@ -54,7 +54,7 @@ import javax.security.identitystore.credential.RememberMeCredential;
  * 
  * <p>
  * This is not intended to be directly used by an authentication mechanism such as 
- * the JSR 375 {@link AuthenticationMechanism} or the JSR 196 (JASPIC) 
+ * the JSR 375 {@link HttpAuthenticationMechanism} or the JSR 196 (JASPIC) 
  * {@link ServerAuthModule}. Instead, the interceptor implementation backing the 
  * {@link RememberMe} annotation is intended to use this. 
  * 
