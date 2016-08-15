@@ -39,6 +39,14 @@
  */
 package org.glassfish.soteria.identitystores;
 
+import javax.security.CallerPrincipal;
+import javax.security.identitystore.CredentialValidationResult;
+import javax.security.identitystore.IdentityStore;
+import javax.security.identitystore.annotation.Credentials;
+import javax.security.identitystore.credential.Credential;
+import javax.security.identitystore.credential.UsernamePasswordCredential;
+import java.util.Map;
+
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
@@ -46,47 +54,45 @@ import static javax.security.identitystore.CredentialValidationResult.INVALID_RE
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
-import java.util.Map;
-
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.Credentials;
-import javax.security.identitystore.credential.Credential;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
-
 public class EmbeddedIdentityStore implements IdentityStore {
+
+    private int priority;
 
     private Map<String, Credentials> callerToCredentials;
 
-    public EmbeddedIdentityStore(Credentials[] credentials) {
+    public EmbeddedIdentityStore(Credentials[] credentials, int priority) {
         callerToCredentials = stream(credentials).collect(toMap(
-            e -> e.callerName(), 
-            e -> e)
+                e -> e.callerName(),
+                e -> e)
         );
+        this.priority = priority;
     }
 
     @Override
-    public CredentialValidationResult validate(Credential credential) {
+    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+
         if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential);
+            return validate(partialValidationResult, (UsernamePasswordCredential) credential);
         }
 
         return NOT_VALIDATED_RESULT;
     }
 
-    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
+    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
         Credentials credentials = callerToCredentials.get(usernamePasswordCredential.getCaller());
 
         if (credentials != null && usernamePasswordCredential.getPassword().compareTo(credentials.password())) {
-            return new CredentialValidationResult(
-                VALID, 
-                new CallerPrincipal(credentials.callerName()), 
-                asList(credentials.groups())
+            return new CredentialValidationResult(partialValidationResult,
+                    VALID,
+                    new CallerPrincipal(credentials.callerName()),
+                    asList(credentials.groups())
             );
         }
 
         return INVALID_RESULT;
     }
 
+    public int priority() {
+        return priority;
+    }
 }

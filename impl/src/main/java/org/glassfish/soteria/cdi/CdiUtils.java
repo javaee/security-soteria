@@ -44,10 +44,9 @@ import static java.util.Optional.empty;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -150,7 +149,51 @@ public class CdiUtils {
 
         return beanReference;
     }
-    
+
+    public static <T> List<T> getBeanReferencesByType(Class<T> type, boolean optional) {
+        BeanManager beanManager =  jndiLookup("java:comp/BeanManager");
+
+        Set<Bean<T>> beans = getBeanDefinitions(type, optional, beanManager);
+
+        List<T> result = new ArrayList<>(beans.size());
+        Iterator<Bean<T>> iterator = beans.iterator();
+
+        for (Bean<?> bean : beans) {
+            //noinspection unchecked
+            result.add(getContextualReference(type, beanManager, Collections.<Bean<?>>singleton(bean)));
+        }
+
+        return result;
+    }
+
+    private static <T> T getContextualReference(Class<T> type, BeanManager beanManager, Set<Bean<?>> beans) {
+        Bean bean = beanManager.resolve(beans);
+        CreationalContext creationalContext = beanManager.createCreationalContext(bean);
+        Object result = beanManager.getReference(bean, type, creationalContext);
+        return (T) result;
+    }
+
+
+    private static <T> Set<Bean<T>> getBeanDefinitions(Class<T> type, boolean optional, BeanManager beanManager) {
+        Set beans = beanManager.getBeans(type, new Annotation[]{new AnyAnnotationLiteral()});
+        if(beans != null && !beans.isEmpty()) {
+
+            HashSet result = new HashSet();
+            Iterator iterator = beans.iterator();
+
+            while(iterator.hasNext()) {
+                Bean bean = (Bean)iterator.next();
+                result.add(bean);
+            }
+
+            return result;
+        } else if(optional) {
+            return Collections.emptySet();
+        } else {
+            throw new IllegalStateException("Could not find beans for Type=" + type);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T jndiLookup(String name) {
         InitialContext context = null;

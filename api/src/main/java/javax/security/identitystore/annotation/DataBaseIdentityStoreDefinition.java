@@ -120,4 +120,10 @@ public @interface DataBaseIdentityStoreDefinition {
 	 */
 	String hashEncoding() default ""; // default no encoding (for now) todo: make enum?
 
+	/**
+	 * Determines the order in case multiple IdentityStores are found.
+	 * @return the priority.
+	 */
+	int priority() default 70;
+
 }

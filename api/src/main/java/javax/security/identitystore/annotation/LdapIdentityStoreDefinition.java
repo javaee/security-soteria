@@ -190,4 +190,10 @@ public @interface LdapIdentityStoreDefinition {
      */
     String searchExpression() default "";
 
+    /**
+     * Determines the order in case multiple IdentityStores are found.
+     * @return the priority.
+     */
+    int priority() default 80;
+
 }

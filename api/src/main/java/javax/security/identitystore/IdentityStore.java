@@ -46,11 +46,14 @@ import javax.security.identitystore.credential.Credential;
 /**
  * <code>IdentityStore</code> is a mechanism for validating a Caller's
  * credentials and accessing a Caller's identity attributes, and would be used
- * by an authentication mechanism, such as the JSR 375 {@link AuthenticationMechanism} 
- * or the JSR 196 (JASPIC) {@link ServerAuthModule}. 
- * 
+ * by an authentication mechanism, such as the JSR 375 {@link AuthenticationMechanism}
+ * or the JSR 196 (JASPIC) {@link ServerAuthModule}.
  * <p>
- * An <code>IdentityStore</code> obtains identity data from a persistence mechanism, 
+ * Stores which do only the authentication or authorization is allowed. Authentication only should use the Status
+ * AUTHENTICATED.
+ * <p>
+ * <p>
+ * An <code>IdentityStore</code> obtains identity data from a persistence mechanism,
  * such as a file, database, or LDAP.
  */
 public interface IdentityStore {
@@ -58,10 +61,16 @@ public interface IdentityStore {
     /**
      * Validates the given credential.
      *
-     * @param credential
-     *            The credential
+     * @param partialValidationResult Validation result for the other IdentityStore.
+     * @param credential The credential
      * @return The validation result, including associated caller roles and
-     *         groups.
+     * groups.
      */
-    CredentialValidationResult validate(Credential credential);
+    CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential);
+
+    /**
+     * Determines the order of multiple <code>IdentityStore</code>s. Stores are consuled lower number first.
+     * @return the priority value. Lower values first.
+     */
+    int priority();
 }

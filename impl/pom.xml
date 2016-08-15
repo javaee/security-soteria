@@ -25,6 +25,12 @@
             <artifactId>javax.security-api</artifactId>
             <version>1.0-m02-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <distributionManagement>

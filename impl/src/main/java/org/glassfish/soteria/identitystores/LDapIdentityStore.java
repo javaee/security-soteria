@@ -66,30 +66,33 @@ public class LDapIdentityStore implements IdentityStore {
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
 
+    private int priority;
+
     public LDapIdentityStore(LdapIdentityStoreDefinition ldapIdentityStoreDefinition) {
         this.ldapIdentityStoreDefinition = ldapIdentityStoreDefinition;
+        this.priority = ldapIdentityStoreDefinition.priority();
     }
 
     @Override
-    public CredentialValidationResult validate(Credential credential) {
+    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential);
+            return validate(partialValidationResult, (UsernamePasswordCredential) credential);
         }
 
         return NOT_VALIDATED_RESULT;
     }
 
-    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
+    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
 
         if (ldapIdentityStoreDefinition.baseDn().isEmpty()) {
-            return checkDirectBinding(usernamePasswordCredential);
+            return checkDirectBinding(partialValidationResult, usernamePasswordCredential);
         } else {
-            return checkThroughSearch(usernamePasswordCredential);
+            return checkThroughSearch(partialValidationResult, usernamePasswordCredential);
         }
 
     }
 
-    private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential) {
+    private CredentialValidationResult checkThroughSearch(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
         LdapContext ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.baseDn(),
@@ -97,7 +100,6 @@ public class LDapIdentityStore implements IdentityStore {
         if (ldapContext != null) {
             String callerDn = searchCaller(ldapContext, ldapIdentityStoreDefinition.searchBase(),
                     String.format(ldapIdentityStoreDefinition.searchExpression(), usernamePasswordCredential.getCaller()));
-
 
             LdapContext ldapContextCaller = null;
 
@@ -121,6 +123,7 @@ public class LDapIdentityStore implements IdentityStore {
             closeContext(ldapContext);
 
             return new CredentialValidationResult(
+                    partialValidationResult,
                     VALID,
                     new CallerPrincipal(usernamePasswordCredential.getCaller()),
                     groups
@@ -146,7 +149,7 @@ public class LDapIdentityStore implements IdentityStore {
 
     }
 
-    private CredentialValidationResult checkDirectBinding(UsernamePasswordCredential usernamePasswordCredential) {
+    private CredentialValidationResult checkDirectBinding(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
         // Construct the full distinguished name (dn) of the caller
         String callerDn = createCallerDn(
                 ldapIdentityStoreDefinition.callerNameAttribute(),
@@ -170,6 +173,7 @@ public class LDapIdentityStore implements IdentityStore {
         closeContext(ldapContext);
 
         return new CredentialValidationResult(
+                partialValidationResult,
                 VALID,
                 new CallerPrincipal(usernamePasswordCredential.getCaller()),
                 groups
@@ -270,4 +274,7 @@ public class LDapIdentityStore implements IdentityStore {
         }
     }
 
+    public int priority() {
+        return priority;
+    }
 }
