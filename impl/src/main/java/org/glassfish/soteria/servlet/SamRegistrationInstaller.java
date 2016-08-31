@@ -41,6 +41,7 @@ package org.glassfish.soteria.servlet;
 
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
+import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.deregisterServerAuthModule;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.registerServerAuthModule;
 
@@ -55,6 +56,8 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
 import org.glassfish.soteria.cdi.CdiExtension;
+import org.glassfish.soteria.cdi.spi.CDIPerRequestInitializer;
+import org.glassfish.soteria.cdi.spi.impl.LibertyCDIPerRequestInitializer;
 import org.glassfish.soteria.mechanisms.jaspic.HttpBridgeServerAuthModule;
 import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
@@ -109,7 +112,16 @@ public class SamRegistrationInstaller implements ServletContainerInitializer, Se
             // getVirtualServerName. At this point we're still allowed to call this.
             
             // TODO: Ask the Servlet EG to address this? Is there any ground for this restriction???
-            registerServerAuthModule(new HttpBridgeServerAuthModule(), ctx);
+            
+            CDIPerRequestInitializer cdiPerRequestInitializer = null;
+            
+            if (!isEmpty(System.getProperty("wlp.server.name"))) {
+                // Hardcode server check for now. TODO: design/implement proper service loader/SPI for this
+                cdiPerRequestInitializer = new LibertyCDIPerRequestInitializer();
+                logger.log(INFO, "Running on Liberty - installing CDI request scope activator");
+            }
+            
+            registerServerAuthModule(new HttpBridgeServerAuthModule(cdiPerRequestInitializer), ctx);
           
             // Add a listener so we can process the context destroyed event, which is needed
             // to de-register the SAM correctly.
