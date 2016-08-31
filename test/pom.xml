@@ -20,7 +20,7 @@
         <payara.version>4.1.1.163</payara.version>
         <wildfly.version>10.0.0.Final</wildfly.version>
         <tomee.version>7.0.1</tomee.version>
-        <liberty.version>8.5.5.9</liberty.version>
+        <liberty.version>16.0.0.2</liberty.version>
     </properties>
 
     <modules>
@@ -339,6 +339,84 @@
                                 <tomee.properties>
                                     openejb.environment.default=true
                                 </tomee.properties>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>liberty</id>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-wlp-managed-8.5</artifactId>
+                    <version>1.0.0.Beta2</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>com.ibm.websphere.appserver.runtime</groupId>
+                                            <artifactId>wlp-javaee7</artifactId>
+                                            <version>${liberty.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.1</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                    	<!--  there has to be a better way... -->
+                                        <echo>Copying server.xml</echo>
+                                        <copy
+                                            file="../common/src/test/resources/server.xml"
+                                            tofile="${project.build.directory}/wlp/templates/servers/defaultServer/server.xml"
+                                            failOnError="false"
+                                        />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                       	<artifactId>maven-failsafe-plugin</artifactId>
+                       	<version>2.19.1</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <arquillian.launch>liberty</arquillian.launch>
+                                <arquillian.liberty.wlpHome>${project.build.directory}/wlp</arquillian.liberty.wlpHome>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
