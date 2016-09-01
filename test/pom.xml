@@ -400,7 +400,7 @@
                                     	<!--  there has to be a better way... -->
                                         <echo>Copying server.xml</echo>
                                         <copy
-                                            file="../common/src/test/resources/server.xml"
+                                            file="../common/src/main/resources/server.xml"
                                             tofile="${project.build.directory}/wlp/templates/servers/defaultServer/server.xml"
                                             failOnError="false"
                                         />
