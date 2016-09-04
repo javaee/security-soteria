@@ -46,7 +46,6 @@ import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,25 +66,20 @@ public class AuthenticationIdentityStore implements IdentityStore {
     }
 
     @Override
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
+        CredentialValidationResult result;
 
-        CredentialValidationResult result = partialValidationResult;
-        if (partialValidationResult.getStatus() != CredentialValidationResult.Status.AUTHENTICATED &&
-                partialValidationResult.getStatus() != CredentialValidationResult.Status.VALID) {
-
-            if (credential instanceof UsernamePasswordCredential) {
-                UsernamePasswordCredential usernamePassword = (UsernamePasswordCredential) credential;
-                String expectedPW = callerToPassword.get(usernamePassword.getCaller());
-                // We don't allow empty passwords :)
-                if (expectedPW != null && expectedPW.equals(usernamePassword.getPasswordAsString())) {
-                    result = new CredentialValidationResult(partialValidationResult, CredentialValidationResult.Status.AUTHENTICATED
-                            , new CallerPrincipal(usernamePassword.getCaller()), new ArrayList<>());
-                } else {
-                    result = CredentialValidationResult.INVALID_RESULT;
-                }
+        if (credential instanceof UsernamePasswordCredential) {
+            UsernamePasswordCredential usernamePassword = (UsernamePasswordCredential) credential;
+            String expectedPW = callerToPassword.get(usernamePassword.getCaller());
+            // We don't allow empty passwords :)
+            if (expectedPW != null && expectedPW.equals(usernamePassword.getPasswordAsString())) {
+                result = new CredentialValidationResult(usernamePassword.getCaller());
             } else {
-                result = CredentialValidationResult.NOT_VALIDATED_RESULT;
+                result = CredentialValidationResult.INVALID_RESULT;
             }
+        } else {
+            result = CredentialValidationResult.NOT_VALIDATED_RESULT;
         }
 
         return result;
@@ -94,5 +88,10 @@ public class AuthenticationIdentityStore implements IdentityStore {
     @Override
     public int priority() {
         return 5;
+    }
+
+    @Override
+    public ValidationType validationType() {
+        return ValidationType.AUTHENTICATION;
     }
 }

@@ -60,78 +60,105 @@ import static java.util.Collections.list;
 import static javax.naming.Context.*;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
 public class LDapIdentityStore implements IdentityStore {
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
-
-    private int priority;
+    private ValidationType validationType;
 
     public LDapIdentityStore(LdapIdentityStoreDefinition ldapIdentityStoreDefinition) {
         this.ldapIdentityStoreDefinition = ldapIdentityStoreDefinition;
-        this.priority = ldapIdentityStoreDefinition.priority();
+        determineValidationType();
+    }
+
+    private void determineValidationType() {
+        validationType = ValidationType.BOTH;
+        if (ldapIdentityStoreDefinition.authenticateOnly()) {
+            validationType = ValidationType.AUTHENTICATION;
+        } else {
+            if (ldapIdentityStoreDefinition.authorizeOnly()) {
+                validationType = ValidationType.AUTHORIZATION;
+            }
+        }
     }
 
     @Override
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate(partialValidationResult, (UsernamePasswordCredential) credential);
+            return validate((UsernamePasswordCredential) credential, callerPrincipal);
         }
 
         return NOT_VALIDATED_RESULT;
     }
 
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
+    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential, CallerPrincipal callerPrincipal) {
 
         if (ldapIdentityStoreDefinition.baseDn().isEmpty()) {
-            return checkDirectBinding(partialValidationResult, usernamePasswordCredential);
+            return checkDirectBinding(usernamePasswordCredential, callerPrincipal);
         } else {
-            return checkThroughSearch(partialValidationResult, usernamePasswordCredential);
+            return checkThroughSearch(usernamePasswordCredential, callerPrincipal);
         }
 
     }
 
-    private CredentialValidationResult checkThroughSearch(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
+    private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential, CallerPrincipal callerPrincipal) {
+        boolean authenticated = callerPrincipal != null;
+
+        String caller = null;
+        CredentialValidationResult result = INVALID_RESULT;
+
         LdapContext ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.baseDn(),
                 ldapIdentityStoreDefinition.password());
         if (ldapContext != null) {
-            String callerDn = searchCaller(ldapContext, ldapIdentityStoreDefinition.searchBase(),
-                    String.format(ldapIdentityStoreDefinition.searchExpression(), usernamePasswordCredential.getCaller()));
+            if (validationType == ValidationType.AUTHENTICATION || validationType == ValidationType.BOTH) {
+                String callerDn = searchCaller(ldapContext, ldapIdentityStoreDefinition.searchBase(),
+                        String.format(ldapIdentityStoreDefinition.searchExpression(), usernamePasswordCredential.getCaller()));
 
-            LdapContext ldapContextCaller = null;
+                LdapContext ldapContextCaller = null;
 
-            if (callerDn != null) {
-                // If this doesn't throw an exception internally, the password is correct
+                if (callerDn != null) {
+                    // If this doesn't throw an exception internally, the password is correct
 
-                ldapContextCaller = createLdapContext(
-                        ldapIdentityStoreDefinition.url(),
-                        callerDn,
-                        new String(usernamePasswordCredential.getPassword().getValue())
-                );
+                    ldapContextCaller = createLdapContext(
+                            ldapIdentityStoreDefinition.url(),
+                            callerDn,
+                            new String(usernamePasswordCredential.getPassword().getValue())
+                    );
+                }
+
+                if (ldapContextCaller == null) {
+                    closeContext(ldapContext);
+                    return INVALID_RESULT;
+                }
+                authenticated = true;
+
+                caller = callerDn;
+            } else {
+                // We are Authorize Only mode, so get the caller determined previously.
+                if (callerPrincipal != null) {
+                    caller = callerPrincipal.getName();
+                }
+                // When callerPrincipal is empty means the authentication failed and caller remains null.
             }
 
-            if (ldapContextCaller == null) {
+            // We check also if caller != null to be sure the Authentication by another IdentityStore succeeded.
+            if (authenticated && caller != null) {
+                if (validationType == ValidationType.AUTHORIZATION || validationType == ValidationType.BOTH) {
+
+                    List<String> groups = retrieveGroupInformation(caller, ldapContext);
+
+                    result = new CredentialValidationResult(usernamePasswordCredential.getCaller(), groups);
+
+                } else {
+                    // Authentication only.
+                    result = new CredentialValidationResult(usernamePasswordCredential.getCaller());
+                }
                 closeContext(ldapContext);
-                return INVALID_RESULT;
             }
-
-            List<String> groups = retrieveGroupInformation(callerDn, ldapContext);
-
-            closeContext(ldapContext);
-
-            return new CredentialValidationResult(
-                    partialValidationResult,
-                    VALID,
-                    new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                    groups
-            );
-
         }
-
-        return INVALID_RESULT;
+        return result;
     }
 
     private String searchCaller(LdapContext ldapContext, String searchBase, String searchExpression) {
@@ -149,7 +176,11 @@ public class LDapIdentityStore implements IdentityStore {
 
     }
 
-    private CredentialValidationResult checkDirectBinding(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
+    private CredentialValidationResult checkDirectBinding(UsernamePasswordCredential usernamePasswordCredential, CallerPrincipal callerPrincipal) {
+        boolean authenticated = callerPrincipal != null;
+
+        CredentialValidationResult result = INVALID_RESULT;
+
         // Construct the full distinguished name (dn) of the caller
         String callerDn = createCallerDn(
                 ldapIdentityStoreDefinition.callerNameAttribute(),
@@ -164,20 +195,26 @@ public class LDapIdentityStore implements IdentityStore {
                 new String(usernamePasswordCredential.getPassword().getValue())
         );
 
-        if (ldapContext == null) {
-            return INVALID_RESULT;
+        if (ldapContext != null) {
+            String caller = usernamePasswordCredential.getCaller();
+
+            // User authenticated (in the direct bind method, we always have to check the credentials.
+            if (validationType == ValidationType.AUTHENTICATION || validationType == ValidationType.BOTH) {
+
+                List<String> groups = retrieveGroupInformation(callerDn, ldapContext);
+
+                result = new CredentialValidationResult(caller, groups);
+            } else {
+                if (authenticated) {
+                    result = new CredentialValidationResult(caller);
+                } else {
+                    result = CredentialValidationResult.NOT_VALIDATED_RESULT;
+                }
+            }
+            closeContext(ldapContext);
         }
 
-        List<String> groups = retrieveGroupInformation(callerDn, ldapContext);
-
-        closeContext(ldapContext);
-
-        return new CredentialValidationResult(
-                partialValidationResult,
-                VALID,
-                new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                groups
-        );
+        return result;
     }
 
     private void closeContext(LdapContext ldapContext) {
@@ -275,6 +312,10 @@ public class LDapIdentityStore implements IdentityStore {
     }
 
     public int priority() {
-        return priority;
+        return ldapIdentityStoreDefinition.priority();
+    }
+
+    public ValidationType validationType() {
+        return validationType;
     }
 }

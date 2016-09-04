@@ -89,4 +89,17 @@ public @interface EmbeddedIdentityStoreDefinition {
      * @return the priority.
      */
     int priority() default 90;
+
+    /**
+     * Defines if the IdentityStore does only Authentication. By default this value is false so that authentication and authorization are performed.
+     * @return does the IdentityStore only do Authentication?
+     */
+    boolean authenticateOnly() default false;
+
+    /**
+     * Defines if the IdentityStore does only Authorization. By default this value is false so that authentication and authorization are performed.
+     * @return does the IdentityStore only do Authentication?
+     */
+    boolean authorizeOnly() default false;
+
 }

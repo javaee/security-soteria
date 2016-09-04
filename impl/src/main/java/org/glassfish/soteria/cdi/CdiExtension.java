@@ -99,7 +99,7 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, EmbeddedIdentityStore.class)
                     .addToId(EmbeddedIdentityStoreDefinition.class)
-                    .create(e -> new EmbeddedIdentityStore(storeDefinition.value(), storeDefinition.priority()))
+                    .create(e -> new EmbeddedIdentityStore(storeDefinition))
             );
         }
 

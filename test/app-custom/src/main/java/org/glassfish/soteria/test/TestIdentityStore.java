@@ -15,25 +15,21 @@ import static javax.security.identitystore.CredentialValidationResult.Status.VAL
 @RequestScoped
 public class TestIdentityStore implements IdentityStore {
 
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+    @Override
+    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate(partialValidationResult, (UsernamePasswordCredential) credential);
+            return validate((UsernamePasswordCredential) credential);
         }
 
         return NOT_VALIDATED_RESULT;
     }
 
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
+    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
 
         if (usernamePasswordCredential.getCaller().equals("reza") &&
                 usernamePasswordCredential.getPassword().compareTo("secret1")) {
 
-            return new CredentialValidationResult(
-                    partialValidationResult,
-                    VALID,
-                    new CallerPrincipal("reza"),
-                    asList("foo", "bar")
-            );
+            return new CredentialValidationResult("reza", asList("foo", "bar"));
         }
 
         return INVALID_RESULT;
@@ -41,6 +37,11 @@ public class TestIdentityStore implements IdentityStore {
 
     @Override
     public int priority() {
-        return 20;
+        return 10;
+    }
+
+    @Override
+    public ValidationType validationType() {
+        return ValidationType.BOTH;
     }
 }

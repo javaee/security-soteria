@@ -42,6 +42,7 @@ package org.glassfish.soteria.cdi;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.credential.Credential;
@@ -141,65 +142,65 @@ public class DefaultIdentityStoreHandlerTest extends DefaultIdentityStoreHandler
     private static class IdentityStoreStrictAuthenticate implements IdentityStore {
 
         @Override
-        public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
-            return new CredentialValidationResult(partialValidationResult, "AuthenticateStore");
+        public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
+            return new CredentialValidationResult("AuthenticateStore");
         }
 
         @Override
-        public int priority() {
-            return 10; // Not Used
+        public ValidationType validationType() {
+            return ValidationType.AUTHENTICATION;
         }
     }
 
     private static class IdentityStoreStrictValid implements IdentityStore {
 
         @Override
-        public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
-            return new CredentialValidationResult(partialValidationResult, CALLER_NAME, Arrays.asList(GROUP1, GROUP2));
+        public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
+            return new CredentialValidationResult(CALLER_NAME, Arrays.asList(GROUP1, GROUP2));
         }
 
         @Override
-        public int priority() {
-            return 10; // Not Used
+        public ValidationType validationType() {
+            return ValidationType.BOTH;
         }
     }
 
     private static class IdentityStoreAdditionalGroup implements IdentityStore {
 
         @Override
-        public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
-            return new CredentialValidationResult(partialValidationResult, "AuthenticateStore", Arrays.asList(GROUP3));
+        public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
+            return new CredentialValidationResult(callerPrincipal.getName(), Arrays.asList(GROUP3));
         }
 
         @Override
-        public int priority() {
-            return 10; // Not Used
+        public ValidationType validationType() {
+            return ValidationType.AUTHORIZATION;
         }
     }
 
     private static class IdentityStoreStrictInvalid implements IdentityStore {
 
         @Override
-        public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+        public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
             return CredentialValidationResult.INVALID_RESULT;
         }
 
         @Override
-        public int priority() {
-            return 10; // Not Used
+        public ValidationType validationType() {
+            return ValidationType.AUTHENTICATION;
         }
     }
 
     private static class IdentityStoreStrictNotValidated implements IdentityStore {
 
         @Override
-        public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+        public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
             return CredentialValidationResult.NOT_VALIDATED_RESULT;
         }
 
         @Override
-        public int priority() {
-            return 10; // Not Used
+        public ValidationType validationType() {
+            return ValidationType.AUTHENTICATION;
         }
     }
 }

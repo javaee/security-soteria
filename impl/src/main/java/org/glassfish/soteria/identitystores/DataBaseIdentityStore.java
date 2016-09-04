@@ -55,50 +55,82 @@ import java.util.List;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
 public class DataBaseIdentityStore implements IdentityStore {
 
     private DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
-    private int priority;
+    private ValidationType validationType;
 
     public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
-        this.priority = dataBaseIdentityStoreDefinition.priority();
+        determineValidationType();
+    }
+
+    private void determineValidationType() {
+        validationType = ValidationType.BOTH;
+        if (dataBaseIdentityStoreDefinition.authenticateOnly()) {
+            validationType = ValidationType.AUTHENTICATION;
+        } else {
+            if (dataBaseIdentityStoreDefinition.authorizeOnly()) {
+                validationType = ValidationType.AUTHORIZATION;
+            }
+        }
     }
 
     @Override
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential) {
+    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
         if (credential instanceof UsernamePasswordCredential) {
-            return validate(partialValidationResult, (UsernamePasswordCredential) credential);
+            return validate((UsernamePasswordCredential) credential, callerPrincipal);
         }
 
         return NOT_VALIDATED_RESULT;
     }
 
-    public CredentialValidationResult validate(CredentialValidationResult partialValidationResult, UsernamePasswordCredential usernamePasswordCredential) {
+    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential, CallerPrincipal callerPrincipal) {
 
         DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
 
-        List<String> passwords = executeQuery(
-                dataSource,
-                dataBaseIdentityStoreDefinition.callerQuery(),
-                usernamePasswordCredential.getCaller()
-        );
-
-        if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
-            return new CredentialValidationResult(
-                    partialValidationResult,
-                    VALID,
-                    new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                    executeQuery(
-                            dataSource,
-                            dataBaseIdentityStoreDefinition.groupsQuery(),
-                            usernamePasswordCredential.getCaller()
-                    )
+        boolean authenticated = true;
+        String caller = null;
+        if (validationType == ValidationType.AUTHENTICATION || validationType == ValidationType.BOTH) {
+            List<String> passwords = executeQuery(
+                    dataSource,
+                    dataBaseIdentityStoreDefinition.callerQuery(),
+                    usernamePasswordCredential.getCaller()
             );
+            // TODO Support for hashed passwords.
+            authenticated = (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0)));
+
+            if (authenticated) {
+                caller = usernamePasswordCredential.getCaller();
+            }
+        } else {
+            // We are Authorize Only mode, so get the caller determined previously.
+            if (callerPrincipal != null) {
+                caller = callerPrincipal.getName();
+            }
+            // When callerPrincipal is empty means the authentication failed and caller remains null.
+        }
+
+        // We check also if caller != null to be sure the Authentication by another IdentityStore succeeded.
+        if (authenticated && caller != null) {
+            if (validationType == ValidationType.AUTHORIZATION || validationType == ValidationType.BOTH) {
+
+                return new CredentialValidationResult(
+                        caller,
+                        executeQuery(
+                                dataSource,
+                                dataBaseIdentityStoreDefinition.groupsQuery(),
+                                caller
+                        )
+                );
+            } else {
+                // Authentication only
+                return new CredentialValidationResult(caller);
+
+            }
         }
 
         return INVALID_RESULT;
@@ -124,6 +156,11 @@ public class DataBaseIdentityStore implements IdentityStore {
     }
 
     public int priority() {
-        return priority;
+        return dataBaseIdentityStoreDefinition.priority();
+    }
+
+    @Override
+    public ValidationType validationType() {
+        return validationType;
     }
 }

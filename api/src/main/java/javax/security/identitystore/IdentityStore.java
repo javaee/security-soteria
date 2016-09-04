@@ -40,6 +40,7 @@
 package javax.security.identitystore;
 
 import javax.resource.spi.AuthenticationMechanism;
+import javax.security.CallerPrincipal;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.security.identitystore.credential.Credential;
 
@@ -61,16 +62,41 @@ public interface IdentityStore {
     /**
      * Validates the given credential.
      *
-     * @param partialValidationResult Validation result for the other IdentityStore.
      * @param credential The credential
+     * @param callerPrincipal The current CallerPrincipal if user is already authenticated. Value van be null.
      * @return The validation result, including associated caller roles and
-     * groups.
+     * groups when Authorization is performed (see validationType() )
      */
-    CredentialValidationResult validate(CredentialValidationResult partialValidationResult, Credential credential);
+    CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal);
 
     /**
-     * Determines the order of multiple <code>IdentityStore</code>s. Stores are consuled lower number first.
+     * Determines the order of multiple <code>IdentityStore</code>s. Stores are consulted lower number first.
      * @return the priority value. Lower values first.
      */
-    int priority();
+    default int priority() {
+        return 100;
+    }
+
+    /**
+     * Determines the type of validation the IdentityStore performs. By default, it performs authentication AND authorization.
+     * @return Type of validation.
+     */
+    default ValidationType validationType() {
+        return ValidationType.BOTH;
+    }
+
+    /**
+     * Determines the type of validation
+     */
+    enum ValidationType {
+        /**
+         * Only Authentication is performed, so no roles and groups are determined.
+         **/
+        AUTHENTICATION,
+        /**
+         * Only Authorization is performed, so only roles and groups for a principal established by another IdentityStore are determined.
+         */
+        AUTHORIZATION,
+        BOTH
+    }
 }

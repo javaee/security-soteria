@@ -39,6 +39,7 @@
  */
 package org.glassfish.soteria.cdi;
 
+import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
@@ -63,22 +64,52 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
-        CredentialValidationResult result = CredentialValidationResult.NONE_RESULT;
+        CredentialValidationResult validationResult = CredentialValidationResult.NONE_RESULT;
         Iterator<IdentityStore> storeIterator = identityStores.iterator();
-        while (storeIterator.hasNext() && result.getStatus() != CredentialValidationResult.Status.INVALID) {
-            result = storeIterator.next().validate(result, credential);
+        CallerPrincipal callerResult = null;
+
+        while (storeIterator.hasNext() && validationResult.getStatus() != CredentialValidationResult.Status.INVALID) {
+
+            IdentityStore identityStore = storeIterator.next();
+            if (shouldIdentityStoreBeCalled(identityStore, validationResult)) {
+                CredentialValidationResult result = identityStore.validate(credential, callerResult);
+
+                // INVALID -> Just take this result as it should stop the loop.
+                if (result.getStatus() == CredentialValidationResult.Status.INVALID) {
+                    validationResult = result;
+                }
+
+                // AUTHENTICATED /  VALID -> Combine with previous result.
+                if (result.getStatus() == CredentialValidationResult.Status.VALID || result.getStatus() == CredentialValidationResult.Status.AUTHENTICATED) {
+                    validationResult = new CredentialValidationResult(validationResult, result.getStatus(), result.getCallerPrincipal(), result.getCallerGroups());
+                    callerResult = validationResult.getCallerPrincipal();  // Use the current CallerPrincipal for the next iteration
+                }
+
+                // Not validated should not be considered here as the IdentityStore didn't participate in the iteration.
+            }
         }
 
-        if (CredentialValidationResult.Status.AUTHENTICATED == result.getStatus()) {
+        if (CredentialValidationResult.Status.AUTHENTICATED == validationResult.getStatus()) {
             // Make the status from Authenticated to Valid, not adding any group.
-            result = new CredentialValidationResult(result, new ArrayList<>());
+            validationResult = new CredentialValidationResult(validationResult, new ArrayList<>());
         }
 
-        if (CredentialValidationResult.Status.NOT_VALIDATED == result.getStatus()) {
+        if (CredentialValidationResult.Status.NONE == validationResult.getStatus()) {
             // The store(s) we have, couldn't handle the type of Credentials. So assume it is Invalid.
-            result = CredentialValidationResult.INVALID_RESULT;
+            validationResult = CredentialValidationResult.INVALID_RESULT;
         }
-        // TODO, What should we do with status NONE. Meaning that there was no IdentityStore found?
+
+        return validationResult;
+    }
+
+    private boolean shouldIdentityStoreBeCalled(IdentityStore identityStore, CredentialValidationResult validationResult) {
+        boolean result = identityStore.validationType() == IdentityStore.ValidationType.BOTH || identityStore.validationType() == IdentityStore.ValidationType.AUTHENTICATION;
+        if (!result && identityStore.validationType() == IdentityStore.ValidationType.AUTHORIZATION) {
+            // When store does authorization only, we should have at least a successful Authentication
+            result = validationResult.getStatus() == CredentialValidationResult.Status.AUTHENTICATED
+                    || validationResult.getStatus() == CredentialValidationResult.Status.VALID;
+        }
+
         return result;
     }
 

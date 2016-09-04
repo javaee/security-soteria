@@ -51,11 +51,10 @@ import static javax.security.identitystore.CredentialValidationResult.Status.*;
  * <code>CredentialValidationResult</code> is the result from an attempt to
  * validate an instance of {@link Credential}.
  *
- * @see IdentityStore#validate
- * @see IdentityStoreHandler#validate
- *
  * @author Arjan Tijms
  * @author Rudy De Busscher
+ * @see IdentityStore#validate
+ * @see IdentityStoreHandler#validate
  */
 public class CredentialValidationResult {
 
@@ -98,22 +97,20 @@ public class CredentialValidationResult {
     /**
      * Constructor for a VALID result.
      *
-     * @param partialValidationResult The current <code>CredentialValidationResult</code>
-     * @param callerName              Name of the validated caller
-     * @param groups                  Groups associated with the caller from the identity store
+     * @param callerName Name of the validated caller
+     * @param groups     Groups associated with the caller from the identity store
      */
-    public CredentialValidationResult(CredentialValidationResult partialValidationResult, String callerName, List<String> groups) {
-        this(partialValidationResult, new CallerPrincipal(callerName), groups);
+    public CredentialValidationResult(String callerName, List<String> groups) {
+        this(NONE_RESULT, Status.VALID, new CallerPrincipal(callerName), groups);
     }
 
     /**
      * Constructor for a AUTHENTICATED result, groups are set to an empty List.
      *
-     * @param partialValidationResult The current <code>CredentialValidationResult</code>
      * @param callerName              Name of the validated caller
      */
-    public CredentialValidationResult(CredentialValidationResult partialValidationResult, String callerName) {
-        this(partialValidationResult, AUTHENTICATED, new CallerPrincipal(callerName), new ArrayList<>());
+    public CredentialValidationResult(String callerName) {
+        this(NONE_RESULT, AUTHENTICATED, new CallerPrincipal(callerName), new ArrayList<>());
     }
 
     /**
@@ -123,21 +120,10 @@ public class CredentialValidationResult {
      * @param groups                  Groups associated with the caller from the identity store
      */
     public CredentialValidationResult(CredentialValidationResult partialValidationResult, List<String> groups) {
-        this(partialValidationResult, partialValidationResult.getCallerPrincipal(), groups);
+        this(partialValidationResult, Status.VALID, partialValidationResult.getCallerPrincipal(), groups);
         if (partialValidationResult.getCallerPrincipal() == null) {
             throw new IllegalArgumentException("CallerPrincipal of partialValidationResult can't be null");
         }
-    }
-
-    /**
-     * Constructor for a VALID result
-     *
-     * @param partialValidationResult The already available CredentialValidationResult.
-     * @param callerPrincipal         Validated caller
-     * @param groups                  Groups associated with the caller from the identity store
-     */
-    public CredentialValidationResult(CredentialValidationResult partialValidationResult, CallerPrincipal callerPrincipal, List<String> groups) {
-        this(partialValidationResult, VALID, callerPrincipal, groups);
     }
 
     private List<String> determineGroups(Status status, List<String> originalGroups, List<String> additionalGroups) {

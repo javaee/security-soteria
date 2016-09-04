@@ -68,6 +68,7 @@ public class CredentialValidationResultTest {
         additionalGroups = Arrays.asList(GROUP3);
     }
 
+    /*
     @Test
     public void construction_Authenticated_None() {
         CredentialValidationResult partialResult = CredentialValidationResult.NONE_RESULT;
@@ -182,4 +183,6 @@ public class CredentialValidationResultTest {
         assertTrue("Groups should contain Group1, Group2 and Group3", validationResult.getCallerGroups().equals(Arrays.asList(GROUP1, GROUP2, GROUP3)));
 
     }
+
+    */
 }
