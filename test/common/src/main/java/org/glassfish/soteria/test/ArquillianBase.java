@@ -81,6 +81,11 @@ public class ArquillianBase {
     }
     
     protected <P extends Page> P pageFromServer(String path) {
+    	
+    	if (base.toString().endsWith("/") && path.startsWith("/")) {
+    		path = path.substring(1);
+    	}
+    	
         try {
             return webClient
                     .getPage(base + path);

@@ -57,17 +57,6 @@
             <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
         </snapshotRepository>
 	</distributionManagement>
-    
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>bintray-snapshot</id>
-            <name>libs-snapshot</name>
-            <url>http://oss.jfrog.org/artifactory/libs-snapshot</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>

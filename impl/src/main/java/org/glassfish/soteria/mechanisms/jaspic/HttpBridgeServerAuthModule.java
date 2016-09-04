@@ -57,6 +57,7 @@ import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.soteria.cdi.spi.CDIPerRequestInitializer;
 import org.glassfish.soteria.mechanisms.HttpMessageContextImpl;
 
 /**
@@ -66,61 +67,77 @@ import org.glassfish.soteria.mechanisms.HttpMessageContextImpl;
  */
 public class HttpBridgeServerAuthModule implements ServerAuthModule {
 
-	private CallbackHandler handler;
-	private Map<String, String> options;
-	private final Class<?>[] supportedMessageTypes = new Class[] { HttpServletRequest.class, HttpServletResponse.class };
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, @SuppressWarnings("rawtypes") Map options) throws AuthException {
-		this.handler = handler;
-		this.options = options;
-	}
-
-	/**
-	 * A Servlet Container Profile compliant implementation should return HttpServletRequest and HttpServletResponse, so
-	 * the delegation class {@link ServerAuthContext} can choose the right SAM to delegate to.
-	 */
-	@Override
-	public Class<?>[] getSupportedMessageTypes() {
-		return supportedMessageTypes;
-	}
-
-	@Override
-	public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
-	    HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, clientSubject);
-		
-	    AuthStatus status = CDI.current()
-		          .select(HttpAuthenticationMechanism.class).get()
-		          .validateRequest(msgContext.getRequest(), msgContext.getResponse(), msgContext);
-	    
-	    setLastStatus(msgContext.getRequest(), status);
-	    
-	    return status;
-	}
-
-	@Override
-	public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
-	    HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, null);
+        private CallbackHandler handler;
+        private Map<String, String> options;
+        private final Class<?>[] supportedMessageTypes = new Class[] { HttpServletRequest.class, HttpServletResponse.class };
+        private final CDIPerRequestInitializer cdiPerRequestInitializer;
         
-        return CDI.current()
-                  .select(HttpAuthenticationMechanism.class).get()
-                  .secureResponse(msgContext.getRequest(), msgContext.getResponse(), msgContext);
-	}
+        public HttpBridgeServerAuthModule(CDIPerRequestInitializer cdiPerRequestInitializer) {
+            this.cdiPerRequestInitializer = cdiPerRequestInitializer;
+        }
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, @SuppressWarnings("rawtypes") Map options) throws AuthException {
+            this.handler = handler;
+            this.options = options;
+        }
 
-	/**
-	 * Called in response to a {@link HttpServletRequest#logout()} call.
-	 *
-	 */
-	@Override
-	public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
-	    HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, subject);
-	    
-	    CDI.current()
-           .select(HttpAuthenticationMechanism.class).get()
-           .cleanSubject(msgContext.getRequest(), msgContext.getResponse(), msgContext);
-	}
-	
+        /**
+         * A Servlet Container Profile compliant implementation should return HttpServletRequest and HttpServletResponse, so
+         * the delegation class {@link ServerAuthContext} can choose the right SAM to delegate to.
+         */
+        @Override
+        public Class<?>[] getSupportedMessageTypes() {
+            return supportedMessageTypes;
+        }
+
+        @Override
+        public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
+            
+            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, clientSubject);
+            
+            if (cdiPerRequestInitializer != null) {
+                cdiPerRequestInitializer.init(msgContext.getRequest());
+            }
+                
+            AuthStatus status = CDI.current()
+                                   .select(HttpAuthenticationMechanism.class).get()
+                                   .validateRequest(msgContext.getRequest(), msgContext.getResponse(), msgContext);
+            
+            setLastStatus(msgContext.getRequest(), status);
+            
+            return status;
+        }
+
+        @Override
+        public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
+            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, null);
+        
+            AuthStatus status = CDI.current()
+                                   .select(HttpAuthenticationMechanism.class).get()
+                                   .secureResponse(msgContext.getRequest(), msgContext.getResponse(), msgContext);
+        
+            if (cdiPerRequestInitializer != null) {
+                cdiPerRequestInitializer.destroy(msgContext.getRequest());
+            }
+            
+            return status;
+        }
+
+        /**
+         * Called in response to a {@link HttpServletRequest#logout()} call.
+         *
+         */
+        @Override
+        public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
+            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, subject);
+            
+            CDI.current()
+               .select(HttpAuthenticationMechanism.class).get()
+               .cleanSubject(msgContext.getRequest(), msgContext.getResponse(), msgContext);
+        }
+        
 
 
 }
