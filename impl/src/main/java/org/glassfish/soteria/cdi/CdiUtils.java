@@ -39,13 +39,6 @@
  */
 package org.glassfish.soteria.cdi;
 
-import static java.util.Arrays.asList;
-import static java.util.Optional.empty;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.*;
-
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
@@ -54,6 +47,12 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.*;
+
+import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
 
 public class CdiUtils {
 	
@@ -156,7 +155,6 @@ public class CdiUtils {
         Set<Bean<T>> beans = getBeanDefinitions(type, optional, beanManager);
 
         List<T> result = new ArrayList<>(beans.size());
-        Iterator<Bean<T>> iterator = beans.iterator();
 
         for (Bean<?> bean : beans) {
             //noinspection unchecked
@@ -173,21 +171,12 @@ public class CdiUtils {
         return (T) result;
     }
 
-
     private static <T> Set<Bean<T>> getBeanDefinitions(Class<T> type, boolean optional, BeanManager beanManager) {
-        Set beans = beanManager.getBeans(type, new Annotation[]{new AnyAnnotationLiteral()});
-        if(beans != null && !beans.isEmpty()) {
+        Set beans = beanManager.getBeans(type, new AnyAnnotationLiteral());
+        if (beans != null && !beans.isEmpty()) {
 
-            HashSet result = new HashSet();
-            Iterator iterator = beans.iterator();
-
-            while(iterator.hasNext()) {
-                Bean bean = (Bean)iterator.next();
-                result.add(bean);
-            }
-
-            return result;
-        } else if(optional) {
+            return beans;
+        } else if (optional) {
             return Collections.emptySet();
         } else {
             throw new IllegalStateException("Could not find beans for Type=" + type);
