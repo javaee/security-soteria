@@ -39,14 +39,19 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.lang.System.getProperty;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assume.assumeFalse;
 
-import org.glassfish.soteria.test.ArquillianBase;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,9 +61,18 @@ public class AppDBIT extends ArquillianBase {
     
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
+    	if ("liberty".equals(getProperty("arquillian.server"))) {
+    		return ShrinkWrap.create(WebArchive.class, "test.war")
+    						 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    	}
         return mavenWar();
     }
 
+    @Before
+    public void checkEnabled() {
+    	assumeFalse("liberty".equals(getProperty("arquillian.server")));
+    }
+    
     @Test
     public void testAuthenticated() {
         assertDefaultAuthenticated(

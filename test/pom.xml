@@ -415,6 +415,7 @@
                        	<version>2.19.1</version>
                         <configuration>
                             <systemPropertyVariables>
+                            	<arquillian.server>liberty</arquillian.server>
                                 <arquillian.launch>liberty</arquillian.launch>
                                 <arquillian.liberty.wlpHome>${project.build.directory}/wlp</arquillian.liberty.wlpHome>
                             </systemPropertyVariables>
