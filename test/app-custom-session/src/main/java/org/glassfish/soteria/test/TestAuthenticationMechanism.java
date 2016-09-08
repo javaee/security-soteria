@@ -10,7 +10,7 @@ import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
 import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
+import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.credential.Password;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
     
     @Inject
-    private IdentityStore identityStore;
+    private IdentityStoreHandler identityStoreHandler;
 
     @Override
     public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
@@ -39,7 +39,7 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
 
             // Delegate the {credentials in -> identity data out} function to
             // the Identity Store
-            CredentialValidationResult result = identityStore.validate(
+            CredentialValidationResult result = identityStoreHandler.validate(
                 new UsernamePasswordCredential(name, password));
 
             if (result.getStatus() == VALID) {

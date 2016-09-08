@@ -39,22 +39,9 @@
  */
 package org.glassfish.soteria.cdi;
 
-import static java.lang.Boolean.TRUE;
-import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
-import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-import static org.glassfish.soteria.Utils.getBaseURL;
-import static org.glassfish.soteria.Utils.getParam;
-import static org.glassfish.soteria.Utils.isEmpty;
-import static org.glassfish.soteria.Utils.isImplementationOf;
-import static org.glassfish.soteria.Utils.notNull;
-import static org.glassfish.soteria.Utils.validateRequestMethod;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
-import static org.glassfish.soteria.servlet.RequestCopier.copy;
-
-import java.io.Serializable;
-import java.util.Optional;
+import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
+import org.glassfish.soteria.servlet.HttpServletRequestDelegator;
+import org.glassfish.soteria.servlet.RequestData;
 
 import javax.annotation.Priority;
 import javax.enterprise.inject.Intercepted;
@@ -72,10 +59,17 @@ import javax.security.identitystore.CredentialValidationResult;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.Serializable;
+import java.util.Optional;
 
-import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
-import org.glassfish.soteria.servlet.HttpServletRequestDelegator;
-import org.glassfish.soteria.servlet.RequestData;
+import static java.lang.Boolean.TRUE;
+import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
+import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
+import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static org.glassfish.soteria.Utils.*;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+import static org.glassfish.soteria.servlet.RequestCopier.copy;
 
 
 @Interceptor
@@ -226,9 +220,10 @@ public class LoginToContinueInterceptor implements Serializable {
                     // URL. This is needed since the underlying JASPIC runtime does not
                     // remember the authenticated identity if we redirect.
                     saveAuthentication(request, new CredentialValidationResult(
-                        VALID,
-                        httpMessageContext.getCallerPrincipal(),
-                        httpMessageContext.getGroups()));
+                            CredentialValidationResult.NONE_RESULT,
+                            VALID,
+                            httpMessageContext.getCallerPrincipal(),
+                            httpMessageContext.getGroups()));
                     
                     return httpMessageContext.redirect(savedRequest.getFullRequestURL());
                 } // else return success

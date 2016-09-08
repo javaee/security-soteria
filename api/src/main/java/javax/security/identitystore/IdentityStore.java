@@ -40,17 +40,21 @@
 package javax.security.identitystore;
 
 import javax.resource.spi.AuthenticationMechanism;
+import javax.security.CallerPrincipal;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.security.identitystore.credential.Credential;
 
 /**
  * <code>IdentityStore</code> is a mechanism for validating a Caller's
  * credentials and accessing a Caller's identity attributes, and would be used
- * by an authentication mechanism, such as the JSR 375 {@link AuthenticationMechanism} 
- * or the JSR 196 (JASPIC) {@link ServerAuthModule}. 
- * 
+ * by an authentication mechanism, such as the JSR 375 {@link AuthenticationMechanism}
+ * or the JSR 196 (JASPIC) {@link ServerAuthModule}.
  * <p>
- * An <code>IdentityStore</code> obtains identity data from a persistence mechanism, 
+ * Stores which do only the authentication or authorization is allowed. Authentication only should use the Status
+ * AUTHENTICATED.
+ * <p>
+ * <p>
+ * An <code>IdentityStore</code> obtains identity data from a persistence mechanism,
  * such as a file, database, or LDAP.
  */
 public interface IdentityStore {
@@ -58,10 +62,41 @@ public interface IdentityStore {
     /**
      * Validates the given credential.
      *
-     * @param credential
-     *            The credential
+     * @param credential The credential
+     * @param callerPrincipal The current CallerPrincipal if user is already authenticated. Value van be null.
      * @return The validation result, including associated caller roles and
-     *         groups.
+     * groups when Authorization is performed (see validationType() )
      */
-    CredentialValidationResult validate(Credential credential);
+    CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal);
+
+    /**
+     * Determines the order of multiple <code>IdentityStore</code>s. Stores are consulted lower number first.
+     * @return the priority value. Lower values first.
+     */
+    default int priority() {
+        return 100;
+    }
+
+    /**
+     * Determines the type of validation the IdentityStore performs. By default, it performs authentication AND authorization.
+     * @return Type of validation.
+     */
+    default ValidationType validationType() {
+        return ValidationType.BOTH;
+    }
+
+    /**
+     * Determines the type of validation
+     */
+    enum ValidationType {
+        /**
+         * Only Authentication is performed, so no roles and groups are determined.
+         **/
+        AUTHENTICATION,
+        /**
+         * Only Authorization is performed, so only roles and groups for a principal established by another IdentityStore are determined.
+         */
+        AUTHORIZATION,
+        BOTH
+    }
 }
