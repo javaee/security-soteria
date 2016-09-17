@@ -32,7 +32,8 @@
         <module>app-ldap</module>
         <module>app-ldap2</module>
         <module>app-custom</module>
-        
+        <module>app-multiple-store</module>
+
         <!-- app-[identity-store]-[authentication mechanism] -->
         <module>app-mem-basic</module>
         <module>app-mem-form</module>

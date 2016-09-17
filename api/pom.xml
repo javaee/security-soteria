@@ -18,6 +18,15 @@
         <packages.export>!javax.security.auth.*,!javax.security.jacc.*,javax.security.*</packages.export>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <distributionManagement>
         <repository>
             <id>bintray-javaee-security-spec-maven</id>

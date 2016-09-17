@@ -48,6 +48,7 @@ import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
 import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
 import javax.security.identitystore.IdentityStore;
+import javax.security.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -70,11 +71,11 @@ public class CustomFormAuthenticationMechanism implements HttpAuthenticationMech
 	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
         
         if (hasCredential(httpMessageContext)) {
-            
-            IdentityStore identityStore = CDI.current().select(IdentityStore.class).get();
+
+            IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
             
             return httpMessageContext.notifyContainerAboutLogin(
-                identityStore.validate(
+                    identityStoreHandler.validate(
                     httpMessageContext.getAuthParameters()
                                       .getCredential()));
         }
