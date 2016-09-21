@@ -39,13 +39,17 @@
  */
 package org.glassfish.soteria.test;
 
+import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Credential;
-import java.util.*;
 
 /**
  *
@@ -64,34 +68,14 @@ public class AuthorizationIdentityStore implements IdentityStore {
         authorization.put("arjan", Arrays.asList("foo", "foo"));
 
     }
-
+    
     @Override
-    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
-        CredentialValidationResult result;
-        if (callerPrincipal == null) {
-            // Not authenticated previously
-            result = CredentialValidationResult.NOT_VALIDATED_RESULT;
-        } else {
-
-            List<String> groups = authorization.get(callerPrincipal.getName());
-            if (groups != null) {
-
-                result = new CredentialValidationResult(callerPrincipal.getName(), groups);
-            } else {
-                result = new CredentialValidationResult(callerPrincipal.getName(), new ArrayList<>());
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public int priority() {
-        return 10;
+    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+        return authorization.get(callerPrincipal.getName());
     }
 
     @Override
     public ValidationType validationType() {
-        return ValidationType.AUTHORIZATION;
+        return AUTHORIZATION;
     }
 }

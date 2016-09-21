@@ -159,7 +159,7 @@ public @interface LdapIdentityStoreDefinition {
      * Base of the distinguished name for the application user that will be used to make the initial connection to the LDAP.
      * This account needs search persons in the LDAP to find the actual DN of the user who we need to authenticate.
      * When this member is filled in, the value in callerBaseDn is ignored.
-     * <p></p>
+     * <p>
      * E.g. <code>uid=ldap,ou=apps,dc=jsr375,dc=net</code>
      *
      * @return The distinguished name for the application user.

@@ -39,6 +39,11 @@
  */
 package javax.security.identitystore;
 
+import static java.util.Collections.emptyList;
+import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+
+import java.util.List;
+
 import javax.resource.spi.AuthenticationMechanism;
 import javax.security.CallerPrincipal;
 import javax.security.auth.message.module.ServerAuthModule;
@@ -53,7 +58,6 @@ import javax.security.identitystore.credential.Credential;
  * Stores which do only the authentication or authorization is allowed. Authentication only should use the Status
  * AUTHENTICATED.
  * <p>
- * <p>
  * An <code>IdentityStore</code> obtains identity data from a persistence mechanism,
  * such as a file, database, or LDAP.
  */
@@ -63,11 +67,15 @@ public interface IdentityStore {
      * Validates the given credential.
      *
      * @param credential The credential
-     * @param callerPrincipal The current CallerPrincipal if user is already authenticated. Value van be null.
-     * @return The validation result, including associated caller roles and
-     * groups when Authorization is performed (see validationType() )
+     * @return The validation result, including associated caller groups when Authorization is performed (see validationType() )
      */
-    CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal);
+    default CredentialValidationResult validate(Credential credential) {
+        return NOT_VALIDATED_RESULT;
+    }
+    
+    default List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    	return emptyList();
+    }
 
     /**
      * Determines the order of multiple <code>IdentityStore</code>s. Stores are consulted lower number first.

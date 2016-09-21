@@ -50,7 +50,6 @@ import javax.security.identitystore.credential.Credential;
  * such as the JSR 375 {@link AuthenticationMechanism}
  * or the JSR 196 (JASPIC) {@link ServerAuthModule}.
  * <p>
- * <p>
  * Other beans should only inject this handler and not the IdentityStore directly as multiple stores can exists.
  *
  * @author Rudy De Busscher

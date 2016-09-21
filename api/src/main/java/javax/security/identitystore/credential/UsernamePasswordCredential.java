@@ -109,5 +109,9 @@ public class UsernamePasswordCredential extends AbstractClearableCredential {
     public String getCaller() {
         return caller;
     }
+    
+    public boolean compareTo(String callerName, String password) {
+        return getCaller().equals(callerName) && getPassword().compareTo(password);
+    }
 
 }

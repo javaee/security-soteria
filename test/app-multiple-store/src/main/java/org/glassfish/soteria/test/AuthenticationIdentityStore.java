@@ -39,15 +39,19 @@
  */
 package org.glassfish.soteria.test;
 
+import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.identitystore.IdentityStore.ValidationType.AUTHENTICATION;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
-import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -66,7 +70,7 @@ public class AuthenticationIdentityStore implements IdentityStore {
     }
 
     @Override
-    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
+    public CredentialValidationResult validate(Credential credential) {
         CredentialValidationResult result;
 
         if (credential instanceof UsernamePasswordCredential) {
@@ -76,22 +80,17 @@ public class AuthenticationIdentityStore implements IdentityStore {
             if (expectedPW != null && expectedPW.equals(usernamePassword.getPasswordAsString())) {
                 result = new CredentialValidationResult(usernamePassword.getCaller());
             } else {
-                result = CredentialValidationResult.INVALID_RESULT;
+                result = INVALID_RESULT;
             }
         } else {
-            result = CredentialValidationResult.NOT_VALIDATED_RESULT;
+            result = NOT_VALIDATED_RESULT;
         }
 
         return result;
     }
 
     @Override
-    public int priority() {
-        return 5;
-    }
-
-    @Override
     public ValidationType validationType() {
-        return ValidationType.AUTHENTICATION;
+        return AUTHENTICATION;
     }
 }

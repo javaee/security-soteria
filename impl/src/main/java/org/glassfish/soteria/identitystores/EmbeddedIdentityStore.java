@@ -39,6 +39,16 @@
  */
 package org.glassfish.soteria.identitystores;
 
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toMap;
+import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+
+import java.util.List;
+import java.util.Map;
+
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
@@ -46,14 +56,6 @@ import javax.security.identitystore.annotation.Credentials;
 import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
-import java.util.ArrayList;
-import java.util.Map;
-
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toMap;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
 public class EmbeddedIdentityStore implements IdentityStore {
 
@@ -70,6 +72,15 @@ public class EmbeddedIdentityStore implements IdentityStore {
         );
         determineValidationType();
     }
+    
+    @Override
+    public CredentialValidationResult validate(Credential credential) {
+        if (credential instanceof UsernamePasswordCredential) {
+            return validate((UsernamePasswordCredential) credential);
+        }
+
+        return NOT_VALIDATED_RESULT;
+    }
 
     private void determineValidationType() {
         validationType = ValidationType.BOTH;
@@ -81,58 +92,26 @@ public class EmbeddedIdentityStore implements IdentityStore {
             }
         }
     }
-
-    @Override
-    public CredentialValidationResult validate(Credential credential, CallerPrincipal callerPrincipal) {
-
-        if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential, callerPrincipal);
-        }
-
-        return NOT_VALIDATED_RESULT;
-    }
-
-    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential, CallerPrincipal callerPrincipal) {
-
-        boolean authenticated = true;
-        String caller = null;
+    
+    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
         Credentials credentials = callerToCredentials.get(usernamePasswordCredential.getCaller());
-        if (validationType == ValidationType.AUTHENTICATION || validationType == ValidationType.BOTH) {
 
-            authenticated = credentials != null && usernamePasswordCredential.getPassword().compareTo(credentials.password());
-            if (authenticated) {
-                caller = usernamePasswordCredential.getCaller();
-            }
-        } else {
-            // We are Authorize Only mode, so get the caller determined previously.
-            if (callerPrincipal != null) {
-                caller = callerPrincipal.getName();
-            }
-            // When callerPrincipal is empty means the authentication failed and caller remains null.
+        if (credentials != null && usernamePasswordCredential.getPassword().compareTo(credentials.password())) {
+            return new CredentialValidationResult(
+                new CallerPrincipal(credentials.callerName()), 
+                asList(credentials.groups())
+            );
         }
 
-        // We check also if caller != null to be sure the Authentication by another IdentityStore succeeded.
-        if (authenticated && caller != null) {
-            if (validationType == ValidationType.AUTHORIZATION || validationType == ValidationType.BOTH) {
-
-                if (credentials != null) {
-                    // Caller is found in the list, use the groups defined.
-                    return new CredentialValidationResult(
-                            caller,
-                            asList(credentials.groups())
-                    );
-                } else {
-                    // Caller not found, so use empty list.
-                    return new CredentialValidationResult(
-                            caller,
-                            new ArrayList<>());
-                }
-            } else {
-                // Authentication only
-                return new CredentialValidationResult(caller);
-            }
-        }
         return INVALID_RESULT;
+    }
+    
+    @Override
+    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+        
+        Credentials credentials = callerToCredentials.get(callerPrincipal.getName());
+        
+        return credentials != null? asList(credentials.groups()) : emptyList();
     }
 
     public int priority() {

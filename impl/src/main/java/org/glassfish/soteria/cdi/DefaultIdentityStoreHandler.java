@@ -39,78 +39,74 @@
  */
 package org.glassfish.soteria.cdi;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.identitystore.IdentityStore.ValidationType.AUTHENTICATION;
+import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
+import static javax.security.identitystore.IdentityStore.ValidationType.BOTH;
+import static org.glassfish.soteria.Utils.isOneOf;
+import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.credential.Credential;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  *
  */
 public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
 
-    // protected so that @Specialized CDI bean can access the identityStores.
-    protected List<IdentityStore> identityStores;
+    private List<IdentityStore> authenticationIdentityStores;
+    private List<IdentityStore> authorizationIdentityStores;
 
     public void init() {
-        identityStores = CdiUtils.getBeanReferencesByType(IdentityStore.class, false);
-        identityStores.sort(Comparator.comparing(IdentityStore::priority));
+    	List<IdentityStore> identityStores = getBeanReferencesByType(IdentityStore.class, false);
+    	
+    	authenticationIdentityStores = identityStores.stream()
+    												 .filter(i -> isOneOf(i.validationType(), BOTH, AUTHENTICATION))
+    												 .sorted(comparing(IdentityStore::priority))
+    												 .collect(toList());
+    	
+    	authorizationIdentityStores = identityStores.stream()
+				 									.filter(i -> i.validationType() == AUTHORIZATION)
+		 											.sorted(comparing(IdentityStore::priority))
+	 												.collect(toList());
     }
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
-        CredentialValidationResult validationResult = CredentialValidationResult.NONE_RESULT;
-        Iterator<IdentityStore> storeIterator = identityStores.iterator();
-        CallerPrincipal callerResult = null;
-
-        while (storeIterator.hasNext() && validationResult.getStatus() != CredentialValidationResult.Status.INVALID) {
-
-            IdentityStore identityStore = storeIterator.next();
-            if (shouldIdentityStoreBeCalled(identityStore, validationResult)) {
-                CredentialValidationResult result = identityStore.validate(credential, callerResult);
-
-                // INVALID -> Just take this result as it should stop the loop.
-                if (result.getStatus() == CredentialValidationResult.Status.INVALID) {
-                    validationResult = result;
-                }
-
-                // AUTHENTICATED /  VALID -> Combine with previous result.
-                if (result.getStatus() == CredentialValidationResult.Status.VALID || result.getStatus() == CredentialValidationResult.Status.AUTHENTICATED) {
-                    validationResult = new CredentialValidationResult(validationResult, result.getStatus(), result.getCallerPrincipal(), result.getCallerGroups());
-                    callerResult = validationResult.getCallerPrincipal();  // Use the current CallerPrincipal for the next iteration
-                }
-
-                // Not validated should not be considered here as the IdentityStore didn't participate in the iteration.
+        
+        CredentialValidationResult  validationResult = null;
+        
+        // Check stores to authenticate until one succeeds.
+        for (IdentityStore authenticationIdentityStore : authenticationIdentityStores) {
+            validationResult = authenticationIdentityStore.validate(credential);
+            if (validationResult.getStatus() == VALID) {
+                break;
             }
         }
-
-        if (CredentialValidationResult.Status.AUTHENTICATED == validationResult.getStatus()) {
-            // Make the status from Authenticated to Valid, not adding any group.
-            validationResult = new CredentialValidationResult(validationResult, new ArrayList<>());
+       
+        if (validationResult.getStatus() != VALID) {
+            // No store authenticated, no need to continue
+            return validationResult;
         }
-
-        if (CredentialValidationResult.Status.NONE == validationResult.getStatus()) {
-            // The store(s) we have, couldn't handle the type of Credentials. So assume it is Invalid.
-            validationResult = CredentialValidationResult.INVALID_RESULT;
+        
+        CallerPrincipal callerPrincipal = validationResult.getCallerPrincipal();
+        List<String> groups = new ArrayList<>(validationResult.getCallerGroups());
+        
+        // Ask all stores that were configured for authorization to get the groups for the
+        // authenticated caller
+        for (IdentityStore authorizationIdentityStore : authorizationIdentityStores) {
+            groups.addAll(authorizationIdentityStore.getGroupsByCallerPrincipal(callerPrincipal));
         }
-
-        return validationResult;
-    }
-
-    private boolean shouldIdentityStoreBeCalled(IdentityStore identityStore, CredentialValidationResult validationResult) {
-        boolean result = identityStore.validationType() == IdentityStore.ValidationType.BOTH || identityStore.validationType() == IdentityStore.ValidationType.AUTHENTICATION;
-        if (!result && identityStore.validationType() == IdentityStore.ValidationType.AUTHORIZATION) {
-            // When store does authorization only, we should have at least a successful Authentication
-            result = validationResult.getStatus() == CredentialValidationResult.Status.AUTHENTICATED
-                    || validationResult.getStatus() == CredentialValidationResult.Status.VALID;
-        }
-
-        return result;
+        
+        return new CredentialValidationResult(callerPrincipal, groups);
     }
 
 }
