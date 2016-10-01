@@ -59,6 +59,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class AppDBIT extends ArquillianBase {
     
+    // Disabled for Liberty since as of version 16.0.0.3 / 2016.9 it doesn't
+    // support embedded datasources on which this test depends
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
     	if ("liberty".equals(getProperty("arquillian.server"))) {

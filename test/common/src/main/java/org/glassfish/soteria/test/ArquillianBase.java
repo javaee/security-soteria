@@ -39,12 +39,22 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.util.logging.Level.SEVERE;
+import static org.apache.http.HttpStatus.SC_MULTIPLE_CHOICES;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.jsoup.Jsoup.parse;
+import static org.jsoup.parser.Parser.xmlParser;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
@@ -53,26 +63,61 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 
 public class ArquillianBase {
     
+    private static final Logger logger = Logger.getLogger(ArquillianBase.class.getName());
+    
     private WebClient webClient;
+    private String response;
 
 	@ArquillianResource
     private URL base;
+	
+    @Rule
+    public TestWatcher ruleExample = new TestWatcher() {
+        @Override
+        protected void failed(Throwable e, Description description) {
+            super.failed(e, description);
+            
+            logger.log(SEVERE, 
+                "\n\nTest failed: " + 
+                description.getClassName() + "." + description.getMethodName() +
+                
+                "\nMessage: " + e.getMessage() +
+                
+                "\nLast response: " +
+                
+                "\n\n"  + formatHTML(response) + "\n\n");
+            
+        }
+    };
 
     @Before
     public void setUp() {
-        webClient = new WebClient();
+        webClient = new WebClient() {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void printContentIfNecessary(WebResponse webResponse) {
+                int statusCode = webResponse.getStatusCode();
+                if (getOptions().getPrintContentOnFailingStatusCode() && !(statusCode >= SC_OK && statusCode < SC_MULTIPLE_CHOICES)) {
+                    logger.log(SEVERE, webResponse.getWebRequest().getUrl().toExternalForm());
+                }
+                super.printContentIfNecessary(webResponse);
+            }
+        };
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
     }
 
     @After
     public void tearDown() {
         webClient.getCookieManager().clearCookies();
-        webClient.closeAllWindows();
+        webClient.close();
     }
     
     protected String readFromServer(String path) {
-    	return responseFromServer(path)
-    			.getContentAsString();
+    	response = responseFromServer(path)
+			        .getContentAsString();
+    	return response;
     }
     
     protected WebResponse responseFromServer(String path) {
@@ -98,5 +143,13 @@ public class ArquillianBase {
     protected WebClient getWebClient() {
  		return webClient;
  	}
+    
+    public static String formatHTML(String html) {
+        try {
+            return parse(html, "", xmlParser()).toString();
+        } catch (Exception e) {
+            return html;
+        }
+    }
     
 }

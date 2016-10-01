@@ -36,6 +36,12 @@ public class LibertyCDIPerRequestInitializer implements CDIPerRequestInitializer
         elProcessor.defineBean("weldInitialListener", weldInitialListener);
         elProcessor.defineBean("event", event);
         elProcessor.eval("weldInitialListener.requestDestroyed(event)");
+        
+        // EXTRA HACK TO MAKE REQUEST WRAPPING NOT DESTROY FOLLOW UP REQUEST IN LIBERTY 16.0.0.3 and 2016.9 AND EARLIER
+        // SHOULD BE REMOVED WHEN LIBERTY NO LONGER STORES THIS PER REQUEST WRAPPER IN THE APPLICATION SCOPE
+        if (request.getServletContext().getAttribute("com.ibm.ws.security.jaspi.servlet.request.wrapper") !=  null) {
+            request.getServletContext().removeAttribute("com.ibm.ws.security.jaspi.servlet.request.wrapper");
+        }
     }
     
 }

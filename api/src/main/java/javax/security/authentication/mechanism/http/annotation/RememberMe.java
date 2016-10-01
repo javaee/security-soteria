@@ -50,6 +50,7 @@ import javax.el.ELProcessor;
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
 import javax.resource.spi.AuthenticationMechanism;
+import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.identitystore.RememberMeIdentityStore;
 import javax.servlet.http.Cookie;
 
@@ -123,7 +124,8 @@ public @interface RememberMe {
      * for every request requiring authentication. The expression needs to evaluate
      * to a boolean outcome. All named CDI beans are available to the expression
      * as well as default classes as specified by EL 3.0 for the {@link ELProcessor}
-     * and the implicit object "this" which refers to the interceptor target.
+     * and the implicit objects "self" which refers to the interceptor target and
+     * "httpMessageContext" which refers to the current {@link HttpMessageContext}.
      * 
      * @return EL expression to determine if remember me should be used
      * 

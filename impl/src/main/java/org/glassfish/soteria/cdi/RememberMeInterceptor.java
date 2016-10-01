@@ -202,7 +202,8 @@ public class RememberMeInterceptor implements Serializable {
         ELProcessor elProcessor = new ELProcessor();
         
         elProcessor.getELManager().addELResolver(beanManager.getELResolver());
-        elProcessor.defineBean("this", invocationContext.getTarget());
+        elProcessor.defineBean("this", invocationContext.getTarget()); // deprecate/remove, not compatible with Apache EL
+        elProcessor.defineBean("self", invocationContext.getTarget());
         elProcessor.defineBean("httpMessageContext", httpMessageContext);
         
         return elProcessor;

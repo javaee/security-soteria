@@ -5,6 +5,7 @@ jdk:
 env:
   - SERVER=payara
   - SERVER=wildfly
+  - SERVER=liberty
 script: mvn clean package -P $SERVER -P bundled
 
 deploy:

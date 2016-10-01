@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @RememberMe(
     cookieMaxAgeSeconds = 3600,
-    isRememberMeExpression ="this.isRememberMe(httpMessageContext)"
+    isRememberMeExpression ="self.isRememberMe(httpMessageContext)"
 )
 @RequestScoped
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {

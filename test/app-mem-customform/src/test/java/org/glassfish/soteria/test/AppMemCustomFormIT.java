@@ -39,16 +39,22 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.lang.System.getProperty;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,9 +66,20 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 @RunWith(Arquillian.class)
 public class AppMemCustomFormIT extends ArquillianBase {
     
+    // Disabled for Liberty since as of version 16.0.0.3 / 2016.9 it doesn't
+    // support request.authenticate(), which is essential for the custom form
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
+        if ("liberty".equals(getProperty("arquillian.server"))) {
+            return ShrinkWrap.create(WebArchive.class, "test.war")
+                             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        }
         return mavenWar();
+    }
+
+    @Before
+    public void checkEnabled() {
+        assumeFalse("liberty".equals(getProperty("arquillian.server")));
     }
 
     @Test
