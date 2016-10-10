@@ -92,6 +92,7 @@ public class ArquillianBase {
 
     @Before
     public void setUp() {
+        response = null;
         webClient = new WebClient() {
             
             private static final long serialVersionUID = 1L;
@@ -121,8 +122,12 @@ public class ArquillianBase {
     }
     
     protected WebResponse responseFromServer(String path) {
-    	return pageFromServer(path)
-    			.getWebResponse();    	
+        WebResponse webResponse =  pageFromServer(path)
+    			                        .getWebResponse();
+        
+        response = webResponse.getContentAsString();
+        
+        return webResponse;
     }
     
     protected <P extends Page> P pageFromServer(String path) {
@@ -132,8 +137,12 @@ public class ArquillianBase {
     	}
     	
         try {
-            return webClient
+            P page = webClient
                     .getPage(base + path);
+            
+            response = page.getWebResponse().getContentAsString();
+            
+            return page;
             
         } catch (FailingHttpStatusCodeException | IOException e) {
             throw new IllegalStateException(e);
