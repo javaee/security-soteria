@@ -31,7 +31,8 @@ This sub-repo contains working applications that demonstrate various aspects of 
 * **app-mem-customform** - As app-mem but uses the JSR 375 provided CUSTOM FORM authentication mechanism.
   * Test URL: http://localhost:8080/app-mem-customform/servlet (then provide "reza" and "secret1" in the form presented)
   * Note that /servlet is a protected resource. The authentication mechanism forwards to /login.xhtml, which posts back to itself. A backing bean then programmatically resumes the authentication dialog and if authentication succeeds a redirect back to /servlet is send.
-
+* **app-multiple-store** - As app-custom but uses two identity stores; 1 that does the authentication (checks username and password match) while the other provides the groups once authentication has succeeded.
+  * Test URL: http://localhost:8080/app-multiple-store/servlet?name=reza&password=secret1
 
   
 
