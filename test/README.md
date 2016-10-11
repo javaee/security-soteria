@@ -33,12 +33,32 @@ This sub-repo contains working applications that demonstrate various aspects of 
   * Note that /servlet is a protected resource. The authentication mechanism forwards to /login.xhtml, which posts back to itself. A backing bean then programmatically resumes the authentication dialog and if authentication succeeds a redirect back to /servlet is send.
 * **app-multiple-store** - As app-custom but uses two identity stores; 1 that does the authentication (checks username and password match) while the other provides the groups once authentication has succeeded.
   * Test URL: http://localhost:8080/app-multiple-store/servlet?name=reza&password=secret1
-* **app-multiple-store-backup** - As app-custom but uses two identity stores that are tried in order. First authentication is attempted against the first one, and when that fails it's attempted against the second one. In this example, user "reza" is present in both stores with different passwords, while user "alex" is only present in the second store. 
+* **app-multiple-store-backup** - As app-custom but uses two identity stores that are tried in order. First authentication is attempted against the first one, and when that fails it's attempted against the second one. In this example, user "reza" is present in both stores with different passwords, while user "alex" is only present in the second store.
   * Test URL: http://localhost:8080/app-multiple-store/servlet?name=reza&password=secret1 (first store)
   * Test URL: http://localhost:8080/app-multiple-store/servlet?name=reza&password=secret2 (second store)
   * Test URL: http://localhost:8080/app-multiple-store-backup/servlet?name=alex&password=verysecret (second store)
 
-  
+## Running the samples in Docker
 
+Examples for how to build and run the `app-mem-basic` sample in docker. The other samples can be run in the same way.
 
-    
+### Wildfly
+```
+cd app-mem-basic
+mvn clean install docker:build -Pwildfly,wildfly-docker
+docker run -it -p 8080:8080 soteria-samples/app-mem-basic:wildfly
+```  
+
+### WebSphere Liberty
+```
+cd app-mem-basic
+mvn clean install docker:build -Pliberty,liberty-docker
+docker run -it -p 8080:9080 soteria-samples/app-mem-basic:liberty
+```  
+
+### Payara
+```
+cd app-mem-basic
+mvn clean install docker:build -Ppayara,payara-docker
+docker run -it -p 8080:8080 soteria-samples/app-mem-basic:payara
+```  
