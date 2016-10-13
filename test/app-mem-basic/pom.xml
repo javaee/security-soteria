@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 	
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
@@ -8,13 +8,13 @@
         <version>1.0-m02-SNAPSHOT</version>
     </parent>
 	
-	<artifactId>app-mem-basic</artifactId>
-	<packaging>war</packaging>
+    <artifactId>app-mem-basic</artifactId>
+    <packaging>war</packaging>
 	
-	<build>
+    <build>
         <finalName>app-mem-basic</finalName>
-	</build>
-
+    </build>
+      
     <properties>
         <failOnMissingWebXml>false</failOnMissingWebXml>
     </properties>
