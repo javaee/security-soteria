@@ -6,6 +6,7 @@ env:
   - SERVER=payara
   - SERVER=wildfly
   - SERVER=liberty
+  - SERVER=tomee
 script: mvn clean package -P $SERVER -P bundled
 
 deploy:
