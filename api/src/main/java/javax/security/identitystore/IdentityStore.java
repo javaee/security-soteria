@@ -39,9 +39,12 @@
  */
 package javax.security.identitystore;
 
+import static java.lang.invoke.MethodType.methodType;
 import static java.util.Collections.emptyList;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.identitystore.IdentityStore.ValidationType.BOTH;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import javax.resource.spi.AuthenticationMechanism;
@@ -65,12 +68,40 @@ public interface IdentityStore {
 
     /**
      * Validates the given credential.
+     * 
+     * <p>
+     * As a convenience a default implementation is provided that looks up an overload of this method
+     * with as the one and only parameter a subclass of {@link Credential}. Here is an example of what
+     * an implementation of this interface looks like with such overloaded method:
+     * <blockquote><pre>{@code
+public class ExampleIdentityStore implements IdentityStore {
+
+    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
+        // Implementation ...
+        return INVALID_RESULT;
+    }
+	
+}
+     * }</pre></blockquote>
+     * <p>
+     * Note that the overloaded method is only called when the actual type passed into this method will <i>exactly</i> match
+     * the parameter type of the overloaded method. There's no attempt being done to find the most specific overloaded method
+     * such as specified in JLS 15.2.
      *
      * @param credential The credential
      * @return The validation result, including associated caller groups when Authorization is performed (see validationType() )
      */
     default CredentialValidationResult validate(Credential credential) {
-        return NOT_VALIDATED_RESULT;
+        try {
+        	return CredentialValidationResult.class.cast(
+                    MethodHandles.lookup()
+                                 .bind(this, "validate", methodType(CredentialValidationResult.class, credential.getClass()))
+                                 .invoke(credential));
+        } catch (NoSuchMethodException e) {
+        	return NOT_VALIDATED_RESULT;
+		} catch (Throwable e) {
+			throw new IllegalStateException(e);
+		}
     }
     
     default List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
@@ -90,7 +121,7 @@ public interface IdentityStore {
      * @return Type of validation.
      */
     default ValidationType validationType() {
-        return ValidationType.BOTH;
+        return BOTH;
     }
 
     /**

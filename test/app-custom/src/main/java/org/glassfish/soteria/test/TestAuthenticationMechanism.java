@@ -10,7 +10,6 @@ import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStoreHandler;
-import javax.security.identitystore.credential.Password;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,14 +23,14 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
     @Override
     public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 
-        if (request.getParameter("name") != null && request.getParameter("password") != null) {
-
-            // Get the (caller) name and password from the request
-            // NOTE: This is for the smallest possible example only. In practice
-            // putting the password in a request query parameter is highly
-            // insecure
-            String name = request.getParameter("name");
-            Password password = new Password(request.getParameter("password"));
+    	// Get the (caller) name and password from the request
+        // NOTE: This is for the smallest possible example only. In practice
+        // putting the password in a request query parameter is highly
+        // insecure
+        String name = request.getParameter("name");
+        String password = request.getParameter("password");
+    	
+        if (name != null && password != null) {
 
             // Delegate the {credentials in -> identity data out} function to
             // the Identity Store
