@@ -68,11 +68,11 @@ import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 
-public class LDapIdentityStore implements IdentityStore {
+public class LdapIdentityStore implements IdentityStore {
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
 
-    public LDapIdentityStore(LdapIdentityStoreDefinition ldapIdentityStoreDefinition) {
+    public LdapIdentityStore(LdapIdentityStoreDefinition ldapIdentityStoreDefinition) {
         this.ldapIdentityStoreDefinition = ldapIdentityStoreDefinition;
     }
 

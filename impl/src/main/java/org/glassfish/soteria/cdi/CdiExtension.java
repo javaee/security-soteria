@@ -42,7 +42,7 @@ package org.glassfish.soteria.cdi;
 import org.glassfish.soteria.SecurityContextImpl;
 import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
-import org.glassfish.soteria.identitystores.LDapIdentityStore;
+import org.glassfish.soteria.identitystores.LdapIdentityStore;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
@@ -119,9 +119,9 @@ public class CdiExtension implements Extension {
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
-                    .types(Object.class, IdentityStore.class, LDapIdentityStore.class)
+                    .types(Object.class, IdentityStore.class, LdapIdentityStore.class)
                     .addToId(LdapIdentityStoreDefinition.class)
-                    .create(e -> new LDapIdentityStore(optionalLdapStore.get()))
+                    .create(e -> new LdapIdentityStore(optionalLdapStore.get()))
             );
         }
 
