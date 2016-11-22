@@ -44,6 +44,7 @@ import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastStatus;
 
 import java.io.Serializable;
+import java.security.Principal;
 
 import javax.inject.Inject;
 import javax.security.SecurityContext;
@@ -60,6 +61,24 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     
     @Inject // Injection of HttpServletRequest doesn't work for TomEE
     private HttpServletRequest request;
+    
+    @Override
+    public Principal getCallerPrincipal() {
+    	// Temporary implementation. Eventually we'd like to have this usable in every context.
+    	// Options to consider:
+    	// Try both the request and an injected EJB bean in order
+    	// Use JACC
+    	// Depend on server specific code
+    	// Note that the injected Principal from the CDI spec is troublesome as we can't
+    	// cast it to a custom principal, should one be used.
+    	return request.getUserPrincipal();
+    }
+    
+    @Override
+    public boolean isCallerInRole(String role) {
+    	// Temporary implementation. Eventually we'd like to have this usable in every context.
+    	return request.isUserInRole(role);
+    }
     
     @Override
     public AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {

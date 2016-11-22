@@ -39,12 +39,17 @@
  */
 package javax.security;
 
+import java.security.Principal;
+
 import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface SecurityContext {
+	
+	Principal getCallerPrincipal();
+	boolean isCallerInRole(String role);
     
     AuthStatus authenticate(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters parameters);
     AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters);
