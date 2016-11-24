@@ -91,7 +91,13 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
                 break;
             }
         }
-       
+
+        if (validationResult == null) {
+            // No authentication store at all
+            // TODO Discuss in EG
+            return CredentialValidationResult.INVALID_RESULT;
+        }
+
         if (validationResult.getStatus() != VALID) {
             // No store authenticated, no need to continue
             return validationResult;

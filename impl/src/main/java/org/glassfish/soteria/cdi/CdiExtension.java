@@ -69,7 +69,7 @@ import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 public class CdiExtension implements Extension {
 
     // Note: for now use the highlander rule: "there can be only one" for
-    // both identity stores and (http) authentication mechanisms.
+    // authentication mechanisms.
     // This could be extended later to support multiple
     private List<Bean<IdentityStore>> identityStoreBeans = new ArrayList<>();
     private Bean<HttpAuthenticationMechanism> authenticationMechanismBean;
@@ -173,9 +173,6 @@ public class CdiExtension implements Extension {
                     });
         }
 
-        if (event.getBean().getBeanClass().isAssignableFrom(IdentityStoreHandler.class)) {
-            System.out.println(event);
-        }
         if (event.getBean().getTypes().contains(HttpAuthenticationMechanism.class)) {
             // enabled bean implementing the HttpAuthenticationMechanism found
             httpAuthenticationMechanismFound = true;
@@ -195,8 +192,6 @@ public class CdiExtension implements Extension {
             afterBeanDiscovery.addBean(authenticationMechanismBean);
         }
 
-        // FIXME Since we have no beans.xml in this jar (and apparently we can't have one) we have to solve it this way.
-        // Needs to be a regular CDI bean because we need to be able to @Specialize it.
         afterBeanDiscovery.addBean(
                 new CdiProducer<IdentityStoreHandler>()
                         .scope(ApplicationScoped.class)
