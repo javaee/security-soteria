@@ -76,11 +76,16 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.18.1</version>
 				</plugin>
-
+				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<version>3.2.0</version>
+					<extensions>true</extensions>
+				</plugin>
 				<plugin>
 					<groupId>com.mycila</groupId>
 					<artifactId>license-maven-plugin</artifactId>
-					<version>2.11</version>
+					<version>3.0</version>
 					<executions>
 						<execution>
 							<goals>
@@ -89,21 +94,24 @@
 						</execution>
 					</executions>
 					<configuration>
-						<header>../../../src/license/header.txt</header>
+						<header>src/license/header.txt</header>
 						<properties>
 							<owner>Oracle</owner>
-							<currentYear>2015</currentYear>
+							<currentYear>2016</currentYear>
 						</properties>
 						<excludes>
 							<exclude>**/*.adoc</exclude>
+							<exclude>**/*.launch</exclude>
+							<exclude>**/*.sh</exclude>
 							<exclude>**/pom.xml</exclude>
 							<exclude>**/README</exclude>
 							<exclude>**/settings.xml</exclude>
+							<exclude>src/license/**</exclude>
 							<exclude>src/test/resources/**</exclude>
 							<exclude>src/main/resources/**</exclude>
 						</excludes>
 						<headerDefinitions>
-							<headerDefinition>../../../src/license/headers.xml</headerDefinition>
+							<headerDefinition>src/license/headers.xml</headerDefinition>
 						</headerDefinitions>
 						<mapping>
 							<java>JAVA_STYLE</java>
