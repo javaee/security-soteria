@@ -51,13 +51,13 @@ public class TokenCredential implements Credential {
     private final String token;
 
 // TODO: extend for standard JWT support
-
     /**
      * Constructor
      *
-     * @param valid  <code>true</code> if an integrity check has validated the credential.
+     * @param valid  <code>true</code> if an integrity check has validated the
+     * credential.
      * @param caller The caller associated with this credential
-     * @param token  The token value to compare for authentication.
+     * @param token The token value to compare for authentication.
      */
     public TokenCredential(boolean valid, String caller, String token) {
         this.valid = valid;
@@ -65,24 +65,12 @@ public class TokenCredential implements Credential {
         this.token = token;
     }
 
-    /**
-     * Determines whether the credential is valid. This would be called as part of
-     * the credential validation process to check the integrity of the credential,
-     * such as a signature check. This check would be self-contained,
-     * not requiring identity store access.
-     *
-     * @return <code>true</code> if credential has integrity.
-     */
+    @Override
     public boolean isValid() {
         return valid;
     }
 
-    /**
-     * Determines the caller associated with this credential. This value would
-     * usually be the unique value identifying the caller, like a login name.
-     *
-     * @return The caller associated with this credential
-     */
+    @Override
     public String getCaller() {
         return caller;
     }

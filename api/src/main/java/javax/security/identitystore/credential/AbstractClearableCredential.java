@@ -48,10 +48,6 @@ public abstract class AbstractClearableCredential implements Credential {
 
     private volatile boolean cleared = false;
 
-    /**
-     * Determines whether the credential value has been securely cleared.
-     * @return <code>true</code> if the credential has been cleared, otherwise false.
-     */
     @Override
     public final boolean isCleared() {
         return cleared;
@@ -64,10 +60,6 @@ public abstract class AbstractClearableCredential implements Credential {
         this.cleared = true;
     }
 
-    /**
-     * Clears the credential. For example, if the credential includes a password,
-     * this method would overwrite the password value.
-     */
     @Override
     public final void clear() {
         clearCredential();

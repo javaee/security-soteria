@@ -85,26 +85,11 @@ public class UsernamePasswordCredential extends AbstractClearableCredential {
         return String.valueOf(getPassword().getValue());
     }
 
-    /**
-     * Invokes the specific subclass to securely clear the credential value.
-     * Some <code>{@link Credential}</code> subclasses contain credential values
-     * which are inherently secure, such as tokens, for which clearing the
-     * credential may not be necessary.
-     * <p>
-     * For example, if the credential includes a password,
-     * this method would overwrite the password value.
-     */
     @Override
     public void clearCredential() {
         password.clear();
     }
 
-    /**
-     * Determines the caller associated with this credential. This value would
-     * usually be the unique value identifying the caller, like a login name.
-     *
-     * @return The caller associated with this credential
-     */
     @Override
     public String getCaller() {
         return caller;
