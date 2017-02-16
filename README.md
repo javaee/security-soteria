@@ -15,7 +15,7 @@ Currently Soteria is working towards an EDR1 release.
 Building
 --------
 
-Soteria can be build by executing the following from the project root:
+Soteria can be built by executing the following from the project root:
 
 ``mvn clean package``
 
