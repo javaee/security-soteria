@@ -71,12 +71,16 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     	// Depend on server specific code
     	// Note that the injected Principal from the CDI spec is troublesome as we can't
     	// cast it to a custom principal, should one be used.
+        
+        // Needs role mapper?
+        
     	return request.getUserPrincipal();
     }
     
     @Override
     public boolean isCallerInRole(String role) {
     	// Temporary implementation. Eventually we'd like to have this usable in every context.
+        // Query WebRoleRefPermission
     	return request.isUserInRole(role);
     }
     
