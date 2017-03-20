@@ -41,10 +41,11 @@ package org.glassfish.soteria.test;
 
 import java.io.IOException;
 
-import javax.annotation.security.DeclareRoles;
 import javax.inject.Inject;
 import javax.security.SecurityContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HttpConstraint;
+import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -56,9 +57,9 @@ import javax.servlet.http.HttpServletResponse;
  * 
  *
  */
-@DeclareRoles({ "foo", "bar", "kaz" })
-@WebServlet("/servlet")
-public class Servlet extends HttpServlet {
+@WebServlet("/protectedServlet")
+@ServletSecurity(@HttpConstraint(rolesAllowed = "foo"))
+public class ProtectedServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
@@ -92,7 +93,7 @@ public class Servlet extends HttpServlet {
         response.getWriter().write("context user has role \"bar\": " + securityContext.isCallerInRole("bar") + "\n");
         response.getWriter().write("context user has role \"kaz\": " + securityContext.isCallerInRole("kaz") + "\n");
         
-        response.getWriter().write("has access " + securityContext.hasAccessToWebResource("/protectedServlet"));
+        response.getWriter().write("has access " + securityContext.hasAccessToWebResource("/servlets"));
         
         
     }
