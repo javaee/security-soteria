@@ -88,6 +88,10 @@ public class Servlet extends HttpServlet {
         
         response.getWriter().write("context username: " + contextName + "\n");
         
+        response.getWriter().write("context user has role \"foo\": " + securityContext.isCallerInRole("foo") + "\n");
+        response.getWriter().write("context user has role \"bar\": " + securityContext.isCallerInRole("bar") + "\n");
+        response.getWriter().write("context user has role \"kaz\": " + securityContext.isCallerInRole("kaz") + "\n");
+        
         
     }
 

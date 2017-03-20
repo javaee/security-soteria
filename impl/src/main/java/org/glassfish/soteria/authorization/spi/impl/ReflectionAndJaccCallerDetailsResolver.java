@@ -27,8 +27,7 @@ public class ReflectionAndJaccCallerDetailsResolver implements CallerDetailsReso
     
     @Override
     public boolean isCallerInRole(String role) {
-        // TODO Auto-generated method stub
-        return false;
+       return JACC.isCallerInRole(role);
     }
     
 }
