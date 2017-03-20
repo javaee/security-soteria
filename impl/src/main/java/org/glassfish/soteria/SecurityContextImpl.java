@@ -46,6 +46,7 @@ import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastStatus;
 import java.io.Serializable;
 import java.security.Principal;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.security.SecurityContext;
 import javax.security.auth.message.AuthStatus;
@@ -53,6 +54,8 @@ import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.soteria.authorization.spi.CallerDetailsResolver;
+import org.glassfish.soteria.authorization.spi.impl.ReflectionAndJaccCallerDetailsResolver;
 import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
 public class SecurityContextImpl implements SecurityContext, Serializable {
@@ -61,6 +64,13 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     
     @Inject // Injection of HttpServletRequest doesn't work for TomEE
     private HttpServletRequest request;
+    
+    private CallerDetailsResolver callerDetailsResolver;
+    
+    @PostConstruct
+    public void init() {
+       callerDetailsResolver = new ReflectionAndJaccCallerDetailsResolver();
+    }
     
     @Override
     public Principal getCallerPrincipal() {
@@ -74,7 +84,7 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
         
         // Needs role mapper?
         
-    	return request.getUserPrincipal();
+    	return callerDetailsResolver.getCallerPrincipal();
     }
     
     @Override

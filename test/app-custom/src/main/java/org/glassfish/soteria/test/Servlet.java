@@ -42,6 +42,8 @@ package org.glassfish.soteria.test;
 import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
+import javax.inject.Inject;
+import javax.security.SecurityContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -59,6 +61,9 @@ import javax.servlet.http.HttpServletResponse;
 public class Servlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    
+    @Inject
+    private SecurityContext securityContext;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -75,6 +80,15 @@ public class Servlet extends HttpServlet {
         response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
         response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
         response.getWriter().write("web user has role \"kaz\": " + request.isUserInRole("kaz") + "\n");
+        
+        String contextName = null;
+        if (securityContext.getCallerPrincipal() != null) {
+            contextName = securityContext.getCallerPrincipal().getName();
+        }
+        
+        response.getWriter().write("context username: " + contextName + "\n");
+        
+        
     }
 
 }
