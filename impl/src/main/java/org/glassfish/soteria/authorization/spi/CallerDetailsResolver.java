@@ -40,10 +40,12 @@
 package org.glassfish.soteria.authorization.spi;
 
 import java.security.Principal;
+import java.util.List;
 
 public interface CallerDetailsResolver {
     
     Principal getCallerPrincipal();
     boolean isCallerInRole(String role);
+    List<String> getAllDeclaredCallerRoles();
 
 }

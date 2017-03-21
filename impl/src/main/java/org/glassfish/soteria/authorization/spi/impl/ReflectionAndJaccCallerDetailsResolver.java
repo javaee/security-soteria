@@ -43,6 +43,7 @@ import static java.util.Collections.emptyList;
 import static javax.security.jacc.PolicyContext.getContextID;
 
 import java.security.Principal;
+import java.util.List;
 
 import javax.security.auth.Subject;
 
@@ -59,14 +60,19 @@ public class ReflectionAndJaccCallerDetailsResolver implements CallerDetailsReso
             return null;
         }
         
-        SubjectParser roleMapper = new SubjectParser(getContextID(), emptyList());
+        SubjectParser subjectParser = new SubjectParser(getContextID(), emptyList());
         
-        return roleMapper.getCallerPrincipalFromPrincipals(subject.getPrincipals());
+        return subjectParser.getCallerPrincipalFromPrincipals(subject.getPrincipals());
     }
     
     @Override
     public boolean isCallerInRole(String role) {
        return JACC.isCallerInRole(role);
+    }
+    
+    @Override
+    public List<String> getAllDeclaredCallerRoles() {
+        return JACC.getAllDeclaredCallerRoles();
     }
     
 }

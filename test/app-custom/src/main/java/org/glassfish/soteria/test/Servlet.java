@@ -92,9 +92,9 @@ public class Servlet extends HttpServlet {
         response.getWriter().write("context user has role \"bar\": " + securityContext.isCallerInRole("bar") + "\n");
         response.getWriter().write("context user has role \"kaz\": " + securityContext.isCallerInRole("kaz") + "\n");
         
-        response.getWriter().write("has access " + securityContext.hasAccessToWebResource("/protectedServlet"));
+        response.getWriter().write("has access " + securityContext.hasAccessToWebResource("/protectedServlet") + "\n");
         
-        
+        response.getWriter().write("All declared roles of user " + securityContext.getAllDeclaredCallerRoles() + "\n");
     }
 
 }

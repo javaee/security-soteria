@@ -39,11 +39,19 @@
  */
 package org.glassfish.soteria.authorization;
 
+import static java.security.Policy.getPolicy;
+import static java.util.Collections.list;
+
 import java.security.CodeSource;
 import java.security.Permission;
-import java.security.Policy;
+import java.security.PermissionCollection;
 import java.security.Principal;
 import java.security.ProtectionDomain;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
@@ -54,12 +62,7 @@ import javax.security.jacc.WebRoleRefPermission;
 public class JACC {
 
     public static Subject getSubject() {
-        try {
-            return (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-        } catch (PolicyContextException e) {
-            throw new IllegalStateException(e);
-        }
-
+        return getFromContext("javax.security.auth.Subject.container");
     }
     
     public static boolean isCallerInRole(String role) {
@@ -70,14 +73,63 @@ public class JACC {
         return hasPermission(getSubject(), new WebResourcePermission(resource, methods));
     }
     
-    public static boolean hasPermission(Subject subject, Permission permission) {
-        return Policy.getPolicy().implies(
-            new ProtectionDomain(
-                new CodeSource(null, (java.security.cert.Certificate[]) null),
-                null, null, 
-                subject.getPrincipals().toArray(new Principal[subject.getPrincipals().size()])
-            ),
-            permission);
+    public static List<String> getAllDeclaredCallerRoles() {
+        // Get the permissions associated with the Subject we obtained
+        PermissionCollection permissionCollection = getPermissionCollection(getSubject());
+
+        // Resolve any potentially unresolved permissions
+        permissionCollection.implies(new WebRoleRefPermission("", "nothing"));
+
+        // Filter just the roles from all the permissions, which may include things like 
+        // java.net.SocketPermission, java.io.FilePermission, and obtain the actual role names.
+        Set<String> roles = filterRoles(permissionCollection);
+        
+        return new ArrayList<String>(roles);
     }
+    
+    public static boolean hasPermission(Subject subject, Permission permission) {
+        return getPolicy().implies(fromSubject(subject), permission);
+    }
+    
+    public static PermissionCollection getPermissionCollection(Subject subject) {
+        return getPolicy().getPermissions(fromSubject(subject));
+    }
+
+    public static Set<String> filterRoles(PermissionCollection permissionCollection) {
+        Set<String> roles = new HashSet<>();
+        for (Permission permission : list(permissionCollection.elements())) {
+            if (permission instanceof WebRoleRefPermission) {
+                String role = permission.getActions();
+
+                // Note that the WebRoleRefPermission is given for every Servlet in the application, even when
+                // no role refs are used anywhere. This will also include Servlets like the default servlet and the
+                // implicit JSP servlet. So if there are 2 application roles, and 3 application servlets, then 
+                // at least 6 WebRoleRefPermission elements will be present in the collection.
+                if (!roles.contains(role) && isCallerInRole(role)) {
+                    roles.add(role);
+                }
+            }
+        }
+
+        return roles;
+    }
+    
+    public static ProtectionDomain fromSubject(Subject subject) {
+        return new ProtectionDomain(
+            new CodeSource(null, (Certificate[]) null),
+            null, null,
+            subject.getPrincipals().toArray(new Principal[subject.getPrincipals().size()])
+        ); 
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T getFromContext(String contextName) {
+        try {
+            return (T) PolicyContext.getContext(contextName);
+        } catch (PolicyContextException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+ 
     
 }
