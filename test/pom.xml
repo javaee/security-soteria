@@ -25,6 +25,8 @@
 
     <modules>
         <module>common</module>
+        
+        <module>app-securitycontext</module>
     
         <!-- app-[identity-store] -->
         <module>app-mem</module>
