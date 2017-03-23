@@ -49,16 +49,20 @@ public final class Assert {
     private static final Logger logger = Logger.getLogger(Assert.class.getName());
     
     public static void assertDefaultAuthenticated(String response) {
+        assertAuthenticated("web", response);
+    }
+    
+    public static void assertAuthenticated(String userType, String response) {
         try {
             assertTrue(
                 "Should be authenticated as user reza but was not",
-                response.contains("web username: reza"));
+                response.contains(userType + " username: reza"));
             assertTrue(
                 "Authenticated user should have role \"foo\", but did not",
-                response.contains("web user has role \"foo\": true"));
+                response.contains(userType + " user has role \"foo\": true"));
             assertTrue(
                 "Authenticated user should have role \"bar\", but did not",
-                response.contains("web user has role \"bar\": true"));
+                response.contains(userType + " user has role \"bar\": true"));
         } catch (AssertionError e) {
             logger.severe("Assertion failed on input:" + response);
         }
@@ -75,6 +79,22 @@ public final class Assert {
             assertFalse(
                 "Authenticated user should not have role \"bar\", but did",
                 response.contains("web user has role \"bar\": true"));
+        } catch (AssertionError e) {
+            logger.severe("Assertion failed on input:" + response);
+        }
+     }
+    
+    public static void assertNotAuthenticated(String userType, String response) {
+        try {
+            assertFalse(
+                "Should not be authenticated as user reza but was",
+                response.contains(userType + " username: reza"));
+            assertFalse(
+                "Authenticated user should not have role \"foo\", but did",
+                response.contains(userType + " user has role \"foo\": true"));
+            assertFalse(
+                "Authenticated user should not have role \"bar\", but did",
+                response.contains(userType + " user has role \"bar\": true"));
         } catch (AssertionError e) {
             logger.severe("Assertion failed on input:" + response);
         }
