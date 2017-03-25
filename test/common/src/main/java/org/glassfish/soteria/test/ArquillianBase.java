@@ -116,16 +116,26 @@ public class ArquillianBase {
     }
     
     protected String readFromServer(String path) {
-    	response = responseFromServer(path)
-			        .getContentAsString();
+        response = "";
+        WebResponse localResponse = responseFromServer(path);
+        if (localResponse != null) {
+            response = localResponse.getContentAsString();
+        }
+        
     	return response;
     }
     
     protected WebResponse responseFromServer(String path) {
-        WebResponse webResponse =  pageFromServer(path)
-    			                        .getWebResponse();
         
-        response = webResponse.getContentAsString();
+        WebResponse webResponse = null;
+        
+        Page page = pageFromServer(path);
+        if (page != null) {
+            webResponse = pageFromServer(path).getWebResponse();
+            if (webResponse != null) {
+                response = webResponse.getContentAsString();
+            }
+        }
         
         return webResponse;
     }
@@ -137,10 +147,16 @@ public class ArquillianBase {
     	}
     	
         try {
-            P page = webClient
-                    .getPage(base + path);
+            response = "";
             
-            response = page.getWebResponse().getContentAsString();
+            P page = webClient.getPage(base + path);
+            
+            if (page != null) {
+                WebResponse localResponse = page.getWebResponse();
+                if (localResponse != null) {
+                    response = localResponse.getContentAsString();
+                }
+            }
             
             return page;
             
