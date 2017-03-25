@@ -37,6 +37,10 @@ This sub-repo contains working applications that demonstrate various aspects of 
   * Test URL: http://localhost:8080/app-multiple-store/servlet?name=reza&password=secret1 (first store)
   * Test URL: http://localhost:8080/app-multiple-store/servlet?name=reza&password=secret2 (second store)
   * Test URL: http://localhost:8080/app-multiple-store-backup/servlet?name=alex&password=verysecret (second store)
+* **app-jaxrs** - As app-custom, but uses a JAX-RS resource instead of a servlet and the mechanism doesn't delegate to an identity store. 
+  * Test URL: http://localhost:8080/app-jaxrs/rest/resource/callerName?name=reza&password=secret1 (public resource, name)
+  * Test URL: http://localhost:8080/app-jaxrs/rest/resource/hasRoleFoo?name=reza&password=secret1 (public resource, role)
+  * Test URL: http://localhost:8080/app-jaxrs/rest/protectedResource/sayHi?name=reza&password=secret1 (protected resource)
 
 ## Running the samples in Docker
 
