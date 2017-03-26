@@ -21,7 +21,7 @@ Milestone versions are uploaded to [BinTray](https://bintray.com/javaee-security
         <name>bintray</name>
         <url>http://dl.bintray.com/javaee-security-spec/maven</url>
     </repository>
-And then, add Soteria and JSR 375 dependencies:
+And then, add Soteria dependency:
 
     <dependency>
         <groupId>org.glassfish.soteria</groupId>
