@@ -12,6 +12,23 @@ From java.net the API will be mirrored back to https://github.com/javaee-securit
 
 Currently Soteria is working towards an EDR1 release.
 
+How to try it
+-------------
+Milestone versions are uploaded to [BinTray](https://bintray.com/javaee-security-spec/maven/org.glassfish.soteria%3Asoteria). In order to use it, add the following repository to your pom.xml
+
+    <repository>
+        <id>bintray-javaee-security-spec-maven</id>
+        <name>bintray</name>
+        <url>http://dl.bintray.com/javaee-security-spec/maven</url>
+    </repository>
+And then, add Soteria and JSR 375 dependencies:
+
+    <dependency>
+        <groupId>org.glassfish.soteria</groupId>
+        <artifactId>soteria</artifactId>
+        <version>1.0-m03</version> <!-- Check for the latest available milestone! -->
+    </dependency>
+
 Building
 --------
 
