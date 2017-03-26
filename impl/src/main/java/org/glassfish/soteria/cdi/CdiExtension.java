@@ -220,15 +220,15 @@ public class CdiExtension implements Extension {
 
         afterBeanDiscovery.addBean(
                 new CdiProducer<IdentityStoreHandler>()
-                .scope(ApplicationScoped.class)
-                .beanClass(IdentityStoreHandler.class)
-                .types(Object.class, IdentityStoreHandler.class)
-                .addToId(IdentityStoreHandler.class)
-                .create(e -> {
-                    DefaultIdentityStoreHandler defaultIdentityStoreHandler = new DefaultIdentityStoreHandler();
-                    defaultIdentityStoreHandler.init();
-                    return defaultIdentityStoreHandler;
-                }));
+                        .scope(ApplicationScoped.class)
+                        .beanClass(IdentityStoreHandler.class)
+                        .types(Object.class, IdentityStoreHandler.class)
+                        .addToId(IdentityStoreHandler.class)
+                        .create(e -> {
+                            DefaultIdentityStoreHandler defaultIdentityStoreHandler = new DefaultIdentityStoreHandler();
+                            defaultIdentityStoreHandler.init();
+                            return defaultIdentityStoreHandler;
+                        }));
     }
 
     public boolean isHttpAuthenticationMechanismFound() {
