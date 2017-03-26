@@ -103,8 +103,8 @@ public class CdiExtension implements Extension {
         Class<?> beanClass = event.getBean().getBeanClass();
         Optional<EmbeddedIdentityStoreDefinition> optionalEmbeddedStore = getAnnotation(beanManager, event.getAnnotated(), EmbeddedIdentityStoreDefinition.class);
         if (optionalEmbeddedStore.isPresent()) {
-            LOGGER.log(Level.INFO, "Activating {0} identity store from {1} class", new Object[]{EmbeddedIdentityStore.class.getName(), event.getBean().getBeanClass()});
             logActivatedIdentityStore(EmbeddedIdentityStore.class, beanClass);
+
             EmbeddedIdentityStoreDefinition storeDefinition = optionalEmbeddedStore.get();
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
@@ -118,6 +118,7 @@ public class CdiExtension implements Extension {
         Optional<DataBaseIdentityStoreDefinition> optionalDBStore = getAnnotation(beanManager, event.getAnnotated(), DataBaseIdentityStoreDefinition.class);
         if (optionalDBStore.isPresent()) {
             logActivatedIdentityStore(DataBaseIdentityStoreDefinition.class, beanClass);
+
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
@@ -130,6 +131,7 @@ public class CdiExtension implements Extension {
         Optional<LdapIdentityStoreDefinition> optionalLdapStore = getAnnotation(beanManager, event.getAnnotated(), LdapIdentityStoreDefinition.class);
         if (optionalLdapStore.isPresent()) {
             logActivatedIdentityStore(LdapIdentityStoreDefinition.class, beanClass);
+
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
@@ -142,6 +144,7 @@ public class CdiExtension implements Extension {
         Optional<BasicAuthenticationMechanismDefinition> optionalBasicMechanism = getAnnotation(beanManager, event.getAnnotated(), BasicAuthenticationMechanismDefinition.class);
         if (optionalBasicMechanism.isPresent()) {
             logActivatedAuthenticationMechanism(BasicAuthenticationMechanismDefinition.class, beanClass);
+
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(BasicAuthenticationMechanism.class)
@@ -153,6 +156,7 @@ public class CdiExtension implements Extension {
         Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
         if (optionalFormMechanism.isPresent()) {
             logActivatedAuthenticationMechanism(FormAuthenticationMechanismDefinition.class, beanClass);
+
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
@@ -173,6 +177,7 @@ public class CdiExtension implements Extension {
         Optional<CustomFormAuthenticationMechanismDefinition> optionalCustomFormMechanism = getAnnotation(beanManager, event.getAnnotated(), CustomFormAuthenticationMechanismDefinition.class);
         if (optionalCustomFormMechanism.isPresent()) {
             logActivatedAuthenticationMechanism(CustomFormAuthenticationMechanismDefinition.class, beanClass);
+
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
