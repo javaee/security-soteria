@@ -200,7 +200,7 @@ public class CdiExtension implements Extension {
             httpAuthenticationMechanismFound = true;
         }
 
-        checkForWrongUseOfInterceptors(event.getAnnotated(), event.getBean().getBeanClass());
+        checkForWrongUseOfInterceptors(event.getAnnotated(), beanClass);
     }
 
     public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
