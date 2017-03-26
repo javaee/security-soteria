@@ -145,7 +145,6 @@ public class LdapIdentityStore implements IdentityStore {
             closeContext(ldapContext);
 
             return new CredentialValidationResult(
-                    VALID,
                     new CallerPrincipal(usernamePasswordCredential.getCaller()),
                     groups
             );
@@ -194,7 +193,6 @@ public class LdapIdentityStore implements IdentityStore {
         closeContext(ldapContext);
 
         return new CredentialValidationResult(
-                VALID,
                 new CallerPrincipal(usernamePasswordCredential.getCaller()),
                 groups
         );

@@ -226,7 +226,6 @@ public class LoginToContinueInterceptor implements Serializable {
                     // URL. This is needed since the underlying JASPIC runtime does not
                     // remember the authenticated identity if we redirect.
                     saveAuthentication(request, new CredentialValidationResult(
-                            VALID,
                             httpMessageContext.getCallerPrincipal(),
                             httpMessageContext.getGroups()));
                     
