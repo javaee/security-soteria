@@ -39,6 +39,7 @@
  */
 package org.glassfish.soteria.cdi;
 
+import java.lang.annotation.Annotation;
 import org.glassfish.soteria.SecurityContextImpl;
 import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
@@ -51,22 +52,33 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
 import javax.security.authentication.mechanism.http.annotation.BasicAuthenticationMechanismDefinition;
 import javax.security.authentication.mechanism.http.annotation.CustomFormAuthenticationMechanismDefinition;
 import javax.security.authentication.mechanism.http.annotation.FormAuthenticationMechanismDefinition;
+import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
+import javax.security.authentication.mechanism.http.annotation.RememberMe;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
 import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
+import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
+import javax.security.authentication.mechanism.http.annotation.RememberMe;
 
 import static org.glassfish.soteria.cdi.CdiUtils.addAnnotatedTypes;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 public class CdiExtension implements Extension {
+
+    private static final Logger LOGGER = Logger.getLogger(CdiExtension.class.getName());
 
     // Note: for now use the highlander rule: "there can be only one" for
     // authentication mechanisms.
@@ -91,8 +103,11 @@ public class CdiExtension implements Extension {
 
         ProcessBean<T> event = eventIn; // JDK8 u60 workaround
 
+        Class<?> beanClass = event.getBean().getBeanClass();
         Optional<EmbeddedIdentityStoreDefinition> optionalEmbeddedStore = getAnnotation(beanManager, event.getAnnotated(), EmbeddedIdentityStoreDefinition.class);
         if (optionalEmbeddedStore.isPresent()) {
+            logActivatedIdentityStore(EmbeddedIdentityStore.class, beanClass);
+
             EmbeddedIdentityStoreDefinition storeDefinition = optionalEmbeddedStore.get();
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
@@ -105,6 +120,8 @@ public class CdiExtension implements Extension {
 
         Optional<DataBaseIdentityStoreDefinition> optionalDBStore = getAnnotation(beanManager, event.getAnnotated(), DataBaseIdentityStoreDefinition.class);
         if (optionalDBStore.isPresent()) {
+            logActivatedIdentityStore(DataBaseIdentityStoreDefinition.class, beanClass);
+
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
@@ -116,6 +133,8 @@ public class CdiExtension implements Extension {
 
         Optional<LdapIdentityStoreDefinition> optionalLdapStore = getAnnotation(beanManager, event.getAnnotated(), LdapIdentityStoreDefinition.class);
         if (optionalLdapStore.isPresent()) {
+            logActivatedIdentityStore(LdapIdentityStoreDefinition.class, beanClass);
+
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
@@ -127,6 +146,8 @@ public class CdiExtension implements Extension {
 
         Optional<BasicAuthenticationMechanismDefinition> optionalBasicMechanism = getAnnotation(beanManager, event.getAnnotated(), BasicAuthenticationMechanismDefinition.class);
         if (optionalBasicMechanism.isPresent()) {
+            logActivatedAuthenticationMechanism(BasicAuthenticationMechanismDefinition.class, beanClass);
+
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(BasicAuthenticationMechanism.class)
@@ -137,6 +158,8 @@ public class CdiExtension implements Extension {
 
         Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
         if (optionalFormMechanism.isPresent()) {
+            logActivatedAuthenticationMechanism(FormAuthenticationMechanismDefinition.class, beanClass);
+
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
@@ -156,6 +179,8 @@ public class CdiExtension implements Extension {
 
         Optional<CustomFormAuthenticationMechanismDefinition> optionalCustomFormMechanism = getAnnotation(beanManager, event.getAnnotated(), CustomFormAuthenticationMechanismDefinition.class);
         if (optionalCustomFormMechanism.isPresent()) {
+            logActivatedAuthenticationMechanism(CustomFormAuthenticationMechanismDefinition.class, beanClass);
+
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
@@ -178,6 +203,7 @@ public class CdiExtension implements Extension {
             httpAuthenticationMechanismFound = true;
         }
 
+        checkForWrongUseOfInterceptors(event.getAnnotated(), beanClass);
     }
 
     public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
@@ -209,4 +235,27 @@ public class CdiExtension implements Extension {
         return httpAuthenticationMechanismFound;
     }
 
+    private void logActivatedIdentityStore(Class<?> identityStoreClass, Class<?> beanClass) {
+        LOGGER.log(Level.INFO, "Activating {0} identity store from {1} class", new Object[]{identityStoreClass.getName(), beanClass.getName()});
+    }
+
+    private void logActivatedAuthenticationMechanism(Class<?> authenticationMechanismClass, Class<?> beanClass) {
+        LOGGER.log(Level.INFO, "Activating {0} authentication mechanism from {1} class", new Object[]{authenticationMechanismClass.getName(), beanClass.getName()});
+    }
+
+    private void checkForWrongUseOfInterceptors(Annotated annotated, Class<?> beanClass) {
+        List<Class<? extends Annotation>> annotations = Arrays.asList(AutoApplySession.class, LoginToContinue.class, RememberMe.class);
+
+        for (Class<? extends Annotation> annotation : annotations) {
+            // Check if the class is not an interceptor, and is not a valid class to be intercepted.
+            if (annotated.isAnnotationPresent(annotation)
+                    && !annotated.isAnnotationPresent(javax.interceptor.Interceptor.class)
+                    && !HttpAuthenticationMechanism.class.isAssignableFrom(beanClass)) {
+                LOGGER.log(Level.WARNING, "Only classes implementing {0} may be annotated with {1}. {2} is annotated, but the interceptor won't take effect on it.", new Object[]{
+                    HttpAuthenticationMechanism.class.getName(),
+                    annotation.getName(),
+                    beanClass.getName()});
+            }
+        }
+    }
 }
