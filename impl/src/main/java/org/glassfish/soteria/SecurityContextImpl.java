@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -44,7 +44,10 @@ import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastStatus;
 
 import java.io.Serializable;
+import java.security.Principal;
+import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.security.SecurityContext;
 import javax.security.auth.message.AuthStatus;
@@ -52,14 +55,52 @@ import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.soteria.authorization.spi.CallerDetailsResolver;
+import org.glassfish.soteria.authorization.spi.ResourceAccessResolver;
+import org.glassfish.soteria.authorization.spi.impl.JaccResourceAccessResolver;
+import org.glassfish.soteria.authorization.spi.impl.ReflectionAndJaccCallerDetailsResolver;
 import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
 public class SecurityContextImpl implements SecurityContext, Serializable {
     
     private static final long serialVersionUID = 1L;
     
-    @Inject // Injection of HttpServletRequest doesn't work for TomEE
+    @Inject // Due to a bug, Injection of HttpServletRequest doesn't work for TomEE 7.0.2
     private HttpServletRequest request;
+    
+    private CallerDetailsResolver callerDetailsResolver;
+    private ResourceAccessResolver resourceAccessResolver;
+    
+    @PostConstruct
+    public void init() {
+       callerDetailsResolver = new ReflectionAndJaccCallerDetailsResolver();
+       resourceAccessResolver = new JaccResourceAccessResolver();
+    }
+    
+    @Override
+    public Principal getCallerPrincipal() {
+    	return callerDetailsResolver.getCallerPrincipal();
+    }
+    
+    @Override
+    public boolean isCallerInRole(String role) {
+    	return callerDetailsResolver.isCallerInRole(role);
+    }
+    
+    @Override
+    public List<String> getAllDeclaredCallerRoles() {
+        return callerDetailsResolver.getAllDeclaredCallerRoles();
+    }
+    
+    @Override
+    public boolean hasAccessToWebResource(String resource) {
+        return resourceAccessResolver.hasAccessToWebResource(resource, "GET");
+    }
+    
+    @Override
+    public boolean hasAccessToWebResource(String resource, String... methods) {
+        return resourceAccessResolver.hasAccessToWebResource(resource, methods);
+    }
     
     @Override
     public AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {

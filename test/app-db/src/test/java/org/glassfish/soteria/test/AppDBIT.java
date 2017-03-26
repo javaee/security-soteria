@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -39,14 +39,19 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.lang.System.getProperty;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assume.assumeFalse;
 
-import org.glassfish.soteria.test.ArquillianBase;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,11 +59,22 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class AppDBIT extends ArquillianBase {
     
+    // Disabled for Liberty since as of version 16.0.0.3 / 2016.9 it doesn't
+    // support embedded datasources on which this test depends
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
+    	if ("liberty".equals(getProperty("arquillian.server"))) {
+    		return ShrinkWrap.create(WebArchive.class, "test.war")
+    						 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    	}
         return mavenWar();
     }
 
+    @Before
+    public void checkEnabled() {
+    	assumeFalse("liberty".equals(getProperty("arquillian.server")));
+    }
+    
     @Test
     public void testAuthenticated() {
         assertDefaultAuthenticated(

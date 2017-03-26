@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -41,31 +41,38 @@ package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.annotation.Credentials;
+import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 
 public class EmbeddedIdentityStore implements IdentityStore {
 
     private Map<String, Credentials> callerToCredentials;
+    private EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition;
+    private ValidationType validationType;
 
-    public EmbeddedIdentityStore(Credentials[] credentials) {
-        callerToCredentials = stream(credentials).collect(toMap(
-            e -> e.callerName(), 
-            e -> e)
+    public EmbeddedIdentityStore(EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition) {
+
+        this.embeddedIdentityStoreDefinition = embeddedIdentityStoreDefinition;
+        callerToCredentials = stream(embeddedIdentityStoreDefinition.value()).collect(toMap(
+                e -> e.callerName(),
+                e -> e)
         );
+        determineValidationType();
     }
-
+    
     @Override
     public CredentialValidationResult validate(Credential credential) {
         if (credential instanceof UsernamePasswordCredential) {
@@ -75,12 +82,22 @@ public class EmbeddedIdentityStore implements IdentityStore {
         return NOT_VALIDATED_RESULT;
     }
 
+    private void determineValidationType() {
+        validationType = ValidationType.BOTH;
+        if (embeddedIdentityStoreDefinition.authenticateOnly()) {
+            validationType = ValidationType.AUTHENTICATION;
+        } else {
+            if (embeddedIdentityStoreDefinition.authorizeOnly()) {
+                validationType = ValidationType.AUTHORIZATION;
+            }
+        }
+    }
+    
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
         Credentials credentials = callerToCredentials.get(usernamePasswordCredential.getCaller());
 
         if (credentials != null && usernamePasswordCredential.getPassword().compareTo(credentials.password())) {
             return new CredentialValidationResult(
-                VALID, 
                 new CallerPrincipal(credentials.callerName()), 
                 asList(credentials.groups())
             );
@@ -88,5 +105,20 @@ public class EmbeddedIdentityStore implements IdentityStore {
 
         return INVALID_RESULT;
     }
+    
+    @Override
+    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+        
+        Credentials credentials = callerToCredentials.get(callerPrincipal.getName());
+        
+        return credentials != null? asList(credentials.groups()) : emptyList();
+    }
 
+    public int priority() {
+        return embeddedIdentityStoreDefinition.priority();
+    }
+
+    public ValidationType validationType() {
+        return validationType;
+    }
 }

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -9,33 +10,32 @@
 
 	<groupId>org.glassfish.soteria</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.0-m02-SNAPSHOT</version>
+	<version>1.0-m03-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-    <inceptionYear>2015</inceptionYear>
-    
-    <licenses>
-        <license>
-            <name>
+	<inceptionYear>2015</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>
                 Dual license consisting of the CDDL v1.1 and GPL v2
             </name>
-            <url>https://glassfish.java.net/public/CDDL+GPL_1_1.html</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+			<url>https://glassfish.java.net/public/CDDL+GPL_1_1.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<modules>
-        <module>api</module>
-        <module>impl</module>
-        <module>test</module>
+		<module>impl</module>
+		<module>test</module>
 	</modules>
-       
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 
 		<api_package>javax.security</api_package>
 		<impl_namespace>org.glassfish.soteria</impl_namespace>
@@ -43,7 +43,7 @@
 		<spec_version>1.0</spec_version>
 		<spec_impl_version>1.0-SNAPSHOT</spec_impl_version>
 		<impl_version>1.0-SNAPSHOT</impl_version>
-    </properties>
+	</properties>
 
 	<distributionManagement>
 		<repository>
@@ -51,32 +51,21 @@
 			<name>javaee-security-spec-maven</name>
 			<url>https://api.bintray.com/maven/javaee-security-spec/maven/org.glassfish.soteria:parent/;publish=1</url>
 		</repository>
-         <snapshotRepository>
-            <id>bintray-snapshot</id>
-            <name>oss-jfrog-artifactory-snapshot</name>
-            <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-        </snapshotRepository>
+		<snapshotRepository>
+			<id>bintray-snapshot</id>
+			<name>oss-jfrog-artifactory-snapshot</name>
+			<url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+		</snapshotRepository>
 	</distributionManagement>
-    
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>bintray-snapshot</id>
-            <name>libs-snapshot</name>
-            <url>http://oss.jfrog.org/artifactory/libs-snapshot</url>
-        </repository>
-    </repositories>
 
-    <dependencies>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
+	<dependencies>
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
 			<scope>provided</scope>
-        </dependency>
-    </dependencies>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<pluginManagement>
@@ -86,11 +75,16 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.18.1</version>
 				</plugin>
-
+				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<version>3.2.0</version>
+					<extensions>true</extensions>
+				</plugin>
 				<plugin>
 					<groupId>com.mycila</groupId>
 					<artifactId>license-maven-plugin</artifactId>
-					<version>2.11</version>
+					<version>3.0</version>
 					<executions>
 						<execution>
 							<goals>
@@ -99,21 +93,24 @@
 						</execution>
 					</executions>
 					<configuration>
-						<header>../../../src/license/header.txt</header>
+						<header>src/license/header.txt</header>
 						<properties>
 							<owner>Oracle</owner>
-							<currentYear>2015</currentYear>
+							<currentYear>2016</currentYear>
 						</properties>
 						<excludes>
 							<exclude>**/*.adoc</exclude>
+							<exclude>**/*.launch</exclude>
+							<exclude>**/*.sh</exclude>
 							<exclude>**/pom.xml</exclude>
 							<exclude>**/README</exclude>
 							<exclude>**/settings.xml</exclude>
+							<exclude>src/license/**</exclude>
 							<exclude>src/test/resources/**</exclude>
 							<exclude>src/main/resources/**</exclude>
 						</excludes>
 						<headerDefinitions>
-							<headerDefinition>../../../src/license/headers.xml</headerDefinition>
+							<headerDefinition>src/license/headers.xml</headerDefinition>
 						</headerDefinitions>
 						<mapping>
 							<java>JAVA_STYLE</java>
@@ -125,45 +122,47 @@
 
 		<plugins>
 
-            <!-- Configure the jar with the sources (or rather, convince Maven that we want sources at all) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<!-- Configure the jar with the sources (or rather, convince Maven that 
+				we want sources at all) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-            <!-- Configure the jar with the javadoc (or rather, convince Maven that we want javadoc at all) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <configuration>
-                    <javadocVersion>1.8</javadocVersion>
-                    <notimestamp>true</notimestamp>
-                    <splitindex>true</splitindex>
-                    <doctitle>Soteria API documentation</doctitle>
-                    <links>
-                        <link>https://docs.oracle.com/javaee/7/api/</link>
-                    </links>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<!-- Configure the jar with the javadoc (or rather, convince Maven that 
+				we want javadoc at all) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<configuration>
+					<javadocVersion>1.8</javadocVersion>
+					<notimestamp>true</notimestamp>
+					<splitindex>true</splitindex>
+					<doctitle>Soteria API documentation</doctitle>
+					<links>
+						<link>https://docs.oracle.com/javaee/7/api/</link>
+					</links>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
-        
+
 	</build>
 </project>

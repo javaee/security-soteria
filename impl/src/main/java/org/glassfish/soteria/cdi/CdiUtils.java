@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -40,13 +40,19 @@
 package org.glassfish.soteria.cdi;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.empty;
+import static org.glassfish.soteria.Utils.isEmpty;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
@@ -151,6 +157,46 @@ public class CdiUtils {
         return beanReference;
     }
     
+    @SuppressWarnings("unchecked")
+    private static <T> T getContextualReference(Class<T> type, BeanManager beanManager, Set<Bean<?>> beans) {
+        
+        Object beanReference = null;
+        
+        Bean<?> bean = beanManager.resolve(beans);
+        if (bean != null) {
+            beanReference = beanManager.getReference(bean, type, beanManager.createCreationalContext(bean));
+        }
+        
+        return (T) beanReference;
+    }
+
+    public static <T> List<T> getBeanReferencesByType(Class<T> type, boolean optional) {
+        BeanManager beanManager =  jndiLookup("java:comp/BeanManager");
+
+        Set<Bean<?>> beans = getBeanDefinitions(type, optional, beanManager);
+
+        List<T> result = new ArrayList<>(beans.size());
+
+        for (Bean<?> bean : beans) {
+            result.add(getContextualReference(type, beanManager, Collections.<Bean<?>>singleton(bean)));
+        }
+
+        return result;
+    }
+
+    private static <T> Set<Bean<?>> getBeanDefinitions(Class<T> type, boolean optional, BeanManager beanManager) {
+        Set<Bean<?>> beans = beanManager.getBeans(type, new AnyAnnotationLiteral());
+        if (!isEmpty(beans)) {
+            return beans;
+        } 
+        
+        if (optional) {
+            return emptySet();
+        } 
+        
+        throw new IllegalStateException("Could not find beans for Type=" + type);
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T jndiLookup(String name) {
         InitialContext context = null;

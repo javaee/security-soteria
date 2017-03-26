@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -43,14 +43,13 @@ import static org.glassfish.soteria.Utils.notNull;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
 import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
-import javax.security.identitystore.IdentityStore;
+import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.credential.Password;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
@@ -75,11 +74,11 @@ public class FormAuthenticationMechanism implements HttpAuthenticationMechanism,
 	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 		
 	    if (isValidFormPostback(request)) {
-	        
-	        IdentityStore identityStore = CDI.current().select(IdentityStore.class).get();
+
+            IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
 	        
             return httpMessageContext.notifyContainerAboutLogin(
-                identityStore.validate(
+                    identityStoreHandler.validate(
                     new UsernamePasswordCredential(
                         request.getParameter("j_username"), 
                         new Password(request.getParameter("j_password")))));

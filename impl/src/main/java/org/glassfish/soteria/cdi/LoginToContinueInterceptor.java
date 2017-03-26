@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -226,9 +226,9 @@ public class LoginToContinueInterceptor implements Serializable {
                     // URL. This is needed since the underlying JASPIC runtime does not
                     // remember the authenticated identity if we redirect.
                     saveAuthentication(request, new CredentialValidationResult(
-                        VALID,
-                        httpMessageContext.getCallerPrincipal(),
-                        httpMessageContext.getGroups()));
+                            VALID,
+                            httpMessageContext.getCallerPrincipal(),
+                            httpMessageContext.getGroups()));
                     
                     return httpMessageContext.redirect(savedRequest.getFullRequestURL());
                 } // else return success

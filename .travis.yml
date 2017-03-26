@@ -1,9 +1,17 @@
 language: java
 jdk:
   - oraclejdk8
+
 env:
   - SERVER=payara
   - SERVER=wildfly
+  - SERVER=liberty
+  - SERVER=tomee
 script: mvn clean package -P $SERVER -P bundled
-after_success:
-  - mvn deploy -Dmaven.test.skip -s settings.xml
+
+deploy:
+   provider: script
+   script: mvn deploy -Dmaven.test.skip -s settings.xml
+   on:
+      branch: master
+      condition: "$SERVER = payara"

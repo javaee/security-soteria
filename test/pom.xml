@@ -5,7 +5,7 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-m02-SNAPSHOT</version>
+       <version>1.0-m03-SNAPSHOT</version>
     </parent>
     
     <groupId>org.glassfish.soteria.test</groupId>
@@ -17,14 +17,16 @@
     <properties>
         <!-- Test servers -->
         <glassfish.version>4.1.1</glassfish.version>
-        <payara.version>4.1.1.162</payara.version>
-        <wildfly.version>10.0.0.Final</wildfly.version>
-        <tomee.version>7.0.1</tomee.version>
-        <liberty.version>8.5.5.9</liberty.version>
+        <payara.version>4.1.1.163</payara.version>
+        <wildfly.version>10.1.0.Final</wildfly.version>
+        <tomee.version>7.0.2</tomee.version>
+        <liberty.version>16.0.0.3</liberty.version>
     </properties>
 
     <modules>
         <module>common</module>
+        
+        <module>app-securitycontext</module>
     
         <!-- app-[identity-store] -->
         <module>app-mem</module>
@@ -32,7 +34,9 @@
         <module>app-ldap</module>
         <module>app-ldap2</module>
         <module>app-custom</module>
-        
+        <module>app-multiple-store</module>
+        <module>app-multiple-store-backup</module>
+
         <!-- app-[identity-store]-[authentication mechanism] -->
         <module>app-mem-basic</module>
         <module>app-mem-form</module>
@@ -72,8 +76,14 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
-            <version>2.13</version>
+            <version>2.23</version>
             <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.9.2</version>
         </dependency>
     </dependencies>
     
@@ -107,7 +117,7 @@
         <!-- 
             This profile assumes a target that already has the Soteria libraries. 
             In Java EE 8 that would be the default. E.g. in the case of GlassFish/Payara
-            a soteria-1.0-m02-SNAPSHOT.jar in [gf_home]/glassfish/modules 
+            a soteria-1.0-m03-SNAPSHOT.jar in [gf_home]/glassfish/modules 
           -->
         <profile>
             <id>provided</id>
@@ -115,7 +125,7 @@
                 <dependency>
                    <groupId>javax.security</groupId>
                    <artifactId>javax.security-api</artifactId>
-                   <version>1.0-m02-SNAPSHOT</version>
+                   <version>1.0-m03-SNAPSHOT</version>
                    <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -125,7 +135,7 @@
             This profile assumes a target that does not have the Soteria libraries. 
             E.g. a Java EE 7 server or Servlet container such as Tomcat or Jetty.
             
-            With this profile e.g. soteria-1.0-m02-SNAPSHOT.jar will end up in WEB-INF/lib
+            With this profile e.g. soteria-1.0-m03-SNAPSHOT.jar will end up in WEB-INF/lib
         -->
         <profile>
             <id>bundled</id>
@@ -134,19 +144,19 @@
             </activation>
             <dependencies>
                 <dependency>
-                   <groupId>org.glassfish.soteria</groupId>
+                    <groupId>org.glassfish.soteria</groupId>
                     <artifactId>soteria</artifactId>
-                    <version>1.0-m02-SNAPSHOT</version>
+                    <version>1.0-m03-SNAPSHOT</version>
                 </dependency>
             </dependencies>
         </profile> 
         
-		<profile>
+        <profile>
             <id>wildfly</id>
             
             <activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 
             <dependencies>
                 <dependency>
@@ -186,19 +196,19 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-               			<artifactId>maven-failsafe-plugin</artifactId>
-               			<version>2.19.1</version>
-		                <executions>
-		                    <execution>
-		                        <goals>
-		                            <goal>integration-test</goal>
-		                            <goal>verify</goal>
-		                        </goals>
-		                    </execution>
-		                </executions>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                         <configuration>
                             <systemPropertyVariables>
-                            	<finalName>${project.build.finalName}</finalName>
+                                <finalName>${project.build.finalName}</finalName>
                                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                             </systemPropertyVariables>
                             <environmentVariables>
@@ -210,16 +220,77 @@
             </build>
         </profile>
         
-        
         <profile>
             <id>payara</id>
+			
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-glassfish-managed-3.1</artifactId>
+                    <version>1.0.0.Final</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+			
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>fish.payara.distributions</groupId>
+                                            <artifactId>payara-web</artifactId>
+                                            <version>${payara.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <environmentVariables>
+                                <GLASSFISH_HOME>${project.build.directory}/payara41</GLASSFISH_HOME>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        
+        <profile>
+            <id>payara-embedded</id>
 
             <dependencies>
-               <dependency>
-                   <groupId>fish.payara.extras</groupId>
-                   <artifactId>payara-embedded-all</artifactId>
-                   <version>${payara.version}</version>
-                   <scope>test</scope>
+                <dependency>
+                    <groupId>fish.payara.extras</groupId>
+                    <artifactId>payara-embedded-all</artifactId>
+                    <version>${payara.version}</version>
+                    <scope>test</scope>
                 </dependency>
                 
                 <dependency>
@@ -234,6 +305,19 @@
         
         <profile>
             <id>tomee</id>
+            
+            <repositories>
+                <repository>
+                    <id>apache.snapshots</id> 
+                    <url>https://repository.apache.org/content/repositories/snapshots/</url> 
+                    <releases> 
+                        <enabled>false</enabled> 
+                    </releases> 
+                    <snapshots> 
+                        <enabled>true</enabled> 
+                    </snapshots> 
+                </repository> 
+            </repositories>
             
             <dependencies>
                 <dependency>
@@ -262,7 +346,7 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <argLine>-DTOMEE_LOCK_FILE=${user.dir}/.tomee-ports.lock</argLine>
                             <systemPropertyVariables>
@@ -284,7 +368,166 @@
                 </plugins>
             </build>
         </profile>
-    
+        
+        <profile>
+            <id>liberty</id>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-wlp-managed-8.5</artifactId>
+                    <version>1.0.0.Beta2</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>com.ibm.websphere.appserver.runtime</groupId>
+                                            <artifactId>wlp-javaee7</artifactId>
+                                            <version>${liberty.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.1</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <!--  there has to be a better way... -->
+                                        <echo>Copying server.xml</echo>
+                                        <copy
+                                            file="../common/src/main/resources/server.xml"
+                                            tofile="${project.build.directory}/wlp/templates/servers/defaultServer/server.xml"
+                                            failOnError="false"
+                                        />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <arquillian.server>liberty</arquillian.server>
+                                <arquillian.launch>liberty</arquillian.launch>
+                                <arquillian.liberty.wlpHome>${project.build.directory}/wlp</arquillian.liberty.wlpHome>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>wildfly-docker</id>
+            <build>            
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.4.13</version>
+                        <configuration>
+                            <serverId>docker-hub</serverId>
+                            <imageName>soteria-samples/${project.artifactId}:wildfly</imageName>
+                            <baseImage>jboss/wildfly:10.1.0.Final</baseImage>
+                            <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
+                            <resources>                                
+                                <resource>
+                                    <targetPath>/opt/jboss/wildfly/standalone/deployments/</targetPath>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${project.build.finalName}.war</include>
+                                </resource>
+                            </resources>   
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>liberty-docker</id>
+            <build>            
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.4.13</version>
+                        <configuration>
+                            <serverId>docker-hub</serverId>
+                            <imageName>soteria-samples/${project.artifactId}:liberty</imageName>
+                            <baseImage>websphere-liberty:javaee7</baseImage>
+                            <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
+                            <resources>
+                                <resource>
+                                    <targetPath>/opt/ibm/wlp/templates/servers/defaultServer/</targetPath>
+                                    <directory>../common/src/main/resources/</directory>
+                                    <include>server.xml</include>
+                                </resource>                             
+                                <resource>
+                                    <targetPath>/opt/ibm/wlp/usr/servers/defaultServer/dropins/</targetPath>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${project.build.finalName}.war</include>
+                                </resource>
+                            </resources>   
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>payara-docker</id>
+            <build>            
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.4.13</version>
+                        <configuration>
+                            <serverId>docker-hub</serverId>
+                            <imageName>soteria-samples/${project.artifactId}:payara</imageName>
+                            <baseImage>payara/server-web:163</baseImage>
+                            <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
+                            <resources>                                
+                                <resource>
+                                    <targetPath>/opt/payara41/glassfish/domains/domain1/autodeploy/</targetPath>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${project.build.finalName}.war</include>
+                                </resource>
+                            </resources>   
+                            <entryPoint>["/opt/payara41/bin/asadmin", "start-domain", "-v"]</entryPoint>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     
 

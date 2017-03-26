@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * http://glassfish.java.net/public/CDDL+GPL_1_1.html
+ * http://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -41,7 +41,6 @@ package org.glassfish.soteria.identitystores;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
 import java.sql.Connection;
@@ -63,8 +62,22 @@ public class DataBaseIdentityStore implements IdentityStore {
 
     private DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
+    private ValidationType validationType;
+
     public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
+        determineValidationType();
+    }
+
+    private void determineValidationType() {
+        validationType = ValidationType.BOTH;
+        if (dataBaseIdentityStoreDefinition.authenticateOnly()) {
+            validationType = ValidationType.AUTHENTICATION;
+        } else {
+            if (dataBaseIdentityStoreDefinition.authorizeOnly()) {
+                validationType = ValidationType.AUTHORIZATION;
+            }
+        }
     }
 
     @Override
@@ -86,9 +99,9 @@ public class DataBaseIdentityStore implements IdentityStore {
             usernamePasswordCredential.getCaller()
         ); 
         
+        // TODO Support for hashed passwords.
         if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
             return new CredentialValidationResult(
-                VALID, 
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
                 executeQuery(
                     dataSource, 
@@ -101,9 +114,21 @@ public class DataBaseIdentityStore implements IdentityStore {
         return INVALID_RESULT;
     }
     
+    @Override
+    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+        
+        DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
+        
+        return executeQuery(
+                dataSource,
+                dataBaseIdentityStoreDefinition.groupsQuery(),
+                callerPrincipal.getName()
+        );
+    }
+
     private List<String> executeQuery(DataSource dataSource, String query, String parameter) {
         List<String> result = new ArrayList<>();
-        
+
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, parameter);
@@ -114,10 +139,18 @@ public class DataBaseIdentityStore implements IdentityStore {
                 }
             }
         } catch (SQLException e) {
-           throw new IllegalStateException(e);
+            throw new IllegalStateException(e);
         }
-        
+
         return result;
     }
 
+    public int priority() {
+        return dataBaseIdentityStoreDefinition.priority();
+    }
+
+    @Override
+    public ValidationType validationType() {
+        return validationType;
+    }
 }
