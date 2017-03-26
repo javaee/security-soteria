@@ -239,8 +239,8 @@ public class CdiExtension implements Extension {
         LOGGER.log(Level.INFO, "Activating {0} identity store from {1} class", new Object[]{identityStoreClass.getName(), beanClass.getName()});
     }
 
-    private void logActivatedAuthenticationMechanism(Class<?> identityStoreClass, Class<?> beanClass) {
-        LOGGER.log(Level.INFO, "Activating {0} authentication mechanism from {1} class", new Object[]{identityStoreClass.getName(), beanClass.getName()});
+    private void logActivatedAuthenticationMechanism(Class<?> authenticationMechanismClass, Class<?> beanClass) {
+        LOGGER.log(Level.INFO, "Activating {0} authentication mechanism from {1} class", new Object[]{authenticationMechanismClass.getName(), beanClass.getName()});
     }
 
     private void checkForWrongUseOfInterceptors(Annotated annotated, Class<?> beanClass) {
