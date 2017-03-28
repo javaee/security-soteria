@@ -40,9 +40,8 @@
 package org.glassfish.soteria.test;
 
 import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
-import static javax.security.auth.message.AuthStatus.FAILURE;
-import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
-import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
+import static javax.security.AuthenticationStatus.FAILURE;
+import static javax.security.AuthenticationStatus.IN_PROGRESS;
 import static javax.security.authentication.mechanism.http.AuthenticationParameters.withParams;
 
 import javax.enterprise.context.RequestScoped;
@@ -50,8 +49,8 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.security.AuthenticationStatus;
 import javax.security.SecurityContext;
-import javax.security.auth.message.AuthStatus;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.Password;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
@@ -80,18 +79,17 @@ public class LoginBacking {
         FacesContext context = FacesContext.getCurrentInstance();
         Credential credential = new UsernamePasswordCredential(username, new Password(password));
         
-        AuthStatus status = securityContext.authenticate(
+        AuthenticationStatus status = securityContext.authenticate(
             getRequest(context),
             getResponse(context), 
             withParams()
                 .credential(credential));
         
-        if (status.equals(SEND_CONTINUE)) {
+        if (status.equals(IN_PROGRESS)) {
             // Authentication mechanism has send a redirect, should not
             // send anything to response from JSF now.
             context.responseComplete();
-        } else if (status.equals(SEND_FAILURE) || status.equals(FAILURE)) {
-            // TODO: only 1 status should be returned. Change to enum or fix source.
+        } else if (status.equals(FAILURE)) {
             addError(context, "Authentication failed");
         }
         

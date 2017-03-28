@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
+import javax.security.AuthenticationStatus;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -249,6 +250,30 @@ public final class Jaspic {
 	
 	public static AuthStatus getLastStatus(HttpServletRequest request) {
 		return (AuthStatus) request.getAttribute(LAST_AUTH_STATUS);
+	}
+	
+	public static AuthenticationStatus getLastAuthenticationStatus(HttpServletRequest request) {
+		return fromAuthStatus(getLastStatus(request));
+	}
+	
+	public static AuthenticationStatus fromAuthStatus(AuthStatus authStatus) {
+		if (authStatus == AuthStatus.SUCCESS) {
+			return AuthenticationStatus.SUCCESS;
+		}
+		
+		if (authStatus == AuthStatus.FAILURE) {
+			return AuthenticationStatus.FAILURE;
+		}
+		
+		if (authStatus == AuthStatus.SEND_FAILURE) {
+			return AuthenticationStatus.FAILURE;
+		}
+		
+		if (authStatus == AuthStatus.SEND_CONTINUE) {
+			return AuthenticationStatus.IN_PROGRESS;
+		}
+		
+		return AuthenticationStatus.NOT_DONE; // TMP
 	}
 	
 	/**

@@ -131,7 +131,7 @@ public class ArquillianBase {
         
         Page page = pageFromServer(path);
         if (page != null) {
-            webResponse = pageFromServer(path).getWebResponse();
+            webResponse = page.getWebResponse();
             if (webResponse != null) {
                 response = webResponse.getContentAsString();
             }
