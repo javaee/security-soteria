@@ -39,9 +39,9 @@
  */
 package org.glassfish.soteria;
 
-import static javax.security.auth.message.AuthStatus.FAILURE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
-import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastStatus;
+import static javax.security.AuthenticationStatus.FAILURE;
+import static javax.security.AuthenticationStatus.SUCCESS;
+import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastAuthenticationStatus;
 
 import java.io.Serializable;
 import java.security.Principal;
@@ -49,8 +49,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.security.AuthenticationStatus;
 import javax.security.SecurityContext;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -103,12 +103,12 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     }
     
     @Override
-    public AuthStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {
+    public AuthenticationStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {
         return authenticate(request, response, parameters);
     }
 
     @Override
-    public AuthStatus authenticate(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters parameters) {
+    public AuthenticationStatus authenticate(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters parameters) {
         
         try {
             if (Jaspic.authenticate(request, response, parameters)) {
@@ -119,7 +119,7 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
             // GlassFish returns false when either authentication is in progress or authentication
             // failed (or was not done at all). 
             // Therefore we need to rely on the status we saved as a request attribute
-            return getLastStatus(request);
+            return getLastAuthenticationStatus(request);
         } catch (IllegalArgumentException e) { // TODO: exception type not ideal
             // JBoss returns false when authentication is in progress, but throws exception when
             // authentication fails (or was not done at all).
