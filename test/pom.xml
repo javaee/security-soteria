@@ -45,6 +45,8 @@
         <!-- app-[identity-store]-[service] -->
         <module>app-custom-session</module>
         <module>app-custom-rememberme</module>
+
+        <module>app-custom-identity-store-handler</module>
     </modules>
     
     <dependencyManagement>
