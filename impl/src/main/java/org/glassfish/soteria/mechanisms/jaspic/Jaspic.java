@@ -244,16 +244,12 @@ public final class Jaspic {
 		}
 	}
 	
-	public static void setLastStatus(HttpServletRequest request, AuthStatus status) {
-		request.setAttribute(LAST_AUTH_STATUS, status);
-	}
-	
-	public static AuthStatus getLastStatus(HttpServletRequest request) {
-		return (AuthStatus) request.getAttribute(LAST_AUTH_STATUS);
-	}
+	public static void setLastAuthenticationStatus(HttpServletRequest request, AuthenticationStatus status) {
+        request.setAttribute(LAST_AUTH_STATUS, status);
+    }
 	
 	public static AuthenticationStatus getLastAuthenticationStatus(HttpServletRequest request) {
-		return fromAuthStatus(getLastStatus(request));
+		return (AuthenticationStatus) request.getAttribute(LAST_AUTH_STATUS);
 	}
 	
 	public static AuthenticationStatus fromAuthStatus(AuthStatus authStatus) {
@@ -274,6 +270,19 @@ public final class Jaspic {
 		}
 		
 		return AuthenticationStatus.NOT_DONE; // TMP
+	}
+	
+	public static AuthStatus fromAuthenticationStatus(AuthenticationStatus authenticationStatus) {
+	    switch (authenticationStatus) {
+	        case NOT_DONE: case SUCCESS:
+	            return AuthStatus.SUCCESS;
+	        case FAILURE:
+	            return AuthStatus.FAILURE;
+	        case IN_PROGRESS:
+	            return AuthStatus.SEND_CONTINUE;
+	        default:
+	            throw new IllegalStateException("Unhandled status:" + authenticationStatus.name());
+	    }
 	}
 	
 	/**

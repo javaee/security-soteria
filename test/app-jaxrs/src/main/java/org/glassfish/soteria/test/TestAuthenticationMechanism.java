@@ -44,8 +44,8 @@ import static javax.security.identitystore.CredentialValidationResult.INVALID_RE
 import static org.glassfish.soteria.Utils.notNull;
 
 import javax.enterprise.context.RequestScoped;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.identitystore.CredentialValidationResult;
@@ -57,7 +57,7 @@ import javax.servlet.http.HttpServletResponse;
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
 
     @Override
-    public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 
         String name = request.getParameter("name");
         String password = request.getParameter("password");

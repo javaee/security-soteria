@@ -43,8 +43,8 @@ import static org.glassfish.soteria.Utils.notNull;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
@@ -71,7 +71,7 @@ public class FormAuthenticationMechanism implements HttpAuthenticationMechanism,
     private LoginToContinue loginToContinue;
     
 	@Override
-	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+	public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 		
 	    if (isValidFormPostback(request)) {
 

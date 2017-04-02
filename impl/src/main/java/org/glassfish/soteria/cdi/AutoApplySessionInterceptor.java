@@ -41,7 +41,7 @@ package org.glassfish.soteria.cdi;
 
 import static java.lang.Boolean.TRUE;
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static javax.security.AuthenticationStatus.SUCCESS;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
 
