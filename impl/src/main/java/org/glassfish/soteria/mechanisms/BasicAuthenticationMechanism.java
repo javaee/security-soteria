@@ -39,9 +39,14 @@
  */
 package org.glassfish.soteria.mechanisms;
 
+import static java.lang.String.format;
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
+import static org.glassfish.soteria.Utils.isEmpty;
+
 import javax.enterprise.inject.spi.CDI;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.identitystore.CredentialValidationResult;
@@ -50,11 +55,6 @@ import javax.security.identitystore.credential.Password;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import static java.lang.String.format;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
-import static org.glassfish.soteria.Utils.isEmpty;
 
 
 /**
@@ -75,7 +75,7 @@ public class BasicAuthenticationMechanism implements HttpAuthenticationMechanism
     }
 
 	@Override
-	public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMsgContext) throws AuthException {
+	public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMsgContext) throws AuthException {
 
 		String[] credentials = getCredentials(request);
 		if (!isEmpty(credentials)) {

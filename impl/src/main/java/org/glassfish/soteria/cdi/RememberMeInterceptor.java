@@ -40,7 +40,6 @@
 package org.glassfish.soteria.cdi;
 
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.cleanSubjectMethod;
 import static org.glassfish.soteria.Utils.getParam;
@@ -65,7 +64,7 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.security.auth.message.AuthStatus;
+import javax.security.AuthenticationStatus;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.RememberMe;
 import javax.security.identitystore.CredentialValidationResult;
@@ -113,7 +112,7 @@ public class RememberMeInterceptor implements Serializable {
         return invocationContext.proceed();
     }
     
-    private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
+    private AuthenticationStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
         RememberMe rememberMeAnnotation = getRememberMeFromIntercepted();
@@ -141,9 +140,9 @@ public class RememberMeInterceptor implements Serializable {
         }
         
         // Try to authenticate with the next interceptor or actual authentication mechanism
-        AuthStatus authstatus = (AuthStatus) invocationContext.proceed();
+        AuthenticationStatus authstatus = (AuthenticationStatus) invocationContext.proceed();
         
-        if (authstatus == SUCCESS && httpMessageContext.getCallerPrincipal() != null) {
+        if (authstatus == AuthenticationStatus.SUCCESS && httpMessageContext.getCallerPrincipal() != null) {
             
             // Authentication succeeded;
             // Check if remember me is wanted by the caller and if so

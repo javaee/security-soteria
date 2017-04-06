@@ -70,6 +70,17 @@ public class Servlet extends HttpServlet {
 
         response.getWriter().write("This is a servlet \n");
         
+        String webName = null;
+        if (request.getUserPrincipal() != null) {
+            webName = request.getUserPrincipal().getName();
+        }
+
+        response.getWriter().write("web username: " + webName + "\n");
+
+        response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
+        response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
+        response.getWriter().write("web user has role \"kaz\": " + request.isUserInRole("kaz") + "\n");
+        
         String contextName = null;
         if (securityContext.getCallerPrincipal() != null) {
             contextName = securityContext.getCallerPrincipal().getName();

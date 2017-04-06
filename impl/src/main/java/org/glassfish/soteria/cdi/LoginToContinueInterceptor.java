@@ -41,9 +41,6 @@ package org.glassfish.soteria.cdi;
 
 import static java.lang.Boolean.TRUE;
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
-import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.getBaseURL;
 import static org.glassfish.soteria.Utils.getParam;
 import static org.glassfish.soteria.Utils.isEmpty;
@@ -64,8 +61,8 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
 import javax.security.identitystore.CredentialValidationResult;
@@ -107,7 +104,7 @@ public class LoginToContinueInterceptor implements Serializable {
         return invocationContext.proceed();
     }
     
-    private AuthStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
+    private AuthenticationStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
         // Check if there's any state lingering behind from a previous aborted authentication dialog
         tryClean(httpMessageContext);
@@ -139,20 +136,20 @@ public class LoginToContinueInterceptor implements Serializable {
         }
     }
     
-    private AuthStatus processCallerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
+    private AuthenticationStatus processCallerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         // Try to authenticate with the next interceptor or actual authentication mechanism
-        AuthStatus authstatus = null;
+        AuthenticationStatus authstatus = null;
         
         try {
-            authstatus = (AuthStatus) invocationContext.proceed();
+            authstatus = (AuthenticationStatus) invocationContext.proceed();
         } catch (AuthException e) {
-            authstatus = SEND_FAILURE;
+            authstatus = AuthenticationStatus.FAILURE;
         }
         
-        if (authstatus == SUCCESS) {
+        if (authstatus == AuthenticationStatus.SUCCESS) {
             
             if (httpMessageContext.getCallerPrincipal() == null) {
-                return SUCCESS;
+                return AuthenticationStatus.SUCCESS;
             }
             
             // Actually authenticated now, so we remove the authentication dialog marker
@@ -169,7 +166,7 @@ public class LoginToContinueInterceptor implements Serializable {
         return authstatus;
     }
     
-    private AuthStatus processContainerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
+    private AuthenticationStatus processContainerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
 
         // 1. Protected resource requested and no request saved before
         if (isOnInitialProtectedURL(httpMessageContext)) {
@@ -200,20 +197,20 @@ public class LoginToContinueInterceptor implements Serializable {
         //          to authenticate though.
         if (isOnLoginPostback(request)) {
             // Try to authenticate with the next interceptor or actual authentication mechanism
-            AuthStatus authstatus = null;
+            AuthenticationStatus authstatus = null;
             
             try {
-                authstatus = (AuthStatus) invocationContext.proceed();
+                authstatus = (AuthenticationStatus) invocationContext.proceed();
             } catch (AuthException e) {
-                authstatus = SEND_FAILURE;
+                authstatus = AuthenticationStatus.FAILURE;
             }
           
             // (Following the JASPIC spec (3.8.3.1) validateRequest before service invocation can only return 
             // SUCCESS, SEND_CONTINUE, SEND_FAILURE or throw an exception
-            if (authstatus == SUCCESS) {
+            if (authstatus == AuthenticationStatus.SUCCESS) {
                 
                 if (httpMessageContext.getCallerPrincipal() == null) {
-                    return SUCCESS;
+                    return AuthenticationStatus.SUCCESS;
                 }
                 
                 // Authentication was successful and an actual caller principal was set 
@@ -232,7 +229,7 @@ public class LoginToContinueInterceptor implements Serializable {
                     return httpMessageContext.redirect(savedRequest.getFullRequestURL());
                 } // else return success
                 
-            } else if (authstatus == SEND_FAILURE)  {
+            } else if (authstatus == AuthenticationStatus.FAILURE)  {
                 
                 String errorPage = getLoginToContinueAnnotation(invocationContext).errorPage();
                 
@@ -267,7 +264,7 @@ public class LoginToContinueInterceptor implements Serializable {
             
         }
        
-        return (AuthStatus) invocationContext.proceed();
+        return (AuthenticationStatus) invocationContext.proceed();
 
     }
     

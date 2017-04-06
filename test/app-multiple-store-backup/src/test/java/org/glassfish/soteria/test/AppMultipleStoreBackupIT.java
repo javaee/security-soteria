@@ -77,7 +77,8 @@ public class AppMultipleStoreBackupIT extends ArquillianBase {
         // This will first try the initial store which will fail, then
         // tries the second store, which should succeeded. The user 
         // is only present in the second store.
-        assertDefaultAuthenticated(
+        Assert.assertAuthenticated(
+            "web", "alex",
             readFromServer("/servlet?name=alex&password=verysecret"));
     }
     

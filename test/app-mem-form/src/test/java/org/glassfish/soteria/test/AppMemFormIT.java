@@ -105,12 +105,17 @@ public class AppMemFormIT extends ArquillianBase {
         
         page = pageFromServer("/servlet");
         
+        System.out.println("+++++++++++STEP 4 +++++++++++++ (before assertDefaultAuthenticated) \n\n\n\n" + page.getWebResponse()
+        .getContentAsString());
+        
         assertDefaultAuthenticated(
             page.getWebResponse()
                 .getContentAsString());
         
         
         // 5. Logout
+        
+        System.out.println("*** STEP 5 ***** (before get logout) " + page.asXml());
         
         page = page.getForms()
                    .get(0)
