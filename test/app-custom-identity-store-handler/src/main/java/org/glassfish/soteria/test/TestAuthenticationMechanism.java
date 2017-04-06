@@ -39,11 +39,12 @@
  */
 package org.glassfish.soteria.test;
 
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.identitystore.CredentialValidationResult;
@@ -53,8 +54,6 @@ import javax.security.identitystore.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-
 @ApplicationScoped
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
     
@@ -62,7 +61,7 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
     private IdentityStoreHandler identityStoreHandler;
 
     @Override
-    public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 
         if (request.getParameter("name") != null && request.getParameter("password") != null) {
 
