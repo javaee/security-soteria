@@ -45,53 +45,39 @@ import static org.junit.Assert.assertTrue;
 public final class Assert {
     
     public static void assertDefaultAuthenticated(String response) {
-        assertAuthenticated("web", "reza", response);
+        assertAuthenticated("web", "reza", response, "foo", "bar");
     }
     
-    public static void assertAuthenticated(String userType, String name, String response) {
+    public static void assertDefaultNotAuthenticated(String response) {
+        assertNotAuthenticated("web", "reza", response, "foo", "bar");
+    }
+    
+    public static void assertAuthenticated(String userType, String name, String response, String... roles) {
         assertTrue(
             "Should be authenticated as user " + name + " but was not \n Response: \n" + 
             response + "\n search: " + userType + " username: " + name,
             response.contains(userType + " username: " + name));
-        assertTrue(
-            "Authenticated user should have role \"foo\", but did not \n Response: \n" + 
-            response,
-            response.contains(userType + " user has role \"foo\": true"));
-        assertTrue(
-            "Authenticated user should have role \"bar\", but did not \n Response: \n" + 
-            response,
-            response.contains(userType + " user has role \"bar\": true"));
+        
+        for (String role : roles) {
+            assertTrue(
+                "Authenticated user should have role \"" + role + "\", but did not \n Response: \n" + 
+                response,
+                response.contains(userType + " user has role \"" + role + "\": true"));
+        }
     }
-     
-    public static void assertDefaultNotAuthenticated(String response) {
-        assertFalse(
-            "Should not be authenticated as user reza but was \n Response: \n" + 
-            response,
-            response.contains("web username: reza"));
-        assertFalse(
-            "Authenticated user should not have role \"foo\", but did \n Response: \n" + 
-            response,
-            response.contains("web user has role \"foo\": true"));
-        assertFalse(
-            "Authenticated user should not have role \"bar\", but did \n Response: \n" + 
-            response,
-            response.contains("web user has role \"bar\": true"));
-     }
     
-    public static void assertNotAuthenticated(String userType, String response) {
+    public static void assertNotAuthenticated(String userType, String name, String response, String... roles) {
         assertFalse(
-            "Should not be authenticated as user reza but was \n Response: \n" + 
-            response,
-            response.contains(userType + " username: reza"));
-        assertFalse(
-            "Authenticated user should not have role \"foo\", but did \n Response: \n" + 
-            response,
-            response.contains(userType + " user has role \"foo\": true"));
-        assertFalse(
-            "Authenticated user should not have role \"bar\", but did \n Response: \n" + 
-            response,
-            response.contains(userType + " user has role \"bar\": true"));
+            "Should not be authenticated as user " + name + " but was \n Response: \n" + 
+            response + "\n search: " + userType + " username: " + name,
+            response.contains(userType + " username: " + name));
+        
+        for (String role : roles) {
+            assertFalse(
+                "Authenticated user should not have role \"" + role + "\", but did \n Response: \n" + 
+                response,
+                response.contains(userType + " user has role \"" + role + "\": true"));
+        }
      }
-
 
 }

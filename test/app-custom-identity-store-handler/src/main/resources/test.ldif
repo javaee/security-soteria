@@ -74,6 +74,6 @@ member: uid=reza,ou=caller,dc=jsr375,dc=net
 dn: cn=kaz,ou=group,dc=jsr375,dc=net
 objectclass: top
 objectclass: groupOfNames
-cn: bar
+cn: kaz
 member: uid=alex,ou=caller,dc=jsr375,dc=net
 
