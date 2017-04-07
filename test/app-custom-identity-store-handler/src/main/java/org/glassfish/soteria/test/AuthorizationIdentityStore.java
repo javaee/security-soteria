@@ -66,10 +66,10 @@ public class AuthorizationIdentityStore implements IdentityStore {
     public void init() {
         authorization = new HashMap<>();
 
-        authorization.put("rudy", Arrays.asList("group1", "group2"));
-        authorization.put("will", Arrays.asList("group1", "group2", "group3"));
-        authorization.put("arjan", Arrays.asList("group1", "group3"));
-        authorization.put("reza", Arrays.asList("group3"));
+        authorization.put("rudy", Arrays.asList("foo", "bar"));
+        authorization.put("will", Arrays.asList("foo", "bar", "baz"));
+        authorization.put("arjan", Arrays.asList("foo", "baz"));
+        authorization.put("reza", Arrays.asList("baz"));
 
     }
 
