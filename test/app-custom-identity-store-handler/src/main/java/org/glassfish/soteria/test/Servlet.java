@@ -53,7 +53,7 @@ import java.io.IOException;
  * this caller is in any of the roles {foo, bar, kaz}
  */
 
-@DeclareRoles({"group1", "group2", "group3"})
+@DeclareRoles({"foo", "bar", "baz"})
 @WebServlet("/servlet")
 public class Servlet extends HttpServlet {
 
@@ -71,9 +71,9 @@ public class Servlet extends HttpServlet {
 
         response.getWriter().write("web username: " + webName + "\n");
 
-        response.getWriter().write("web user has role \"group1\": " + request.isUserInRole("group1") + "\n");
-        response.getWriter().write("web user has role \"group2\": " + request.isUserInRole("group2") + "\n");
-        response.getWriter().write("web user has role \"group3\": " + request.isUserInRole("group3") + "\n");
+        response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
+        response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
+        response.getWriter().write("web user has role \"baz\": " + request.isUserInRole("baz") + "\n");
     }
 
 }
