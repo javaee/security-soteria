@@ -41,9 +41,9 @@ package org.glassfish.soteria.mechanisms;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
-import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
-import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static javax.security.AuthenticationStatus.FAILURE;
+import static javax.security.AuthenticationStatus.IN_PROGRESS;
+import static javax.security.AuthenticationStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
@@ -52,11 +52,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.AuthenticationStatus;
 import javax.security.CallerPrincipal;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
@@ -221,14 +221,14 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
     
     @Override
-    public AuthStatus redirect(String location) {
+    public AuthenticationStatus redirect(String location) {
         Utils.redirect(getResponse(), location);
         
-        return SEND_CONTINUE;
+        return IN_PROGRESS;
     }
     
     @Override
-    public AuthStatus forward(String path) {
+    public AuthenticationStatus forward(String path) {
         try {
             getRequest().getRequestDispatcher(path)
                         .forward(getRequest(), getResponse());
@@ -237,42 +237,42 @@ public class HttpMessageContextImpl implements HttpMessageContext {
         }
 
         // After forward MUST NOT invoke the resource, so CAN NOT return SUCCESS here.
-        return SEND_CONTINUE;
+        return IN_PROGRESS;
     }
     
     /* (non-Javadoc)
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#responseUnAuthorized()
      */
     @Override
-    public AuthStatus responseUnAuthorized() {
+    public AuthenticationStatus responseUnAuthorized() {
     	try {
 			getResponse().sendError(SC_UNAUTHORIZED);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
     	
-    	return SEND_FAILURE;
+    	return FAILURE;
     }
     
     /* (non-Javadoc)
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#responseNotFound()
      */
     @Override
-    public AuthStatus responseNotFound() {
+    public AuthenticationStatus responseNotFound() {
     	try {
 			getResponse().sendError(SC_NOT_FOUND);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
     	
-    	return SEND_FAILURE;
+    	return FAILURE;
     }
     
     /* (non-Javadoc)
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#notifyContainerAboutLogin(java.lang.String, java.util.List)
      */
     @Override
-    public AuthStatus notifyContainerAboutLogin(String callerName, List<String> groups) {
+    public AuthenticationStatus notifyContainerAboutLogin(String callerName, List<String> groups) {
         CallerPrincipal callerPrincipal = null;
         if (callerName != null) {
             callerPrincipal = new CallerPrincipal(callerName); // TODO: or store username separately?
@@ -282,7 +282,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
     
     @Override
-    public AuthStatus notifyContainerAboutLogin(CredentialValidationResult result) throws AuthException {
+    public AuthenticationStatus notifyContainerAboutLogin(CredentialValidationResult result) throws AuthException {
         if (result.getStatus() == VALID) {
             return notifyContainerAboutLogin(
                 result.getCallerPrincipal(), 
@@ -294,7 +294,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
     
     @Override
-    public AuthStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, List<String> groups) {
+    public AuthenticationStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, List<String> groups) {
         this.callerPrincipal = callerPrincipal;
         if (callerPrincipal != null) {
             this.groups = groups;
@@ -315,7 +315,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#doNothing()
      */
     @Override
-    public AuthStatus doNothing() {
+    public AuthenticationStatus doNothing() {
         this.callerPrincipal = null;
         this.groups = null;
         

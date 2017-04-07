@@ -73,6 +73,7 @@ public class AppSecurityContextIT extends ArquillianBase {
     public void testContextAuthenticated() {
         Assert.assertAuthenticated(
             "context",
+            "reza",
             readFromServer("/servlet?name=reza&password=secret1"));
     }
     

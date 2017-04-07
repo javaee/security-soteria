@@ -39,11 +39,13 @@
  */
 package org.glassfish.soteria.mechanisms.jaspic;
 
-import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.setLastStatus;
+import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.fromAuthenticationStatus;
+import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.setLastAuthenticationStatus;
 
 import java.util.Map;
 
 import javax.enterprise.inject.spi.CDI;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.AuthException;
@@ -101,28 +103,34 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
                 cdiPerRequestInitializer.init(msgContext.getRequest());
             }
                 
-            AuthStatus status = CDI.current()
-                                   .select(HttpAuthenticationMechanism.class).get()
-                                   .validateRequest(msgContext.getRequest(), msgContext.getResponse(), msgContext);
+            AuthenticationStatus status = CDI.current()
+                                             .select(HttpAuthenticationMechanism.class).get()
+                                             .validateRequest(
+                                                 msgContext.getRequest(), 
+                                                 msgContext.getResponse(), 
+                                                 msgContext);
             
-            setLastStatus(msgContext.getRequest(), status);
+            setLastAuthenticationStatus(msgContext.getRequest(), status);
             
-            return status;
+            return fromAuthenticationStatus(status);
         }
 
         @Override
         public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
             HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, null);
         
-            AuthStatus status = CDI.current()
-                                   .select(HttpAuthenticationMechanism.class).get()
-                                   .secureResponse(msgContext.getRequest(), msgContext.getResponse(), msgContext);
+            AuthenticationStatus status = CDI.current()
+                                             .select(HttpAuthenticationMechanism.class).get()
+                                             .secureResponse(
+                                                 msgContext.getRequest(), 
+                                                 msgContext.getResponse(), 
+                                                 msgContext);
         
             if (cdiPerRequestInitializer != null) {
                 cdiPerRequestInitializer.destroy(msgContext.getRequest());
             }
             
-            return status;
+            return fromAuthenticationStatus(status);
         }
 
         /**
@@ -137,7 +145,5 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
                .select(HttpAuthenticationMechanism.class).get()
                .cleanSubject(msgContext.getRequest(), msgContext.getResponse(), msgContext);
         }
-        
-
 
 }

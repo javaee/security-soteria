@@ -40,11 +40,12 @@
 package org.glassfish.soteria.test;
 
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static org.glassfish.soteria.Utils.notNull;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.HttpMessageContext;
 import javax.security.identitystore.CredentialValidationResult;
@@ -61,9 +62,9 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
     private IdentityStoreHandler identityStoreHandler;
 
     @Override
-    public AuthStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 
-        if (request.getParameter("name") != null && request.getParameter("password") != null) {
+        if (notNull(request.getParameter("name"), request.getParameter("password"))) {
 
             // Get the (caller) name and password from the request
             // NOTE: This is for the smallest possible example only. In practice
@@ -84,9 +85,9 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
                 // this method.
                 return httpMessageContext.notifyContainerAboutLogin(
                     result.getCallerPrincipal(), result.getCallerGroups());
-            } else {
-                throw new AuthException("Login failed");
-            }
+            } 
+               
+            throw new AuthException("Login failed");
         } 
 
         return httpMessageContext.doNothing();

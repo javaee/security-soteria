@@ -17,7 +17,7 @@
     <properties>
         <!-- Test servers -->
         <glassfish.version>4.1.1</glassfish.version>
-        <payara.version>4.1.1.163</payara.version>
+        <payara.version>4.1.1.164</payara.version>
         <wildfly.version>10.1.0.Final</wildfly.version>
         <tomee.version>7.0.2</tomee.version>
         <liberty.version>16.0.0.3</liberty.version>
@@ -259,6 +259,28 @@
                                     </artifactItems>
                                 </configuration>
                             </execution>
+                            
+                            <execution>
+                                <id>copy</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+											<groupId>org.jboss.classfilewriter</groupId>
+											<artifactId>jboss-classfilewriter</artifactId>
+											<version>1.2.1.Final</version>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${project.build.directory}/payara41/glassfish/modules</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <stripClassifier>true</stripClassifier>
+                                    <stripVersion>true</stripVersion>
+                                </configuration>
+                            </execution>
+                            
                         </executions>
                     </plugin>
                     <plugin>
