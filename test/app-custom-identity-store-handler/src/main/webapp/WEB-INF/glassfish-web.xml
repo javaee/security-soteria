@@ -59,6 +59,11 @@
     </security-role-mapping>
     
     <security-role-mapping>
+        <role-name>baz</role-name>
+        <group-name>baz</group-name>
+    </security-role-mapping>
+    
+    <security-role-mapping>
         <role-name>group1</role-name>
         <group-name>group1</group-name>
     </security-role-mapping>
