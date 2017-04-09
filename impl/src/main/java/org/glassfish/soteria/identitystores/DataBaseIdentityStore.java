@@ -48,7 +48,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
@@ -115,14 +117,14 @@ public class DataBaseIdentityStore implements IdentityStore {
     }
     
     @Override
-    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
         
         DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
         
-        return executeQuery(
-                dataSource,
-                dataBaseIdentityStoreDefinition.groupsQuery(),
-                callerPrincipal.getName()
+        return new HashSet<>(executeQuery(
+            dataSource,
+            dataBaseIdentityStoreDefinition.groupsQuery(),
+            callerPrincipal.getName())
         );
     }
 

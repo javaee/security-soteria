@@ -40,7 +40,7 @@
 package org.glassfish.soteria.identitystores;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.list;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
@@ -49,11 +49,12 @@ import static javax.naming.Context.SECURITY_CREDENTIALS;
 import static javax.naming.Context.SECURITY_PRINCIPAL;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 
 import javax.naming.AuthenticationException;
 import javax.naming.NamingException;
@@ -96,7 +97,7 @@ public class LdapIdentityStore implements IdentityStore {
     }
     
     @Override
-    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
         LdapContext ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.baseDn(),
@@ -104,13 +105,13 @@ public class LdapIdentityStore implements IdentityStore {
         
         if (ldapContext != null) {
             try {
-                return retrieveGroupInformation(callerPrincipal.getName(), ldapContext);
+                return new HashSet<>(retrieveGroupInformation(callerPrincipal.getName(), ldapContext));
             } finally {
                 closeContext(ldapContext);
             }
         }
         
-        return emptyList();
+        return emptySet();
     }
 
     private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential) {

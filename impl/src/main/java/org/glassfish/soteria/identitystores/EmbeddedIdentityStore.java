@@ -41,13 +41,14 @@ package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
@@ -107,11 +108,11 @@ public class EmbeddedIdentityStore implements IdentityStore {
     }
     
     @Override
-    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
         
         Credentials credentials = callerToCredentials.get(callerPrincipal.getName());
         
-        return credentials != null? asList(credentials.groups()) : emptyList();
+        return credentials != null? new HashSet<>(asList(credentials.groups())) : emptySet();
     }
 
     public int priority() {
