@@ -39,14 +39,20 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
+import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
-import java.util.*;
-
-import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
 
 /**
  *
@@ -60,25 +66,25 @@ import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZ
 @ApplicationScoped
 public class AuthorizationIdentityStore implements IdentityStore {
 
-    private Map<String, List<String>> authorization;
+    private Map<String, Set<String>> authorization;
 
     @PostConstruct
     public void init() {
         authorization = new HashMap<>();
 
-        authorization.put("rudy", Arrays.asList("foo", "bar"));
-        authorization.put("will", Arrays.asList("foo", "bar", "baz"));
-        authorization.put("arjan", Arrays.asList("foo", "baz"));
-        authorization.put("reza", Arrays.asList("baz"));
+        authorization.put("rudy", new HashSet<>(asList("foo", "bar")));
+        authorization.put("will", new HashSet<>(asList("foo", "bar", "baz")));
+        authorization.put("arjan", new HashSet<>(asList("foo", "baz")));
+        authorization.put("reza", new HashSet<>(asList("baz")));
 
     }
 
     @Override
-    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
 
-        List<String> result = authorization.get(callerPrincipal.getName());
+        Set<String> result = authorization.get(callerPrincipal.getName());
         if (result == null) {
-            result = Collections.emptyList();
+            result = emptySet();
         }
 
         return result;

@@ -39,12 +39,13 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.util.Arrays.asList;
 import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
@@ -57,20 +58,20 @@ import javax.security.identitystore.IdentityStore;
 @RequestScoped
 public class AuthorizationIdentityStore implements IdentityStore {
 
-    private Map<String, List<String>> authorization;
+    private Map<String, Set<String>> authorization;
 
     @PostConstruct
     public void init() {
         authorization = new HashMap<>();
 
-        authorization.put("reza", Arrays.asList("foo", "bar"));
-        authorization.put("alex", Arrays.asList("foo", "foo", "kaz"));
-        authorization.put("arjan", Arrays.asList("foo", "foo"));
+        authorization.put("reza", new HashSet<>(asList("foo", "bar")));
+        authorization.put("alex", new HashSet<>(asList("foo", "foo", "kaz")));
+        authorization.put("arjan", new HashSet<>(asList("foo", "foo")));
 
     }
     
     @Override
-    public List<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
         return authorization.get(callerPrincipal.getName());
     }
 
