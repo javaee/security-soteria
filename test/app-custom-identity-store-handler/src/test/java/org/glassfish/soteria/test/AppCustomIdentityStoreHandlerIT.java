@@ -39,15 +39,16 @@
  */
 package org.glassfish.soteria.test;
 
+import static org.glassfish.soteria.test.Assert.assertAuthenticated;
+import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
+import static org.glassfish.soteria.test.Assert.assertNotAuthenticated;
+import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
-import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
-import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
 
 
 @RunWith(Arquillian.class)
@@ -60,32 +61,40 @@ public class AppCustomIdentityStoreHandlerIT extends ArquillianBase {
 
     @Test
     public void testAuthenticated() {
-        assertDefaultAuthenticated(
-                readFromServer("/servlet?name=reza&password=secret1"));
+        assertAuthenticated(
+            "web", "reza", 
+            readFromServer("/servlet?name=reza&password=secret1"),
+            "foo", "bar", "baz");
     }
 
     @Test
     public void testBlacklisted() {
-        assertDefaultNotAuthenticated(
-                readFromServer("/servlet?name=rudy&password=pw"));
+        assertNotAuthenticated(
+            "web", "rudy", 
+            readFromServer("/servlet?name=rudy&password=pw"),
+            "foo", "bar");
     }
 
     @Test
     public void testNotAuthenticated() {
         assertDefaultNotAuthenticated(
-                readFromServer("/servlet"));
+            readFromServer("/servlet"));
     }
 
     @Test
     public void testNotAuthenticatedWrongName() {
-        assertDefaultNotAuthenticated(
-                readFromServer("/servlet?name=romo&password=secret1"));
+        assertNotAuthenticated(
+            "web", "reza", 
+            readFromServer("/servlet?name=romo&password=secret1"),
+            "foo", "bar", "baz");
     }
 
     @Test
     public void testNotAuthenticatedWrongPassword() {
-        assertDefaultNotAuthenticated(
-                readFromServer("/servlet?name=reza&password=wrongpassword"));
+        assertNotAuthenticated(
+            "web", "reza", 
+            readFromServer("/servlet?name=reza&password=wrongpassword"),
+            "foo", "bar", "baz");
     }
 
 }
