@@ -42,8 +42,8 @@ package org.glassfish.soteria.cdi;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-import static javax.security.identitystore.IdentityStore.ValidationType.AUTHENTICATION;
-import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
+import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 import static javax.security.identitystore.IdentityStore.ValidationType.BOTH;
 import static org.glassfish.soteria.Utils.isOneOf;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
@@ -69,12 +69,12 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
     	List<IdentityStore> identityStores = getBeanReferencesByType(IdentityStore.class, false);
     	
     	authenticationIdentityStores = identityStores.stream()
-    												 .filter(i -> isOneOf(i.validationType(), BOTH, AUTHENTICATION))
+    												 .filter(i -> isOneOf(i.validationType(), BOTH, VALIDATE))
     												 .sorted(comparing(IdentityStore::priority))
     												 .collect(toList());
     	
     	authorizationIdentityStores = identityStores.stream()
-				 									.filter(i -> i.validationType() == AUTHORIZATION)
+				 									.filter(i -> i.validationType() == PROVIDE_GROUPS)
 		 											.sorted(comparing(IdentityStore::priority))
 	 												.collect(toList());
     }

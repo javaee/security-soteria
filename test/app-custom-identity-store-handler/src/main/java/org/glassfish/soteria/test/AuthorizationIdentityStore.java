@@ -41,7 +41,7 @@ package org.glassfish.soteria.test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
+import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,6 +92,6 @@ public class AuthorizationIdentityStore implements IdentityStore {
 
     @Override
     public ValidationType validationType() {
-        return AUTHORIZATION;
+        return PROVIDE_GROUPS;
     }
 }

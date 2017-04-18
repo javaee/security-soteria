@@ -41,7 +41,7 @@ package org.glassfish.soteria.test;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.IdentityStore.ValidationType.AUTHENTICATION;
+import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.security.identitystore.CredentialValidationResult;
@@ -70,6 +70,6 @@ public class BlackListedIdentityStore implements IdentityStore {
 
     @Override
     public ValidationType validationType() {
-        return AUTHENTICATION;
+        return VALIDATE;
     }
 }

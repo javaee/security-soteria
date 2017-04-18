@@ -86,10 +86,10 @@ public class EmbeddedIdentityStore implements IdentityStore {
     private void determineValidationType() {
         validationType = ValidationType.BOTH;
         if (embeddedIdentityStoreDefinition.authenticateOnly()) {
-            validationType = ValidationType.AUTHENTICATION;
+            validationType = ValidationType.VALIDATE;
         } else {
             if (embeddedIdentityStoreDefinition.authorizeOnly()) {
-                validationType = ValidationType.AUTHORIZATION;
+                validationType = ValidationType.PROVIDE_GROUPS;
             }
         }
     }
