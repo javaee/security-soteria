@@ -74,10 +74,10 @@ public class DataBaseIdentityStore implements IdentityStore {
     private void determineValidationType() {
         validationType = ValidationType.BOTH;
         if (dataBaseIdentityStoreDefinition.authenticateOnly()) {
-            validationType = ValidationType.AUTHENTICATION;
+            validationType = ValidationType.VALIDATE;
         } else {
             if (dataBaseIdentityStoreDefinition.authorizeOnly()) {
-                validationType = ValidationType.AUTHORIZATION;
+                validationType = ValidationType.PROVIDE_GROUPS;
             }
         }
     }
