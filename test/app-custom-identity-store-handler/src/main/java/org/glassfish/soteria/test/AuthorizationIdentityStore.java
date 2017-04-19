@@ -62,7 +62,7 @@ import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
         url = "ldap://localhost:33389/",
         callerBaseDn = "ou=caller,dc=jsr375,dc=net",
         groupBaseDn = "ou=group,dc=jsr375,dc=net",
-        useFor = {VALIDATE, PROVIDE_GROUPS}
+        useFor = VALIDATE
 )
 @ApplicationScoped
 public class AuthorizationIdentityStore implements IdentityStore {

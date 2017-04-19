@@ -65,6 +65,7 @@ import javax.sql.DataSource;
 public class DataBaseIdentityStore implements IdentityStore {
 
     private final DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
+
     private final Set<ValidationType> validationTypes;
 
     public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {

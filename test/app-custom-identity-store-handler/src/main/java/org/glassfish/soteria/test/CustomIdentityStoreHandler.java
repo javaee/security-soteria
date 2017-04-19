@@ -44,6 +44,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static org.glassfish.soteria.Utils.isOneOf;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
 import java.util.ArrayList;

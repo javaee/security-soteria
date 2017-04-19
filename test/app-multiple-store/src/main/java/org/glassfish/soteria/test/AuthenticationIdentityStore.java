@@ -53,6 +53,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
+import javax.security.identitystore.IdentityStore.ValidationType;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 

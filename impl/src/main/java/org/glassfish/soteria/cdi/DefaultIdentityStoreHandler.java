@@ -109,7 +109,7 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
         // Take the groups from the identity store that validated the credentials only
         // if it has been set to provide groups.
         if (identityStore.validationTypes().contains(PROVIDE_GROUPS)) {
-            groups.addAll(validationResult.getCallerGroups());
+            validationResult.getCallerGroups();
         }
         
         // Ask all stores that were configured for group providing only to get the groups for the

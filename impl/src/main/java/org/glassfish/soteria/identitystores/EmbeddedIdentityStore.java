@@ -63,7 +63,7 @@ public class EmbeddedIdentityStore implements IdentityStore {
 
     private final EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition;
     private final Map<String, Credentials> callerToCredentials;
-    private final Set<ValidationType> validationTypes;
+    private final Set<ValidationType> validationType;
 
     public EmbeddedIdentityStore(EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition) {
 
@@ -72,7 +72,7 @@ public class EmbeddedIdentityStore implements IdentityStore {
                 e -> e.callerName(),
                 e -> e)
         );
-        validationTypes = unmodifiableSet(new HashSet<>(asList(embeddedIdentityStoreDefinition.useFor())));
+        validationType = unmodifiableSet(new HashSet<>(asList(embeddedIdentityStoreDefinition.useFor())));
     }
     
     @Override
@@ -111,6 +111,6 @@ public class EmbeddedIdentityStore implements IdentityStore {
 
     @Override
     public Set<ValidationType> validationTypes() {
-        return validationTypes;
+        return validationType;
     }
 }

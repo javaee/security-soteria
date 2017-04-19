@@ -42,6 +42,7 @@ package org.glassfish.soteria.test;
 import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 import java.util.HashSet;
