@@ -76,7 +76,8 @@ public class AuthorizationIdentityStore implements IdentityStore {
     }
 
     @Override
-    public ValidationType validationType() {
-        return PROVIDE_GROUPS;
+    public Set<ValidationType> validationTypes() {
+        return new HashSet<>(asList(PROVIDE_GROUPS));
     }
+    
 }

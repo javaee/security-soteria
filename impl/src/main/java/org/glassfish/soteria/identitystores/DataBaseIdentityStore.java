@@ -39,6 +39,8 @@
  */
 package org.glassfish.soteria.identitystores;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
@@ -62,24 +64,13 @@ import javax.sql.DataSource;
 
 public class DataBaseIdentityStore implements IdentityStore {
 
-    private DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
+    private final DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
-    private ValidationType validationType;
+    private final Set<ValidationType> validationTypes;
 
     public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
-        determineValidationType();
-    }
-
-    private void determineValidationType() {
-        validationType = ValidationType.BOTH;
-        if (dataBaseIdentityStoreDefinition.authenticateOnly()) {
-            validationType = ValidationType.VALIDATE;
-        } else {
-            if (dataBaseIdentityStoreDefinition.authorizeOnly()) {
-                validationType = ValidationType.PROVIDE_GROUPS;
-            }
-        }
+        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
     }
 
     @Override
@@ -147,12 +138,13 @@ public class DataBaseIdentityStore implements IdentityStore {
         return result;
     }
 
+    @Override
     public int priority() {
         return dataBaseIdentityStoreDefinition.priority();
     }
 
     @Override
-    public ValidationType validationType() {
-        return validationType;
+    public Set<ValidationType> validationTypes() {
+        return validationTypes;
     }
 }

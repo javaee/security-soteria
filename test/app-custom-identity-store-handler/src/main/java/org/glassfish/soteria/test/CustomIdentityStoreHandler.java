@@ -39,6 +39,17 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
+import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static org.glassfish.soteria.Utils.isOneOf;
+import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
@@ -49,17 +60,6 @@ import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.credential.Credential;
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
-import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
-import static javax.security.identitystore.IdentityStore.ValidationType.BOTH;
-import static org.glassfish.soteria.Utils.isOneOf;
-import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
 /**
  *
@@ -77,12 +77,12 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
         List<IdentityStore> identityStores = getBeanReferencesByType(IdentityStore.class, false);
 
         authenticationIdentityStores = identityStores.stream()
-                .filter(i -> isOneOf(i.validationType(), BOTH, VALIDATE))
+                .filter(i -> i.validationTypes().contains(VALIDATE))
                 .sorted(comparing(IdentityStore::priority))
                 .collect(toList());
 
         authorizationIdentityStores = identityStores.stream()
-                .filter(i -> i.validationType() == PROVIDE_GROUPS)
+                .filter(i -> i.validationTypes().contains(PROVIDE_GROUPS))
                 .sorted(comparing(IdentityStore::priority))
                 .collect(toList());
     }
@@ -90,7 +90,8 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
     @Override
     public CredentialValidationResult validate(Credential credential) {
         CredentialValidationResult  validationResult = null;
-
+        IdentityStore identityStore = null;
+        
         // Check stores to authenticate until one succeeds.
         for (IdentityStore authenticationIdentityStore : authenticationIdentityStores) {
             CredentialValidationResult temp = authenticationIdentityStore.validate(credential);
@@ -104,6 +105,7 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
                     break;
                 case VALID:
                     validationResult = temp;
+                    identityStore = authenticationIdentityStore;
                     break;
                 default:
                     throw new IllegalArgumentException("Value not supported "+temp.getStatus());
@@ -116,7 +118,11 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
         }
 
         CallerPrincipal callerPrincipal = validationResult.getCallerPrincipal();
-        List<String> groups = new ArrayList<>(validationResult.getCallerGroups());
+        
+        List<String> groups = new ArrayList<>();
+        if (identityStore.validationTypes().contains(PROVIDE_GROUPS)) {
+            groups.addAll(validationResult.getCallerGroups());
+        }
 
         // Ask all stores that were configured for authorization to get the groups for the
         // authenticated caller
