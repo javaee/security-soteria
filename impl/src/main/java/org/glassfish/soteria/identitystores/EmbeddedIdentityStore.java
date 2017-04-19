@@ -42,6 +42,7 @@ package org.glassfish.soteria.identitystores;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
@@ -60,9 +61,9 @@ import javax.security.identitystore.credential.UsernamePasswordCredential;
 
 public class EmbeddedIdentityStore implements IdentityStore {
 
-    private Map<String, Credentials> callerToCredentials;
-    private EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition;
-    private ValidationType validationType;
+    private final EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition;
+    private final Map<String, Credentials> callerToCredentials;
+    private final Set<ValidationType> validationTypes;
 
     public EmbeddedIdentityStore(EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition) {
 
@@ -71,7 +72,7 @@ public class EmbeddedIdentityStore implements IdentityStore {
                 e -> e.callerName(),
                 e -> e)
         );
-        determineValidationType();
+        validationTypes = unmodifiableSet(new HashSet<>(asList(embeddedIdentityStoreDefinition.useFor())));
     }
     
     @Override
@@ -81,17 +82,6 @@ public class EmbeddedIdentityStore implements IdentityStore {
         }
 
         return NOT_VALIDATED_RESULT;
-    }
-
-    private void determineValidationType() {
-        validationType = ValidationType.BOTH;
-        if (embeddedIdentityStoreDefinition.authenticateOnly()) {
-            validationType = ValidationType.VALIDATE;
-        } else {
-            if (embeddedIdentityStoreDefinition.authorizeOnly()) {
-                validationType = ValidationType.PROVIDE_GROUPS;
-            }
-        }
     }
     
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
@@ -119,7 +109,8 @@ public class EmbeddedIdentityStore implements IdentityStore {
         return embeddedIdentityStoreDefinition.priority();
     }
 
-    public ValidationType validationType() {
-        return validationType;
+    @Override
+    public Set<ValidationType> validationTypes() {
+        return validationTypes;
     }
 }

@@ -42,6 +42,7 @@ package org.glassfish.soteria.test;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
+import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +62,7 @@ import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
         url = "ldap://localhost:33389/",
         callerBaseDn = "ou=caller,dc=jsr375,dc=net",
         groupBaseDn = "ou=group,dc=jsr375,dc=net",
-        authenticateOnly = true
+        useFor = {VALIDATE, PROVIDE_GROUPS}
 )
 @ApplicationScoped
 public class AuthorizationIdentityStore implements IdentityStore {
@@ -91,7 +92,7 @@ public class AuthorizationIdentityStore implements IdentityStore {
     }
 
     @Override
-    public ValidationType validationType() {
-        return PROVIDE_GROUPS;
+    public Set<ValidationType> validationTypes() {
+        return new HashSet<>(asList(PROVIDE_GROUPS));
     }
 }

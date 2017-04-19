@@ -39,12 +39,15 @@
  */
 package org.glassfish.soteria.test;
 
+import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
@@ -88,9 +91,10 @@ public class AuthenticationIdentityStore implements IdentityStore {
 
         return result;
     }
-
+    
     @Override
-    public ValidationType validationType() {
-        return VALIDATE;
+    public Set<ValidationType> validationTypes() {
+        return new HashSet<>(asList(VALIDATE));
     }
+   
 }
