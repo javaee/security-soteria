@@ -66,12 +66,12 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
 
     public void init() {
     	List<IdentityStore> identityStores = getBeanReferencesByType(IdentityStore.class, false);
-    	
+
     	authenticationIdentityStores = identityStores.stream()
     												 .filter(i -> i.validationTypes().contains(VALIDATE))
     												 .sorted(comparing(IdentityStore::priority))
     												 .collect(toList());
-    	
+
     	authorizationIdentityStores = identityStores.stream()
 				 									.filter(i -> i.validationTypes().contains(PROVIDE_GROUPS) && !i.validationTypes().contains(VALIDATE))
 		 											.sorted(comparing(IdentityStore::priority))
@@ -80,10 +80,10 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
-        
+
         CredentialValidationResult validationResult = null;
         IdentityStore identityStore = null;
-        
+
         // Check stores to authenticate until one succeeds.
         for (IdentityStore authenticationIdentityStore : authenticationIdentityStores) {
             validationResult = authenticationIdentityStore.validate(credential);
@@ -102,22 +102,22 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
             // No store authenticated, no need to continue
             return validationResult;
         }
-        
+
         CallerPrincipal callerPrincipal = validationResult.getCallerPrincipal();
         List<String> groups = new ArrayList<>();
-        
+
         // Take the groups from the identity store that validated the credentials only
         // if it has been set to provide groups.
         if (identityStore.validationTypes().contains(PROVIDE_GROUPS)) {
-            validationResult.getCallerGroups();
+            groups.addAll(validationResult.getCallerGroups());
         }
-        
+
         // Ask all stores that were configured for group providing only to get the groups for the
         // authenticated caller
         for (IdentityStore authorizationIdentityStore : authorizationIdentityStores) {
             groups.addAll(authorizationIdentityStore.getGroupsByCallerPrincipal(callerPrincipal));
         }
-        
+
         return new CredentialValidationResult(callerPrincipal, groups);
     }
 
