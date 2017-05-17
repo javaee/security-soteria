@@ -39,18 +39,17 @@
  */
 package org.glassfish.soteria.test;
 
-import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static org.glassfish.soteria.Utils.unmodifiableSet;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Credential;
+import javax.security.identitystore.credential.UsernamePasswordCredential;
 
 /**
  *
@@ -58,8 +57,7 @@ import javax.security.identitystore.credential.Credential;
 @ApplicationScoped
 public class BlackListedIdentityStore implements IdentityStore {
 
-    @Override
-    public CredentialValidationResult validate(Credential credential) {
+    public CredentialValidationResult validate(UsernamePasswordCredential credential) {
         CredentialValidationResult result = NOT_VALIDATED_RESULT;
         if ("rudy".equals(credential.getCaller())) {
             result = INVALID_RESULT;
@@ -74,6 +72,6 @@ public class BlackListedIdentityStore implements IdentityStore {
 
     @Override
     public Set<ValidationType> validationTypes() {
-        return new HashSet<>(asList(VALIDATE));
+        return unmodifiableSet(VALIDATE);
     }
 }
