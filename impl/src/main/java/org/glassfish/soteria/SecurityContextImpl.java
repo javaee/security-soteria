@@ -48,7 +48,6 @@ import java.security.Principal;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.security.AuthenticationStatus;
 import javax.security.SecurityContext;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
@@ -64,9 +63,6 @@ import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 public class SecurityContextImpl implements SecurityContext, Serializable {
     
     private static final long serialVersionUID = 1L;
-    
-    @Inject // Due to a bug, Injection of HttpServletRequest doesn't work for TomEE 7.0.2
-    private HttpServletRequest request;
     
     private CallerDetailsResolver callerDetailsResolver;
     private ResourceAccessResolver resourceAccessResolver;
@@ -100,11 +96,6 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     @Override
     public boolean hasAccessToWebResource(String resource, String... methods) {
         return resourceAccessResolver.hasAccessToWebResource(resource, methods);
-    }
-    
-    @Override
-    public AuthenticationStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {
-        return authenticate(request, response, parameters);
     }
 
     @Override
