@@ -156,22 +156,6 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     public CallbackHandler getHandler() {
         return handler;
     }
-    
-    /* (non-Javadoc)
-     * @see javax.security.authenticationmechanism.http.HttpMessageContext#getModuleOptions()
-     */
-    @Override
-    public Map<String, String> getModuleOptions() {
-		return moduleOptions;
-	}
-    
-    /* (non-Javadoc)
-     * @see javax.security.authenticationmechanism.http.HttpMessageContext#getModuleOption(java.lang.String)
-     */
-    @Override
-    public String getModuleOption(String key) {
-    	return moduleOptions.get(key);
-    }
 
     /* (non-Javadoc)
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#getMessageInfo()
