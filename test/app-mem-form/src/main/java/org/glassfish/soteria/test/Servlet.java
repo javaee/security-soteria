@@ -44,8 +44,6 @@ import java.io.IOException;
 import javax.annotation.security.DeclareRoles;
 import javax.security.authentication.mechanism.http.annotation.FormAuthenticationMechanismDefinition;
 import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
-import javax.security.identitystore.annotation.Credentials;
-import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -53,6 +51,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.glassfish.soteria.identitystores.annotation.Credentials;
+import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
 
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether

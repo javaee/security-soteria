@@ -84,9 +84,9 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
                 // this method.
                 return httpMessageContext.notifyContainerAboutLogin(
                     result.getCallerPrincipal(), result.getCallerGroups());
-            } else {
-                throw new AuthException("Login failed");
-            }
+            } 
+                
+            throw new AuthException("Login failed");
         } 
 
         return httpMessageContext.doNothing();

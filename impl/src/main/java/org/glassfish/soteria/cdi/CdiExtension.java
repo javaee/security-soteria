@@ -70,13 +70,13 @@ import javax.security.authentication.mechanism.http.annotation.RememberMe;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
-import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 
 import org.glassfish.soteria.SecurityContextImpl;
 import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
 import org.glassfish.soteria.identitystores.LdapIdentityStore;
+import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;

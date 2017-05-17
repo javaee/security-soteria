@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,62 +37,63 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.identitystores.annotation;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.security.CallerPrincipal;
 import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
+import javax.security.identitystore.IdentityStore.ValidationType;
 
 /**
+ * Annotation used to define a container provided {@link IdentityStore} that stores
+ * caller credentials and identity attributes (together caller identities) in an 
+ * in-memory store, and make that implementation available as an enabled CDI bean.
+ * 
+ * <p>
+ * The data in this store is set at definition time only via the {@link #value()} attribute
+ * of this annotation.
+ * 
+ * <p>
+ * The following shows an example:
+ * 
+ * <pre>
+ * <code>
+ * {@literal @}EmbeddedIdentityStoreDefinition({ 
+ *  {@literal @}Credentials(callerName = "peter", password = "secret1", groups = { "foo", "bar" }),
+ *  {@literal @}Credentials(callerName = "john", password = "secret2", groups = { "foo", "kaz" }),
+ *  {@literal @}Credentials(callerName = "carla", password = "secret3", groups = { "foo" }) })
+ * </code>
+ * </pre>
  *
  */
-@LdapIdentityStoreDefinition(
-        url = "ldap://localhost:33389/",
-        callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-        groupBaseDn = "ou=group,dc=jsr375,dc=net",
-        useFor = VALIDATE
-)
-@ApplicationScoped
-public class AuthorizationIdentityStore implements IdentityStore {
+@Retention(RUNTIME)
+@Target(TYPE)
+public @interface EmbeddedIdentityStoreDefinition {
 
-    private Map<String, Set<String>> authorization;
+    /**
+     * Defines the caller identities stored in the embedded identity store
+     * 
+     * @return caller identities stored in the embedded identity store
+     */
+    Credentials[] value() default {};
 
-    @PostConstruct
-    public void init() {
-        authorization = new HashMap<>();
+    /**
+     * Determines the order in case multiple IdentityStores are found.
+     * @return the priority.
+     */
+    int priority() default 90;
 
-        authorization.put("rudy", new HashSet<>(asList("foo", "bar")));
-        authorization.put("will", new HashSet<>(asList("foo", "bar", "baz")));
-        authorization.put("arjan", new HashSet<>(asList("foo", "baz")));
-        authorization.put("reza", new HashSet<>(asList("baz")));
+    /**
+     * Determines what the identity store is used for
+     * 
+     * @return the type the identity store is used for
+     */
+    ValidationType[] useFor() default {VALIDATE, PROVIDE_GROUPS};
 
-    }
-
-    @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
-
-        Set<String> result = authorization.get(callerPrincipal.getName());
-        if (result == null) {
-            result = emptySet();
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<ValidationType> validationTypes() {
-        return new HashSet<>(asList(PROVIDE_GROUPS));
-    }
 }

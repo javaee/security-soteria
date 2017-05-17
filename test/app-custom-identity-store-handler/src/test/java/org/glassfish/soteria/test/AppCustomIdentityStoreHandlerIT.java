@@ -64,7 +64,8 @@ public class AppCustomIdentityStoreHandlerIT extends ArquillianBase {
         assertAuthenticated(
             "web", "reza", 
             readFromServer("/servlet?name=reza&password=secret1"),
-            "foo", "bar", "baz");
+            // Only groups from the 
+            "baz");
     }
 
     @Test

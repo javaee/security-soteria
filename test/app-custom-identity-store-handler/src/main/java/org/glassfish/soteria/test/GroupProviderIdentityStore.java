@@ -40,40 +40,60 @@
 package org.glassfish.soteria.test;
 
 import static java.util.Arrays.asList;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static java.util.Collections.emptySet;
+import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static org.glassfish.soteria.Utils.unmodifiableSet;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.identitystore.CredentialValidationResult;
+import javax.security.CallerPrincipal;
 import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Credential;
+import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 
 /**
  *
  */
+@LdapIdentityStoreDefinition(
+        url = "ldap://localhost:33389/",
+        callerBaseDn = "ou=caller,dc=jsr375,dc=net",
+        groupBaseDn = "ou=group,dc=jsr375,dc=net",
+        useFor = VALIDATE
+)
 @ApplicationScoped
-public class BlackListedIdentityStore implements IdentityStore {
+public class GroupProviderIdentityStore implements IdentityStore {
+
+    private Map<String, Set<String>> groupsPerCaller;
+
+    @PostConstruct
+    public void init() {
+        groupsPerCaller = new HashMap<>();
+
+        groupsPerCaller.put("rudy", new HashSet<>(asList("foo", "bar")));
+        groupsPerCaller.put("will", new HashSet<>(asList("foo", "bar", "baz")));
+        groupsPerCaller.put("arjan", new HashSet<>(asList("foo", "baz")));
+        groupsPerCaller.put("reza", new HashSet<>(asList("baz")));
+
+    }
 
     @Override
-    public CredentialValidationResult validate(Credential credential) {
-        CredentialValidationResult result = NOT_VALIDATED_RESULT;
-        if ("rudy".equals(credential.getCaller())) {
-            result = INVALID_RESULT;
+    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+
+        Set<String> result = groupsPerCaller.get(callerPrincipal.getName());
+        if (result == null) {
+            result = emptySet();
         }
+        
         return result;
     }
 
     @Override
-    public int priority() {
-        return 1000;
-    }
-
-    @Override
     public Set<ValidationType> validationTypes() {
-        return new HashSet<>(asList(VALIDATE));
+        return unmodifiableSet(PROVIDE_GROUPS);
     }
 }
