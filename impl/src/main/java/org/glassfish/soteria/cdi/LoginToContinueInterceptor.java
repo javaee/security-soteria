@@ -143,7 +143,7 @@ public class LoginToContinueInterceptor implements Serializable {
         try {
             authstatus = (AuthenticationStatus) invocationContext.proceed();
         } catch (AuthException e) {
-            authstatus = AuthenticationStatus.FAILURE;
+            authstatus = AuthenticationStatus.SEND_FAILURE;
         }
         
         if (authstatus == AuthenticationStatus.SUCCESS) {
@@ -202,7 +202,7 @@ public class LoginToContinueInterceptor implements Serializable {
             try {
                 authstatus = (AuthenticationStatus) invocationContext.proceed();
             } catch (AuthException e) {
-                authstatus = AuthenticationStatus.FAILURE;
+                authstatus = AuthenticationStatus.SEND_FAILURE;
             }
           
             // (Following the JASPIC spec (3.8.3.1) validateRequest before service invocation can only return 
@@ -229,7 +229,7 @@ public class LoginToContinueInterceptor implements Serializable {
                     return httpMessageContext.redirect(savedRequest.getFullRequestURL());
                 } // else return success
                 
-            } else if (authstatus == AuthenticationStatus.FAILURE)  {
+            } else if (authstatus == AuthenticationStatus.SEND_FAILURE)  {
                 
                 String errorPage = getLoginToContinueAnnotation(invocationContext).errorPage();
                 

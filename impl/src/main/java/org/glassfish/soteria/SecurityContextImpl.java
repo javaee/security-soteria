@@ -39,7 +39,7 @@
  */
 package org.glassfish.soteria;
 
-import static javax.security.AuthenticationStatus.FAILURE;
+import static javax.security.AuthenticationStatus.SEND_FAILURE;
 import static javax.security.AuthenticationStatus.SUCCESS;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastAuthenticationStatus;
 
@@ -114,7 +114,7 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
         } catch (IllegalArgumentException e) { // TODO: exception type not ideal
             // JBoss returns false when authentication is in progress, but throws exception when
             // authentication fails (or was not done at all).
-            return FAILURE;
+            return SEND_FAILURE;
         }
     }
     
