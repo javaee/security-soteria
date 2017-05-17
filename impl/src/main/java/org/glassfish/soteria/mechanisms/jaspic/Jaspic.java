@@ -257,28 +257,24 @@ public final class Jaspic {
 			return AuthenticationStatus.SUCCESS;
 		}
 		
-		if (authStatus == AuthStatus.FAILURE) {
-			return AuthenticationStatus.FAILURE;
-		}
-		
 		if (authStatus == AuthStatus.SEND_FAILURE) {
-			return AuthenticationStatus.FAILURE;
+			return AuthenticationStatus.SEND_FAILURE;
 		}
 		
 		if (authStatus == AuthStatus.SEND_CONTINUE) {
-			return AuthenticationStatus.IN_PROGRESS;
+			return AuthenticationStatus.SEND_CONTINUE;
 		}
 		
-		return AuthenticationStatus.NOT_DONE; // TMP
+		return AuthenticationStatus.NOT_DONE;
 	}
 	
 	public static AuthStatus fromAuthenticationStatus(AuthenticationStatus authenticationStatus) {
 	    switch (authenticationStatus) {
 	        case NOT_DONE: case SUCCESS:
 	            return AuthStatus.SUCCESS;
-	        case FAILURE:
-	            return AuthStatus.FAILURE;
-	        case IN_PROGRESS:
+	        case SEND_FAILURE:
+	            return AuthStatus.SEND_FAILURE;
+	        case SEND_CONTINUE:
 	            return AuthStatus.SEND_CONTINUE;
 	        default:
 	            throw new IllegalStateException("Unhandled status:" + authenticationStatus.name());
