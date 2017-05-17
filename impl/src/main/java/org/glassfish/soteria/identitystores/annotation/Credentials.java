@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.identitystores.annotation;
 
-import static java.util.Arrays.asList;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Credential;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 /**
+ * <code>Credentials</code> define a single caller identity for
+ * use with the {@link EmbeddedIdentityStoreDefinition} annotation. 
  *
  */
-@ApplicationScoped
-public class BlackListedIdentityStore implements IdentityStore {
+@Retention(RUNTIME)
+@Target({ TYPE, METHOD, FIELD, PARAMETER })
+public @interface Credentials {
+    
+    /**
+     * Name of caller. This is the name a caller uses to authenticate with.
+     * 
+     * @return Name of caller
+     */
+    String callerName();
 
-    @Override
-    public CredentialValidationResult validate(Credential credential) {
-        CredentialValidationResult result = NOT_VALIDATED_RESULT;
-        if ("rudy".equals(credential.getCaller())) {
-            result = INVALID_RESULT;
-        }
-        return result;
-    }
+    /**
+     * A text-based password used by the caller to authenticate.
+     * 
+     * @return A text-based password
+     */
+    String password();
 
-    @Override
-    public int priority() {
-        return 1000;
-    }
-
-    @Override
-    public Set<ValidationType> validationTypes() {
-        return new HashSet<>(asList(VALIDATE));
-    }
+    /**
+     * The optional list of groups that the specified caller is in.
+     * 
+     * @return optional list of groups
+     */
+    String[] groups() default {};
 }
