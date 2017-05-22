@@ -16,7 +16,7 @@
     
     <properties>
         <!-- Test servers -->
-        <payara.version>4.1.1.171.1</payara.version>
+        <payara.version>4.1.2.172</payara.version>
         <glassfish.version>4.1.1</glassfish.version>
         <wildfly.version>10.1.0.Final</wildfly.version>
         <tomee.version>7.0.2</tomee.version>
@@ -27,6 +27,7 @@
         <module>common</module>
         
         <module>app-securitycontext</module>
+        <module>app-securitycontext-auth</module>
     
         <!-- app-[identity-store] -->
         <module>app-mem</module>
@@ -194,28 +195,6 @@
                                     </artifactItems>
                                 </configuration>
                             </execution>
-                            
-                            <execution>
-                                <id>copy</id>
-                                <phase>process-test-classes</phase>
-                                <goals>
-                                    <goal>copy</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-											<groupId>org.jboss.classfilewriter</groupId>
-											<artifactId>jboss-classfilewriter</artifactId>
-											<version>1.2.1.Final</version>
-                                            <overWrite>true</overWrite>
-                                            <outputDirectory>${project.build.directory}/payara41/glassfish/modules</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <stripClassifier>true</stripClassifier>
-                                    <stripVersion>true</stripVersion>
-                                </configuration>
-                            </execution>
-                            
                         </executions>
                     </plugin>
                     <plugin>
