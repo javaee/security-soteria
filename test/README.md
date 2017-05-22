@@ -41,6 +41,10 @@ This sub-repo contains working applications that demonstrate various aspects of 
   * Test URL: http://localhost:8080/app-jaxrs/rest/resource/callerName?name=reza&password=secret1 (public resource, name)
   * Test URL: http://localhost:8080/app-jaxrs/rest/resource/hasRoleFoo?name=reza&password=secret1 (public resource, role)
   * Test URL: http://localhost:8080/app-jaxrs/rest/protectedResource/sayHi?name=reza&password=secret1 (protected resource)
+* **app-securitycontext-auth** - This example has some aspects from app-mem-customform in that it uses the security context to trigger authentication, but here this happens from a Servlet and a special authentication mechanism is used that only processes a special credential provided with the securityContext.authenticate call.
+  * Test URL: http://localhost:8080/app-securitycontext-auth/servlet?name=reza (authenticates as Reza)
+  * Test URL: http://localhost:8080/app-securitycontext-auth/servlet?name=rezax (fails authentication via exception)
+  * Test URL: http://localhost:8080/app-securitycontext-auth/servlet?name=rezax (fails authentication via status return code)
 
 ## Running the samples in Docker
 
