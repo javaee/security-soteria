@@ -21,6 +21,7 @@
         <wildfly.version>10.1.0.Final</wildfly.version>
         <tomee.version>7.0.2</tomee.version>
         <liberty.version>16.0.0.3</liberty.version>
+        <version.docker-maven-plugin>0.20.1</version.docker-maven-plugin>
     </properties>
 
     <modules>
@@ -455,51 +456,29 @@
             <build>            
                 <plugins>
                     <plugin>
-                        <groupId>com.spotify</groupId>
+                        <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.4.13</version>
+                        <version>${version.docker-maven-plugin}</version>
                         <configuration>
-                            <serverId>docker-hub</serverId>
-                            <imageName>soteria-samples/${project.artifactId}:wildfly</imageName>
-                            <baseImage>jboss/wildfly:10.1.0.Final</baseImage>
-                            <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
-                            <resources>                                
-                                <resource>
-                                    <targetPath>/opt/jboss/wildfly/standalone/deployments/</targetPath>
-                                    <directory>${project.build.directory}</directory>
-                                    <include>${project.build.finalName}.war</include>
-                                </resource>
-                            </resources>   
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>liberty-docker</id>
-            <build>            
-                <plugins>
-                    <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.4.13</version>
-                        <configuration>
-                            <serverId>docker-hub</serverId>
-                            <imageName>soteria-samples/${project.artifactId}:liberty</imageName>
-                            <baseImage>websphere-liberty:javaee7</baseImage>
-                            <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
-                            <resources>
-                                <resource>
-                                    <targetPath>/opt/ibm/wlp/templates/servers/defaultServer/</targetPath>
-                                    <directory>../common/src/main/resources/</directory>
-                                    <include>server.xml</include>
-                                </resource>                             
-                                <resource>
-                                    <targetPath>/opt/ibm/wlp/usr/servers/defaultServer/dropins/</targetPath>
-                                    <directory>${project.build.directory}</directory>
-                                    <include>${project.build.finalName}.war</include>
-                                </resource>
-                            </resources>   
+                            <images>
+                                <image>
+                                    <alias>wildfly</alias>
+                                    <name>soteria-samples/${project.artifactId}:wildfly</name>
+                                    <build>
+                                        <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
+                                        <from>jboss/wildfly:10.1.0.Final</from>
+                                        <assembly>
+                                            <basedir>/opt/jboss/wildfly/standalone/deployments/</basedir>
+                                            <descriptorRef>artifact</descriptorRef>
+                                        </assembly>
+                                    </build>
+                                    <run>
+                                        <ports>
+                                            <port>8088:8080</port>
+                                        </ports>
+                                    </run>
+                                </image>
+                            </images>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -510,22 +489,34 @@
             <build>            
                 <plugins>
                     <plugin>
-                        <groupId>com.spotify</groupId>
+                        <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.4.13</version>
+                        <version>${version.docker-maven-plugin}</version>
                         <configuration>
-                            <serverId>docker-hub</serverId>
-                            <imageName>soteria-samples/${project.artifactId}:payara</imageName>
-                            <baseImage>payara/server-web:163</baseImage>
-                            <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
-                            <resources>                                
-                                <resource>
-                                    <targetPath>/opt/payara41/glassfish/domains/domain1/autodeploy/</targetPath>
-                                    <directory>${project.build.directory}</directory>
-                                    <include>${project.build.finalName}.war</include>
-                                </resource>
-                            </resources>   
-                            <entryPoint>["/opt/payara41/bin/asadmin", "start-domain", "-v"]</entryPoint>
+                            <images>
+                                <image>
+                                    <alias>payara</alias>
+                                    <name>soteria-samples/${project.artifactId}:payara</name>
+                                    <build>
+                                        <maintainer>Ivar Grimstad (ivar.grimstad@gmail.com)</maintainer>
+                                        <from>payara/server-web:163</from>
+                                        <assembly>
+                                            <basedir>/opt/payara41/glassfish/domains/domain1/autodeploy/</basedir>
+                                            <descriptorRef>artifact</descriptorRef>
+                                        </assembly>
+                                        <entryPoint>
+                                            <arg>/opt/payara41/bin/asadmin</arg>
+                                            <arg>start-domain</arg>
+                                            <arg>-v</arg>
+                                        </entryPoint>
+                                    </build>
+                                    <run>
+                                        <ports>
+                                            <port>8089:8080</port>
+                                        </ports>
+                                    </run>
+                                </image>
+                            </images>
                         </configuration>
                     </plugin>
                 </plugins>
