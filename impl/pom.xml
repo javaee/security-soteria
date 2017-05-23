@@ -23,7 +23,7 @@
         <dependency>
             <groupId>javax.security</groupId>
             <artifactId>javax.security-api</artifactId>
-            <version>1.0-m03-SNAPSHOT</version>
+            <version>1.0-m04-prd</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
