@@ -42,6 +42,8 @@ package org.glassfish.soteria.test;
 import static java.util.Arrays.asList;
 import static javax.security.AuthenticationStatus.SEND_FAILURE;
 
+import java.util.HashSet;
+
 import javax.enterprise.context.RequestScoped;
 import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
@@ -59,27 +61,27 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 
         if (httpMessageContext.isAuthenticationRequest()) {
-            
+
             Credential credential = httpMessageContext.getAuthParameters().getCredential();
             if (!(credential instanceof CallerOnlyCredential)) {
                 throw new IllegalStateException("This authentication mechanism requires a programmatically provided CallerOnlyCredential");
             }
-            
+
             CallerOnlyCredential callerOnlyCredential = (CallerOnlyCredential) credential;
-            
+
             if ("reza".equals(callerOnlyCredential.getCaller())) {
-                return httpMessageContext.notifyContainerAboutLogin("reza", asList("foo", "bar"));
+                return httpMessageContext.notifyContainerAboutLogin("reza", new HashSet<>(asList("foo", "bar")));
             }
-            
+
             if ("rezax".equals(callerOnlyCredential.getCaller())) {
                 throw new AuthException();
             }
-            
+
             return SEND_FAILURE;
-            
+
         }
-        
+
         return httpMessageContext.doNothing();
     }
-    
+
 }
