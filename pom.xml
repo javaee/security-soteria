@@ -10,7 +10,7 @@
 
 	<groupId>org.glassfish.soteria</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.0-m04-SNAPSHOT</version>
+	<version>1.0-m05-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2015</inceptionYear>
