@@ -49,6 +49,8 @@
         <module>app-custom-rememberme</module>
 
         <module>app-custom-identity-store-handler</module>
+
+        <module>app-jaxrs</module>
     </modules>
     
     <dependencyManagement>
