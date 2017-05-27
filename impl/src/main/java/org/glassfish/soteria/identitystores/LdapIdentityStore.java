@@ -40,13 +40,16 @@
 package org.glassfish.soteria.identitystores;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.list;
+import static java.util.Collections.unmodifiableSet;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static javax.naming.Context.SECURITY_AUTHENTICATION;
 import static javax.naming.Context.SECURITY_CREDENTIALS;
 import static javax.naming.Context.SECURITY_PRINCIPAL;
+import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
@@ -72,9 +75,11 @@ import javax.security.identitystore.credential.UsernamePasswordCredential;
 public class LdapIdentityStore implements IdentityStore {
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
+    private final Set<ValidationType> validationTypes;
 
     public LdapIdentityStore(LdapIdentityStoreDefinition ldapIdentityStoreDefinition) {
         this.ldapIdentityStoreDefinition = ldapIdentityStoreDefinition;
+        validationTypes = unmodifiableSet(new HashSet<>(asList(ldapIdentityStoreDefinition.useFor())));
     }
 
     @Override
@@ -265,7 +270,7 @@ public class LdapIdentityStore implements IdentityStore {
             return list(ldapContext.search(
                     searchBase,                             // e.g. ou=group,dc=jsr375,dc=net
                     format("(%s={0})", filterAttribute),    // e.g. (member={0})
-                    new Object[]{filterValue},             // e.g. uid=reza,ou=caller,dc=jsr375,dc=net
+                    new Object[]{filterValue},              // e.g. uid=reza,ou=caller,dc=jsr375,dc=net
                     controls
             ));
         } catch (NamingException e) {
@@ -276,7 +281,7 @@ public class LdapIdentityStore implements IdentityStore {
     private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchExpression) {
         SearchControls controls = new SearchControls();
         // Specify the search scope
-        controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        controls.setSearchScope(SUBTREE_SCOPE);
 
         try {
             return list(ldapContext.search(searchBase, searchExpression, controls));
@@ -291,6 +296,16 @@ public class LdapIdentityStore implements IdentityStore {
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
+    }
+    
+    @Override
+    public int priority() {
+        return ldapIdentityStoreDefinition.priority();
+    }
+
+    @Override
+    public Set<ValidationType> validationTypes() {
+        return validationTypes;
     }
 
 }

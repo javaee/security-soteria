@@ -41,8 +41,9 @@ package org.glassfish.soteria.mechanisms;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
-import static javax.security.AuthenticationStatus.FAILURE;
-import static javax.security.AuthenticationStatus.IN_PROGRESS;
+import static javax.security.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.AuthenticationStatus.NOT_DONE;
+import static javax.security.AuthenticationStatus.SEND_CONTINUE;
 import static javax.security.AuthenticationStatus.SUCCESS;
 import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -155,22 +156,6 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     public CallbackHandler getHandler() {
         return handler;
     }
-    
-    /* (non-Javadoc)
-     * @see javax.security.authenticationmechanism.http.HttpMessageContext#getModuleOptions()
-     */
-    @Override
-    public Map<String, String> getModuleOptions() {
-		return moduleOptions;
-	}
-    
-    /* (non-Javadoc)
-     * @see javax.security.authenticationmechanism.http.HttpMessageContext#getModuleOption(java.lang.String)
-     */
-    @Override
-    public String getModuleOption(String key) {
-    	return moduleOptions.get(key);
-    }
 
     /* (non-Javadoc)
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#getMessageInfo()
@@ -224,7 +209,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     public AuthenticationStatus redirect(String location) {
         Utils.redirect(getResponse(), location);
         
-        return IN_PROGRESS;
+        return SEND_CONTINUE;
     }
     
     @Override
@@ -237,7 +222,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
         }
 
         // After forward MUST NOT invoke the resource, so CAN NOT return SUCCESS here.
-        return IN_PROGRESS;
+        return SEND_CONTINUE;
     }
     
     /* (non-Javadoc)
@@ -251,7 +236,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
 			throw new IllegalStateException(e);
 		}
     	
-    	return FAILURE;
+    	return SEND_FAILURE;
     }
     
     /* (non-Javadoc)
@@ -265,7 +250,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
 			throw new IllegalStateException(e);
 		}
     	
-    	return FAILURE;
+    	return SEND_FAILURE;
     }
     
     /* (non-Javadoc)
@@ -321,7 +306,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
         
     	Jaspic.notifyContainerAboutLogin(clientSubject, handler, (String) null, null);
     	
-    	return SUCCESS;
+    	return NOT_DONE;
     }
     
     @Override

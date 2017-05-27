@@ -39,79 +39,86 @@
  */
 package org.glassfish.soteria.test;
 
+import static javax.security.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static org.glassfish.soteria.Utils.notNull;
+
 import java.io.IOException;
+import java.util.List;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.authentication.mechanism.http.annotation.CustomFormAuthenticationMechanismDefinition;
-import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
+import javax.inject.Inject;
+import javax.security.AuthenticationStatus;
+import javax.security.SecurityContext;
+import javax.security.identitystore.credential.CallerOnlyCredential;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.glassfish.soteria.identitystores.annotation.Credentials;
-import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
-
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
+ *
  */
-@CustomFormAuthenticationMechanismDefinition(
-    loginToContinue = @LoginToContinue(
-        loginPage="/login.jsf",
-        errorPage="" // DRAFT API - must be set to empty for now
-    )
-)
-
-@EmbeddedIdentityStoreDefinition({ 
-    @Credentials(callerName = "reza", password = "secret1", groups = { "foo", "bar" }),
-    @Credentials(callerName = "alex", password = "secret2", groups = { "foo", "kaz" }),
-    @Credentials(callerName = "arjan", password = "secret3", groups = { "foo" }) }
-)
-
-@WebServlet("/servlet")
 @DeclareRoles({ "foo", "bar", "kaz" })
-@ServletSecurity(@HttpConstraint(rolesAllowed = "foo"))
+@WebServlet("/servlet")
 public class Servlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    
+    @Inject
+    private SecurityContext securityContext;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+        
+        response.getWriter().write("This is a servlet \n");
+        
+        String name = request.getParameter("name");
+        
+        if (notNull(name)) {
+        
+            AuthenticationStatus status = securityContext.authenticate(
+                request, response,
+                withParams()
+                    .credential(
+                        new CallerOnlyCredential(name)));
+            
+            response.getWriter().write("Authenticated with status: " + status.name() + "\n");
+        }
+        
         String webName = null;
         if (request.getUserPrincipal() != null) {
             webName = request.getUserPrincipal().getName();
         }
-        
-        response.getWriter().write(
-                "<html><body> This is a servlet <br><br>\n" +
-        
-                    "web username: " + webName + "<br><br>\n" +
-                            
-                    "web user has role \"foo\": " + request.isUserInRole("foo") + "<br>\n" +
-                    "web user has role \"bar\": " + request.isUserInRole("bar") + "<br>\n" +
-                    "web user has role \"kaz\": " + request.isUserInRole("kaz") + "<br><br>\n" + 
 
-                        
-                    "<form method=\"POST\">" +
-                        "<input type=\"hidden\" name=\"logout\" value=\"true\"  >" +
-                        "<input type=\"submit\" value=\"Logout\">" +
-                    "</form>" +
-                "</body></html>");
-    }
-    
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if ("true".equals(request.getParameter("logout"))) {
-            request.logout();
-            request.getSession().invalidate();
+        response.getWriter().write("web username: " + webName + "\n");
+
+        response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
+        response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
+        response.getWriter().write("web user has role \"kaz\": " + request.isUserInRole("kaz") + "\n");
+        
+        String contextName = null;
+        if (securityContext.getCallerPrincipal() != null) {
+            contextName = securityContext.getCallerPrincipal().getName();
         }
         
-        doGet(request, response);
+        response.getWriter().write("context username: " + contextName + "\n");
+        
+        response.getWriter().write("context user has role \"foo\": " + securityContext.isCallerInRole("foo") + "\n");
+        response.getWriter().write("context user has role \"bar\": " + securityContext.isCallerInRole("bar") + "\n");
+        response.getWriter().write("context user has role \"kaz\": " + securityContext.isCallerInRole("kaz") + "\n");
+        
+        response.getWriter().write("has access to /protectedServlet: " + securityContext.hasAccessToWebResource("/protectedServlet") + "\n");
+        
+        List<String> roles = securityContext.getAllDeclaredCallerRoles();
+        
+        response.getWriter().write("All declared roles of user " + roles + "\n");
+        
+        response.getWriter().write("all roles has role \"foo\": " + roles.contains("foo") + "\n");
+        response.getWriter().write("all roles has role \"bar\": " + roles.contains("bar") + "\n");
+        response.getWriter().write("all roles has role \"kaz\": " + roles.contains("kaz") + "\n");
     }
 
 }

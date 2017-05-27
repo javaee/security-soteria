@@ -39,7 +39,7 @@
  */
 package org.glassfish.soteria;
 
-import static javax.security.AuthenticationStatus.FAILURE;
+import static javax.security.AuthenticationStatus.SEND_FAILURE;
 import static javax.security.AuthenticationStatus.SUCCESS;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastAuthenticationStatus;
 
@@ -48,7 +48,6 @@ import java.security.Principal;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.security.AuthenticationStatus;
 import javax.security.SecurityContext;
 import javax.security.authentication.mechanism.http.AuthenticationParameters;
@@ -64,9 +63,6 @@ import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 public class SecurityContextImpl implements SecurityContext, Serializable {
     
     private static final long serialVersionUID = 1L;
-    
-    @Inject // Due to a bug, Injection of HttpServletRequest doesn't work for TomEE 7.0.2
-    private HttpServletRequest request;
     
     private CallerDetailsResolver callerDetailsResolver;
     private ResourceAccessResolver resourceAccessResolver;
@@ -101,11 +97,6 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     public boolean hasAccessToWebResource(String resource, String... methods) {
         return resourceAccessResolver.hasAccessToWebResource(resource, methods);
     }
-    
-    @Override
-    public AuthenticationStatus authenticate(HttpServletResponse response, AuthenticationParameters parameters) {
-        return authenticate(request, response, parameters);
-    }
 
     @Override
     public AuthenticationStatus authenticate(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters parameters) {
@@ -123,7 +114,7 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
         } catch (IllegalArgumentException e) { // TODO: exception type not ideal
             // JBoss returns false when authentication is in progress, but throws exception when
             // authentication fails (or was not done at all).
-            return FAILURE;
+            return SEND_FAILURE;
         }
     }
     

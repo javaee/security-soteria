@@ -42,6 +42,7 @@ package org.glassfish.soteria.identitystores;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
@@ -53,16 +54,17 @@ import java.util.Set;
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.Credentials;
-import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 
+import org.glassfish.soteria.identitystores.annotation.Credentials;
+import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
+
 public class EmbeddedIdentityStore implements IdentityStore {
 
-    private Map<String, Credentials> callerToCredentials;
-    private EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition;
-    private ValidationType validationType;
+    private final EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition;
+    private final Map<String, Credentials> callerToCredentials;
+    private final Set<ValidationType> validationType;
 
     public EmbeddedIdentityStore(EmbeddedIdentityStoreDefinition embeddedIdentityStoreDefinition) {
 
@@ -71,7 +73,7 @@ public class EmbeddedIdentityStore implements IdentityStore {
                 e -> e.callerName(),
                 e -> e)
         );
-        determineValidationType();
+        validationType = unmodifiableSet(new HashSet<>(asList(embeddedIdentityStoreDefinition.useFor())));
     }
     
     @Override
@@ -81,17 +83,6 @@ public class EmbeddedIdentityStore implements IdentityStore {
         }
 
         return NOT_VALIDATED_RESULT;
-    }
-
-    private void determineValidationType() {
-        validationType = ValidationType.BOTH;
-        if (embeddedIdentityStoreDefinition.authenticateOnly()) {
-            validationType = ValidationType.AUTHENTICATION;
-        } else {
-            if (embeddedIdentityStoreDefinition.authorizeOnly()) {
-                validationType = ValidationType.AUTHORIZATION;
-            }
-        }
     }
     
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
@@ -119,7 +110,8 @@ public class EmbeddedIdentityStore implements IdentityStore {
         return embeddedIdentityStoreDefinition.priority();
     }
 
-    public ValidationType validationType() {
+    @Override
+    public Set<ValidationType> validationTypes() {
         return validationType;
     }
 }

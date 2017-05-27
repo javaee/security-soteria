@@ -39,6 +39,8 @@
  */
 package org.glassfish.soteria.mechanisms.jaspic;
 
+import static javax.security.AuthenticationStatus.NOT_DONE;
+import static javax.security.AuthenticationStatus.SEND_FAILURE;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.fromAuthenticationStatus;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.setLastAuthenticationStatus;
 
@@ -102,13 +104,24 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
             if (cdiPerRequestInitializer != null) {
                 cdiPerRequestInitializer.init(msgContext.getRequest());
             }
+            
+            AuthenticationStatus status = NOT_DONE;
+            setLastAuthenticationStatus(msgContext.getRequest(), status);
                 
-            AuthenticationStatus status = CDI.current()
-                                             .select(HttpAuthenticationMechanism.class).get()
-                                             .validateRequest(
-                                                 msgContext.getRequest(), 
-                                                 msgContext.getResponse(), 
-                                                 msgContext);
+            try {
+                status = CDI.current()
+                            .select(HttpAuthenticationMechanism.class).get()
+                            .validateRequest(
+                                msgContext.getRequest(), 
+                                msgContext.getResponse(), 
+                                msgContext);
+            } catch (AuthException e) {
+                // In case of an explicit AuthException, status will
+                // be set to SEND_FAILURE, for any other (non checked) exception
+                // the status will be the default NOT_DONE
+                setLastAuthenticationStatus(msgContext.getRequest(), SEND_FAILURE);
+                throw e;
+            }
             
             setLastAuthenticationStatus(msgContext.getRequest(), status);
             

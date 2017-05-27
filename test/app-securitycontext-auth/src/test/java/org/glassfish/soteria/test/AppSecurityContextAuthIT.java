@@ -39,10 +39,10 @@
  */
 package org.glassfish.soteria.test;
 
-import static org.glassfish.soteria.test.Assert.assertAuthenticated;
+import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
-import static org.glassfish.soteria.test.Assert.assertNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -52,8 +52,8 @@ import org.junit.runner.RunWith;
 
 
 @RunWith(Arquillian.class)
-public class AppCustomIdentityStoreHandlerIT extends ArquillianBase {
-
+public class AppSecurityContextAuthIT extends ArquillianBase {
+    
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
         return mavenWar();
@@ -61,41 +61,56 @@ public class AppCustomIdentityStoreHandlerIT extends ArquillianBase {
 
     @Test
     public void testAuthenticated() {
-        assertAuthenticated(
-            "web", "reza", 
-            readFromServer("/servlet?name=reza&password=secret1"),
-            // Only groups from the 
-            "baz");
+        assertDefaultAuthenticated(
+            readFromServer("/servlet?name=reza"));
     }
-
+    
     @Test
-    public void testBlacklisted() {
-        assertNotAuthenticated(
-            "web", "rudy", 
-            readFromServer("/servlet?name=rudy&password=pw"),
-            "foo", "bar");
+    public void testAuthenticatedStatus() {
+        assertTrue(
+            readFromServer("/servlet?name=reza")
+                .contains("Authenticated with status: SUCCESS"));
     }
-
+    
+    /**
+     * The name "rezax" will cause the custom authentication provider
+     * to throw an auth exception, which should ultimately result in
+     * a SEND_FAILURE outcome from SecurityContext.authenticate.
+     */
+    @Test
+    public void testAuthenticatedStatusException() {
+        assertTrue(
+            readFromServer("/servlet?name=rezax")
+                .contains("Authenticated with status: SEND_FAILURE"));
+    }
+    
+    /**
+     * The name "unknown" will cause the custom authentication provider
+     * to return SEND_FAILURE, which should ultimately result in
+     * a SEND_FAILURE outcome from SecurityContext.authenticate as well.
+     */
+    @Test
+    public void testAuthenticatedStatusFail() {
+        assertTrue(
+            readFromServer("/servlet?name=unknown")
+                .contains("Authenticated with status: SEND_FAILURE"));
+    }
+    
+//    @Test
+//    public void testContextAuthenticated() {
+//        Assert.assertAuthenticated(
+//            "context",
+//            "reza",
+//            readFromServer("/servlet?name=reza"));
+//    }
+    
     @Test
     public void testNotAuthenticated() {
         assertDefaultNotAuthenticated(
             readFromServer("/servlet"));
     }
-
-    @Test
-    public void testNotAuthenticatedWrongName() {
-        assertNotAuthenticated(
-            "web", "reza", 
-            readFromServer("/servlet?name=romo&password=secret1"),
-            "foo", "bar", "baz");
-    }
-
-    @Test
-    public void testNotAuthenticatedWrongPassword() {
-        assertNotAuthenticated(
-            "web", "reza", 
-            readFromServer("/servlet?name=reza&password=wrongpassword"),
-            "foo", "bar", "baz");
-    }
+    
+  
+    
 
 }

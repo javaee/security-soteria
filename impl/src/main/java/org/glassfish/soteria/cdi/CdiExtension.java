@@ -39,18 +39,27 @@
  */
 package org.glassfish.soteria.cdi;
 
+import static org.glassfish.soteria.cdi.CdiUtils.addAnnotatedTypes;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+
 import java.lang.annotation.Annotation;
-import org.glassfish.soteria.SecurityContextImpl;
-import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
-import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
-import org.glassfish.soteria.identitystores.LdapIdentityStore;
-import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
-import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
-import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.*;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
 import javax.security.authentication.mechanism.http.annotation.BasicAuthenticationMechanismDefinition;
@@ -61,20 +70,16 @@ import javax.security.authentication.mechanism.http.annotation.RememberMe;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
-import javax.security.identitystore.annotation.EmbeddedIdentityStoreDefinition;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
-import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
-import javax.security.authentication.mechanism.http.annotation.RememberMe;
 
-import static org.glassfish.soteria.cdi.CdiUtils.addAnnotatedTypes;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
+import org.glassfish.soteria.SecurityContextImpl;
+import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
+import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
+import org.glassfish.soteria.identitystores.LdapIdentityStore;
+import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
+import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
+import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
+import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
 
 public class CdiExtension implements Extension {
 

@@ -40,58 +40,46 @@
 package org.glassfish.soteria.test;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
-import static javax.security.identitystore.IdentityStore.ValidationType.AUTHORIZATION;
+import static javax.security.AuthenticationStatus.SEND_FAILURE;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import javax.enterprise.context.RequestScoped;
+import javax.security.AuthenticationStatus;
+import javax.security.auth.message.AuthException;
+import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.authentication.mechanism.http.HttpMessageContext;
+import javax.security.identitystore.credential.CallerOnlyCredential;
+import javax.security.identitystore.credential.Credential;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
-
-/**
- *
- */
-@LdapIdentityStoreDefinition(
-        url = "ldap://localhost:33389/",
-        callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-        groupBaseDn = "ou=group,dc=jsr375,dc=net",
-        authenticateOnly = true
-)
-@ApplicationScoped
-public class AuthorizationIdentityStore implements IdentityStore {
-
-    private Map<String, Set<String>> authorization;
-
-    @PostConstruct
-    public void init() {
-        authorization = new HashMap<>();
-
-        authorization.put("rudy", new HashSet<>(asList("foo", "bar")));
-        authorization.put("will", new HashSet<>(asList("foo", "bar", "baz")));
-        authorization.put("arjan", new HashSet<>(asList("foo", "baz")));
-        authorization.put("reza", new HashSet<>(asList("baz")));
-
-    }
+@RequestScoped
+public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
 
     @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
 
-        Set<String> result = authorization.get(callerPrincipal.getName());
-        if (result == null) {
-            result = emptySet();
+        if (httpMessageContext.isAuthenticationRequest()) {
+            
+            Credential credential = httpMessageContext.getAuthParameters().getCredential();
+            if (!(credential instanceof CallerOnlyCredential)) {
+                throw new IllegalStateException("This authentication mechanism requires a programmatically provided CallerOnlyCredential");
+            }
+            
+            CallerOnlyCredential callerOnlyCredential = (CallerOnlyCredential) credential;
+            
+            if ("reza".equals(callerOnlyCredential.getCaller())) {
+                return httpMessageContext.notifyContainerAboutLogin("reza", asList("foo", "bar"));
+            }
+            
+            if ("rezax".equals(callerOnlyCredential.getCaller())) {
+                throw new AuthException();
+            }
+            
+            return SEND_FAILURE;
+            
         }
-
-        return result;
+        
+        return httpMessageContext.doNothing();
     }
-
-    @Override
-    public ValidationType validationType() {
-        return AUTHORIZATION;
-    }
+    
 }
