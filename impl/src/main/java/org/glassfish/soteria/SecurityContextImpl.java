@@ -83,7 +83,6 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     	return callerDetailsResolver.isCallerInRole(role);
     }
     
-    @Override
     public List<String> getAllDeclaredCallerRoles() {
         return callerDetailsResolver.getAllDeclaredCallerRoles();
     }

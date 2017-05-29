@@ -43,6 +43,8 @@ import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
+import java.util.HashSet;
+
 import javax.enterprise.context.RequestScoped;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
@@ -66,12 +68,12 @@ public class TestIdentityStore implements IdentityStore {
         if (usernamePasswordCredential.getCaller().equals("reza") &&
                 usernamePasswordCredential.getPassword().compareTo("secret1")) {
 
-            return new CredentialValidationResult("reza", asList("foo", "bar"));
+            return new CredentialValidationResult("reza", new HashSet<>(asList("foo", "bar")));
         }
 
         return INVALID_RESULT;
     }
-    
+
     public int priority() {
         return 10;
     }

@@ -49,7 +49,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
-import javax.security.CallerPrincipal;
+import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 
 /**
@@ -69,15 +69,15 @@ public class AuthorizationIdentityStore implements IdentityStore {
         authorization.put("arjan", new HashSet<>(asList("foo", "foo")));
 
     }
-    
+
     @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
-        return authorization.get(callerPrincipal.getName());
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+        return authorization.get(validationResult.getCallerPrincipal().getName());
     }
 
     @Override
     public Set<ValidationType> validationTypes() {
         return new HashSet<>(asList(PROVIDE_GROUPS));
     }
-    
+
 }

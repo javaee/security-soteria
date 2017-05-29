@@ -96,11 +96,11 @@ public class DataBaseIdentityStore implements IdentityStore {
         if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
             return new CredentialValidationResult(
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
-                executeQuery(
-                    dataSource, 
+                new HashSet<>(executeQuery(
+                    dataSource,
                     dataBaseIdentityStoreDefinition.groupsQuery(),
                     usernamePasswordCredential.getCaller()
-                )
+                ))
             );
         }
 
@@ -108,14 +108,14 @@ public class DataBaseIdentityStore implements IdentityStore {
     }
     
     @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
         
         DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
         
         return new HashSet<>(executeQuery(
             dataSource,
             dataBaseIdentityStoreDefinition.groupsQuery(),
-            callerPrincipal.getName())
+            validationResult.getCallerPrincipal().getName())
         );
     }
 
