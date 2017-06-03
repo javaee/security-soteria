@@ -50,8 +50,6 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -132,7 +130,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
      */
     @Override
     public void setRegisterSession(String username, Set<String> groups) {
-        Jaspic.setRegisterSession(messageInfo, username, new ArrayList<>(groups));
+        Jaspic.setRegisterSession(messageInfo, username, groups);
     }
     
     /* (non-Javadoc)
@@ -289,7 +287,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
             this.groups = null;
         }
         
-        Jaspic.notifyContainerAboutLogin(clientSubject, handler, callerPrincipal, new ArrayList<>(groups));
+        Jaspic.notifyContainerAboutLogin(clientSubject, handler, callerPrincipal, groups);
         
         // Explicitly set a flag that we did authentication, so code can check that this happened
         // TODO: or throw CDI event here?

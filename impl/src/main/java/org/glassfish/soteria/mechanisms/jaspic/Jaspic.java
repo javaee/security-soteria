@@ -45,6 +45,7 @@ import static org.glassfish.soteria.Utils.isEmpty;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 
 import javax.security.AuthenticationStatus;
 import javax.security.auth.Subject;
@@ -167,7 +168,7 @@ public final class Jaspic {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void setRegisterSession(MessageInfo messageInfo, String username, List<String> roles) {
+	public static void setRegisterSession(MessageInfo messageInfo, String username, Set<String> roles) {
 		messageInfo.getMap().put("javax.servlet.http.registerSession", TRUE.toString());
 		
 		HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
@@ -192,7 +193,7 @@ public final class Jaspic {
 		return TRUE.equals(request.getAttribute(IS_REFRESH));
 	}
 	
-    public static void notifyContainerAboutLogin(Subject clientSubject, CallbackHandler handler, Principal callerPrincipal, List<String> roles) {
+    public static void notifyContainerAboutLogin(Subject clientSubject, CallbackHandler handler, Principal callerPrincipal, Set<String> roles) {
         try {
             if (isEmpty(roles)) {
                 handler.handle(new Callback[] { 
