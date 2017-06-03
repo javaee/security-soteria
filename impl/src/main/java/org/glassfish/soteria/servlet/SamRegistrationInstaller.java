@@ -83,7 +83,7 @@ public class SamRegistrationInstaller implements ServletContainerInitializer, Se
         // Obtain a reference to the CdiExtension that was used to see if
         // there's an enabled bean
         
-        CDI<Object> cdi = null;
+        CDI<Object> cdi;
         try {
             cdi = CDI.current();
             

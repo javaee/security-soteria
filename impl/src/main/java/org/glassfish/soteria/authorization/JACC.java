@@ -84,7 +84,7 @@ public class JACC {
         // java.net.SocketPermission, java.io.FilePermission, and obtain the actual role names.
         Set<String> roles = filterRoles(permissionCollection);
         
-        return new ArrayList<String>(roles);
+        return new ArrayList<>(roles);
     }
     
     public static boolean hasPermission(Subject subject, Permission permission) {

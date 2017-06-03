@@ -43,7 +43,6 @@ import static java.util.Arrays.asList;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
-import java.util.Arrays;
 import java.util.HashSet;
 
 import javax.enterprise.context.RequestScoped;

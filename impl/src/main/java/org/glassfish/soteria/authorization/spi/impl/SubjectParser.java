@@ -316,7 +316,7 @@ public class SubjectParser {
                     List<String> groups = getGroupsFromPrincipals(principals);
                     for (String group : groups) {
                         if (!groupToRoles.containsKey(group)) {
-                            groupToRoles.put(group, new ArrayList<String>());
+                            groupToRoles.put(group, new ArrayList<>());
                         }
                         groupToRoles.get(group).add(role);
                     }
@@ -380,7 +380,7 @@ public class SubjectParser {
                         // Ignore the fact that the collection also contains user names and hope
                         // that there are no user names in the application with the same name as a group
                         if (!groupToRoles.containsKey(groupOrUserName)) {
-                            groupToRoles.put(groupOrUserName, new ArrayList<String>());
+                            groupToRoles.put(groupOrUserName, new ArrayList<>());
                         }
                         groupToRoles.get(groupOrUserName).add(role);
                     }
@@ -412,7 +412,7 @@ public class SubjectParser {
                     // (for Geronimo we know that using the default role mapper it's always zero or one group)
                     for (String group : principalToGroups(entry.getKey())) {
                         if (!groupToRoles.containsKey(group)) {
-                            groupToRoles.put(group, new ArrayList<String>());
+                            groupToRoles.put(group, new ArrayList<>());
                         }
                         groupToRoles.get(group).addAll(entry.getValue());
                          
@@ -532,7 +532,7 @@ public class SubjectParser {
                                           .getMethod("getTomcatPrincipal")
                                           .invoke(principal))));
                         
-                        ;
+
                     } catch (Exception e) {
                         
                     }
