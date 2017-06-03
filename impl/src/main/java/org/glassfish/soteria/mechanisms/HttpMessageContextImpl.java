@@ -50,8 +50,10 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.AuthenticationStatus;
 import javax.security.CallerPrincipal;
@@ -85,7 +87,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     private AuthenticationParameters authParameters;
 
     private CallerPrincipal callerPrincipal;
-    private List<String> groups;
+    private Set<String> groups;
     
     public HttpMessageContextImpl(CallbackHandler handler, Map<String, String> moduleOptions, MessageInfo messageInfo, Subject clientSubject) {
         this.handler = handler;
@@ -126,11 +128,11 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
 
     /* (non-Javadoc)
-     * @see javax.security.authenticationmechanism.http.HttpMessageContext#setRegisterSession(java.lang.String, java.util.List)
+     * @see javax.security.authenticationmechanism.http.HttpMessageContext#setRegisterSession(java.lang.String, java.util.Set)
      */
     @Override
-    public void setRegisterSession(String username, List<String> roles) {
-        Jaspic.setRegisterSession(messageInfo, username, roles);
+    public void setRegisterSession(String username, Set<String> groups) {
+        Jaspic.setRegisterSession(messageInfo, username, new ArrayList<>(groups));
     }
     
     /* (non-Javadoc)
@@ -254,10 +256,10 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
     
     /* (non-Javadoc)
-     * @see javax.security.authenticationmechanism.http.HttpMessageContext#notifyContainerAboutLogin(java.lang.String, java.util.List)
+     * @see javax.security.authenticationmechanism.http.HttpMessageContext#notifyContainerAboutLogin(java.lang.String, java.util.Set)
      */
     @Override
-    public AuthenticationStatus notifyContainerAboutLogin(String callerName, List<String> groups) {
+    public AuthenticationStatus notifyContainerAboutLogin(String callerName, Set<String> groups) {
         CallerPrincipal callerPrincipal = null;
         if (callerName != null) {
             callerPrincipal = new CallerPrincipal(callerName); // TODO: or store username separately?
@@ -279,7 +281,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
     
     @Override
-    public AuthenticationStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, List<String> groups) {
+    public AuthenticationStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, Set<String> groups) {
         this.callerPrincipal = callerPrincipal;
         if (callerPrincipal != null) {
             this.groups = groups;
@@ -287,7 +289,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
             this.groups = null;
         }
         
-        Jaspic.notifyContainerAboutLogin(clientSubject, handler, callerPrincipal, groups);
+        Jaspic.notifyContainerAboutLogin(clientSubject, handler, callerPrincipal, new ArrayList<>(groups));
         
         // Explicitly set a flag that we did authentication, so code can check that this happened
         // TODO: or throw CDI event here?
@@ -315,7 +317,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
 
     @Override
-    public List<String> getGroups() {
+    public Set<String> getGroups() {
         return groups;
     }
 

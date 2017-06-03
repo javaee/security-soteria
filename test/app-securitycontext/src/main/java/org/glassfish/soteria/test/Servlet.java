@@ -51,6 +51,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.soteria.SecurityContextImpl;
+
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
@@ -94,7 +96,7 @@ public class Servlet extends HttpServlet {
         
         response.getWriter().write("has access to /protectedServlet: " + securityContext.hasAccessToWebResource("/protectedServlet") + "\n");
         
-        List<String> roles = securityContext.getAllDeclaredCallerRoles();
+        List<String> roles = ((SecurityContextImpl)securityContext).getAllDeclaredCallerRoles();
         
         response.getWriter().write("All declared roles of user " + roles + "\n");
         

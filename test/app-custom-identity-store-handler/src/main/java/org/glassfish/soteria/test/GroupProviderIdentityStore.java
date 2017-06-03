@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.security.CallerPrincipal;
+import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
 
@@ -82,13 +83,12 @@ public class GroupProviderIdentityStore implements IdentityStore {
     }
 
     @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
-
-        Set<String> result = groupsPerCaller.get(callerPrincipal.getName());
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+        Set<String> result = groupsPerCaller.get(validationResult.getCallerPrincipal().getName());
         if (result == null) {
             result = emptySet();
         }
-        
+
         return result;
     }
 

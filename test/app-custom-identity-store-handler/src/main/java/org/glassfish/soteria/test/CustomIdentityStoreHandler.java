@@ -47,8 +47,9 @@ import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
@@ -90,7 +91,7 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
     public CredentialValidationResult validate(Credential credential) {
         CredentialValidationResult  validationResult = null;
         IdentityStore identityStore = null;
-        
+
         // Check stores to validate until one succeeds.
         for (IdentityStore authenticationIdentityStore : validatingIdentityStores) {
             CredentialValidationResult temp = authenticationIdentityStore.validate(credential);
@@ -117,8 +118,8 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
         }
 
         CallerPrincipal callerPrincipal = validationResult.getCallerPrincipal();
-        
-        List<String> groups = new ArrayList<>();
+
+        Set<String> groups = new HashSet<>();
         if (identityStore.validationTypes().contains(PROVIDE_GROUPS)) {
             groups.addAll(validationResult.getCallerGroups());
         }
@@ -126,7 +127,7 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
         // Ask all stores that were configured for authorization to get the groups for the
         // authenticated caller
         for (IdentityStore authorizationIdentityStore : groupProvidingIdentityStores) {
-            groups.addAll(authorizationIdentityStore.getGroupsByCallerPrincipal(callerPrincipal));
+            groups.addAll(authorizationIdentityStore.getCallerGroups(validationResult));
         }
 
         return new CredentialValidationResult(callerPrincipal, groups);
