@@ -39,41 +39,34 @@
  */
 package org.glassfish.soteria.authorization;
 
-import static java.security.Policy.getPolicy;
-import static java.util.Collections.list;
-
-import java.security.CodeSource;
-import java.security.Permission;
-import java.security.PermissionCollection;
-import java.security.Principal;
-import java.security.ProtectionDomain;
-import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.security.Policy.getPolicy;
+import static java.util.Collections.list;
 
 public class JACC {
 
     public static Subject getSubject() {
         return getFromContext("javax.security.auth.Subject.container");
     }
-    
+
     public static boolean isCallerInRole(String role) {
         return hasPermission(getSubject(), new WebRoleRefPermission("", role));
     }
-    
+
     public static boolean hasAccessToWebResource(String resource, String... methods) {
         return hasPermission(getSubject(), new WebResourcePermission(resource, methods));
     }
-    
-    public static List<String> getAllDeclaredCallerRoles() {
+
+    public static Set<String> getAllDeclaredCallerRoles() {
         // Get the permissions associated with the Subject we obtained
         PermissionCollection permissionCollection = getPermissionCollection(getSubject());
 
@@ -82,15 +75,14 @@ public class JACC {
 
         // Filter just the roles from all the permissions, which may include things like 
         // java.net.SocketPermission, java.io.FilePermission, and obtain the actual role names.
-        Set<String> roles = filterRoles(permissionCollection);
-        
-        return new ArrayList<>(roles);
+        return filterRoles(permissionCollection);
+
     }
-    
+
     public static boolean hasPermission(Subject subject, Permission permission) {
         return getPolicy().implies(fromSubject(subject), permission);
     }
-    
+
     public static PermissionCollection getPermissionCollection(Subject subject) {
         return getPolicy().getPermissions(fromSubject(subject));
     }
@@ -113,15 +105,15 @@ public class JACC {
 
         return roles;
     }
-    
+
     public static ProtectionDomain fromSubject(Subject subject) {
         return new ProtectionDomain(
-            new CodeSource(null, (Certificate[]) null),
-            null, null,
-            subject.getPrincipals().toArray(new Principal[subject.getPrincipals().size()])
-        ); 
+                new CodeSource(null, (Certificate[]) null),
+                null, null,
+                subject.getPrincipals().toArray(new Principal[subject.getPrincipals().size()])
+        );
     }
-    
+
     @SuppressWarnings("unchecked")
     public static <T> T getFromContext(String contextName) {
         try {
@@ -130,6 +122,5 @@ public class JACC {
             throw new IllegalStateException(e);
         }
     }
- 
-    
+
 }

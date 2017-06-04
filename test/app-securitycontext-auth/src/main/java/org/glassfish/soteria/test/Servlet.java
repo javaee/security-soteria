@@ -39,11 +39,7 @@
  */
 package org.glassfish.soteria.test;
 
-import static javax.security.authentication.mechanism.http.AuthenticationParameters.withParams;
-import static org.glassfish.soteria.Utils.notNull;
-
-import java.io.IOException;
-import java.util.List;
+import org.glassfish.soteria.SecurityContextImpl;
 
 import javax.annotation.security.DeclareRoles;
 import javax.inject.Inject;
@@ -55,15 +51,17 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Set;
 
-import org.glassfish.soteria.SecurityContextImpl;
+import static javax.security.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static org.glassfish.soteria.Utils.notNull;
 
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
- *
  */
-@DeclareRoles({ "foo", "bar", "kaz" })
+@DeclareRoles({"foo", "bar", "kaz"})
 @WebServlet("/servlet")
 public class Servlet extends HttpServlet {
 
@@ -82,10 +80,10 @@ public class Servlet extends HttpServlet {
         if (notNull(name)) {
 
             AuthenticationStatus status = securityContext.authenticate(
-                request, response,
-                withParams()
-                    .credential(
-                        new CallerOnlyCredential(name)));
+                    request, response,
+                    withParams()
+                            .credential(
+                                    new CallerOnlyCredential(name)));
 
             response.getWriter().write("Authenticated with status: " + status.name() + "\n");
         }
@@ -114,7 +112,7 @@ public class Servlet extends HttpServlet {
 
         response.getWriter().write("has access to /protectedServlet: " + securityContext.hasAccessToWebResource("/protectedServlet") + "\n");
 
-        List<String> roles = ((SecurityContextImpl)securityContext).getAllDeclaredCallerRoles();
+        Set<String> roles = ((SecurityContextImpl) securityContext).getAllDeclaredCallerRoles();
 
         response.getWriter().write("All declared roles of user " + roles + "\n");
 
