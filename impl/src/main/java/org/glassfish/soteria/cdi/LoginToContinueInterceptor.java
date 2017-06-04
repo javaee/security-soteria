@@ -138,7 +138,7 @@ public class LoginToContinueInterceptor implements Serializable {
     
     private AuthenticationStatus processCallerInitiatedAuthentication(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         // Try to authenticate with the next interceptor or actual authentication mechanism
-        AuthenticationStatus authstatus = null;
+        AuthenticationStatus authstatus;
         
         try {
             authstatus = (AuthenticationStatus) invocationContext.proceed();
@@ -197,7 +197,7 @@ public class LoginToContinueInterceptor implements Serializable {
         //          to authenticate though.
         if (isOnLoginPostback(request)) {
             // Try to authenticate with the next interceptor or actual authentication mechanism
-            AuthenticationStatus authstatus = null;
+            AuthenticationStatus authstatus;
             
             try {
                 authstatus = (AuthenticationStatus) invocationContext.proceed();

@@ -116,22 +116,7 @@ public final class Jaspic {
 			}
 		}
 	}
-	
-	public static boolean refreshAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationParameters authParameters) {
-		try {
-			request.setAttribute(IS_REFRESH, true);
-			// Doing an explicit logout is actually not really nice, as it has some side-effects that we need to counter
-			// (like a SAM supporting remember-me clearing its remember-me cookie, etc). But there doesn't seem to be another
-			// way in JASPIC
-			request.logout();
-			return authenticate(request, response, authParameters);
-		} catch (ServletException e) {
-			throw new IllegalArgumentException(e);
-		} finally {
-			request.removeAttribute(IS_REFRESH);
-		}
-	}
-	
+
 	public static AuthenticationParameters getAuthParameters(HttpServletRequest request) {
 		AuthenticationParameters authParameters = (AuthenticationParameters) request.getAttribute(AUTH_PARAMS);
 		if (authParameters == null) {
@@ -180,19 +165,7 @@ public final class Jaspic {
 	public static boolean isAuthenticationRequest(HttpServletRequest request) {
 		return TRUE.equals(request.getAttribute(IS_AUTHENTICATION));
 	}
-	
-	public static boolean isAuthenticationFromFilterRequest(HttpServletRequest request) {
-		return TRUE.equals(request.getAttribute(IS_AUTHENTICATION_FROM_FILTER));
-	}
-	
-	public static boolean isSecureResponseRequest(HttpServletRequest request) {
-		return TRUE.equals(request.getAttribute(IS_SECURE_RESPONSE));
-	}
-	
-	public static boolean isRefresh(HttpServletRequest request) {
-		return TRUE.equals(request.getAttribute(IS_REFRESH));
-	}
-	
+
     public static void notifyContainerAboutLogin(Subject clientSubject, CallbackHandler handler, Principal callerPrincipal, Set<String> roles) {
         try {
             if (isEmpty(roles)) {
@@ -252,23 +225,7 @@ public final class Jaspic {
 	public static AuthenticationStatus getLastAuthenticationStatus(HttpServletRequest request) {
 		return (AuthenticationStatus) request.getAttribute(LAST_AUTH_STATUS);
 	}
-	
-	public static AuthenticationStatus fromAuthStatus(AuthStatus authStatus) {
-		if (authStatus == AuthStatus.SUCCESS) {
-			return AuthenticationStatus.SUCCESS;
-		}
-		
-		if (authStatus == AuthStatus.SEND_FAILURE) {
-			return AuthenticationStatus.SEND_FAILURE;
-		}
-		
-		if (authStatus == AuthStatus.SEND_CONTINUE) {
-			return AuthenticationStatus.SEND_CONTINUE;
-		}
-		
-		return AuthenticationStatus.NOT_DONE;
-	}
-	
+
 	public static AuthStatus fromAuthenticationStatus(AuthenticationStatus authenticationStatus) {
 	    switch (authenticationStatus) {
 	        case NOT_DONE: case SUCCESS:
@@ -292,26 +249,6 @@ public final class Jaspic {
 	 */
 	public static void setDidAuthentication(HttpServletRequest request) {
 		request.setAttribute(DID_AUTHENTICATION, TRUE);
-	}
-	
-	/**
-	 * Returns true if a SAM has indicated that it intended authentication to be happening during
-	 * the current request.
-	 * Does not necessarily mean that authentication has indeed succeeded, for this
-	 * the actual user/caller principal should be checked as well.
-	 * 
-	 * @param request The involved HTTP servlet request.
-	 * 
-	 * @return true if a SAM has indicated that it intended authentication to be happening during
-     * the current request.
-	 * 
-	 */
-	public static boolean isDidAuthentication(HttpServletRequest request) {
-		return TRUE.equals(request.getAttribute(DID_AUTHENTICATION));
-	}
-	
-	public static boolean isDidAuthenticationAndSucceeded(HttpServletRequest request) {
-		return TRUE.equals(request.getAttribute(DID_AUTHENTICATION)) && request.getUserPrincipal() != null;
 	}
 	
 	/**
