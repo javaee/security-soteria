@@ -80,7 +80,6 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
         }
         
         @Override
-        @SuppressWarnings("unchecked")
         public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, @SuppressWarnings("rawtypes") Map options) throws AuthException {
             this.handler = handler;
             // options not supported.
