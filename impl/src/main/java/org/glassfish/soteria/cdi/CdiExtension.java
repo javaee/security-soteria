@@ -110,21 +110,20 @@ public class CdiExtension implements Extension {
 
         Class<?> beanClass = event.getBean().getBeanClass();
         Optional<EmbeddedIdentityStoreDefinition> optionalEmbeddedStore = getAnnotation(beanManager, event.getAnnotated(), EmbeddedIdentityStoreDefinition.class);
-        if (optionalEmbeddedStore.isPresent()) {
+        optionalEmbeddedStore.ifPresent(embeddedIdentityStoreDefinition -> {
             logActivatedIdentityStore(EmbeddedIdentityStore.class, beanClass);
 
-            EmbeddedIdentityStoreDefinition storeDefinition = optionalEmbeddedStore.get();
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, EmbeddedIdentityStore.class)
                     .addToId(EmbeddedIdentityStoreDefinition.class)
-                    .create(e -> new EmbeddedIdentityStore(storeDefinition))
+                    .create(e -> new EmbeddedIdentityStore(embeddedIdentityStoreDefinition))
             );
-        }
+        });
 
         Optional<DataBaseIdentityStoreDefinition> optionalDBStore = getAnnotation(beanManager, event.getAnnotated(), DataBaseIdentityStoreDefinition.class);
-        if (optionalDBStore.isPresent()) {
+        optionalDBStore.ifPresent(dataBaseIdentityStoreDefinition -> {
             logActivatedIdentityStore(DataBaseIdentityStoreDefinition.class, beanClass);
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
@@ -132,12 +131,12 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, DataBaseIdentityStore.class)
                     .addToId(DataBaseIdentityStoreDefinition.class)
-                    .create(e -> new DataBaseIdentityStore(optionalDBStore.get()))
+                    .create(e -> new DataBaseIdentityStore(dataBaseIdentityStoreDefinition))
             );
-        }
+        });
 
         Optional<LdapIdentityStoreDefinition> optionalLdapStore = getAnnotation(beanManager, event.getAnnotated(), LdapIdentityStoreDefinition.class);
-        if (optionalLdapStore.isPresent()) {
+        optionalLdapStore.ifPresent(ldapIdentityStoreDefinition -> {
             logActivatedIdentityStore(LdapIdentityStoreDefinition.class, beanClass);
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
@@ -145,12 +144,12 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, LdapIdentityStore.class)
                     .addToId(LdapIdentityStoreDefinition.class)
-                    .create(e -> new LdapIdentityStore(optionalLdapStore.get()))
+                    .create(e -> new LdapIdentityStore(ldapIdentityStoreDefinition))
             );
-        }
+        });
 
         Optional<BasicAuthenticationMechanismDefinition> optionalBasicMechanism = getAnnotation(beanManager, event.getAnnotated(), BasicAuthenticationMechanismDefinition.class);
-        if (optionalBasicMechanism.isPresent()) {
+        optionalBasicMechanism.ifPresent(basicAuthenticationMechanismDefinition -> {
             logActivatedAuthenticationMechanism(BasicAuthenticationMechanismDefinition.class, beanClass);
 
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
@@ -158,11 +157,11 @@ public class CdiExtension implements Extension {
                     .beanClass(BasicAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class, BasicAuthenticationMechanism.class)
                     .addToId(BasicAuthenticationMechanismDefinition.class)
-                    .create(e -> new BasicAuthenticationMechanism(optionalBasicMechanism.get().realmName()));
-        }
+                    .create(e -> new BasicAuthenticationMechanism(basicAuthenticationMechanismDefinition.realmName()));
+        });
 
         Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
-        if (optionalFormMechanism.isPresent()) {
+        optionalFormMechanism.ifPresent(formAuthenticationMechanismDefinition -> {
             logActivatedAuthenticationMechanism(FormAuthenticationMechanismDefinition.class, beanClass);
 
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
@@ -176,14 +175,14 @@ public class CdiExtension implements Extension {
                                 .get();
 
                         formAuthenticationMechanism.setLoginToContinue(
-                                optionalFormMechanism.get().loginToContinue());
+                                formAuthenticationMechanismDefinition.loginToContinue());
 
                         return formAuthenticationMechanism;
                     });
-        }
+        });
 
         Optional<CustomFormAuthenticationMechanismDefinition> optionalCustomFormMechanism = getAnnotation(beanManager, event.getAnnotated(), CustomFormAuthenticationMechanismDefinition.class);
-        if (optionalCustomFormMechanism.isPresent()) {
+        optionalCustomFormMechanism.ifPresent(customFormAuthenticationMechanismDefinition -> {
             logActivatedAuthenticationMechanism(CustomFormAuthenticationMechanismDefinition.class, beanClass);
 
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
@@ -197,11 +196,11 @@ public class CdiExtension implements Extension {
                                 .get();
 
                         customFormAuthenticationMechanism.setLoginToContinue(
-                                optionalCustomFormMechanism.get().loginToContinue());
+                                customFormAuthenticationMechanismDefinition.loginToContinue());
 
                         return customFormAuthenticationMechanism;
                     });
-        }
+        });
 
         if (event.getBean().getTypes().contains(HttpAuthenticationMechanism.class)) {
             // enabled bean implementing the HttpAuthenticationMechanism found

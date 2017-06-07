@@ -53,7 +53,6 @@ import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -102,7 +101,7 @@ public class LdapIdentityStore implements IdentityStore {
     }
     
     @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
         LdapContext ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.baseDn(),
@@ -110,7 +109,7 @@ public class LdapIdentityStore implements IdentityStore {
         
         if (ldapContext != null) {
             try {
-                return new HashSet<>(retrieveGroupInformation(callerPrincipal.getName(), ldapContext));
+                return new HashSet<>(retrieveGroupInformation(validationResult.getCallerPrincipal().getName(), ldapContext));
             } finally {
                 closeContext(ldapContext);
             }
@@ -146,7 +145,7 @@ public class LdapIdentityStore implements IdentityStore {
                 return INVALID_RESULT;
             }
 
-            List<String> groups = retrieveGroupInformation(callerDn, ldapContext);
+            Set<String> groups = retrieveGroupInformation(callerDn, ldapContext);
 
             closeContext(ldapContext);
 
@@ -194,7 +193,7 @@ public class LdapIdentityStore implements IdentityStore {
             return INVALID_RESULT;
         }
 
-        List<String> groups = retrieveGroupInformation(callerDn, ldapContext);
+        Set<String> groups = retrieveGroupInformation(callerDn, ldapContext);
 
         closeContext(ldapContext);
 
@@ -212,7 +211,7 @@ public class LdapIdentityStore implements IdentityStore {
         }
     }
 
-    private List<String> retrieveGroupInformation(String callerDn, LdapContext ldapContext) {
+    private Set<String> retrieveGroupInformation(String callerDn, LdapContext ldapContext) {
         // Search for the groups starting from the groupBaseDn,
         // Search for groupCallerDnAttribute equal to callerDn
         // Return groupNameAttribute
@@ -225,7 +224,7 @@ public class LdapIdentityStore implements IdentityStore {
         );
 
         // Collect the groups from the search results
-        List<String> groups = new ArrayList<>();
+        Set<String> groups = new HashSet<>();
         for (SearchResult searchResult : searchResults) {
             for (Object group : get(searchResult, ldapIdentityStoreDefinition.groupNameAttribute())) {
                 groups.add(group.toString());

@@ -41,8 +41,8 @@ package org.glassfish.soteria.test;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,7 +67,7 @@ public class TestRememberMeIdentityStore implements RememberMeIdentityStore {
     }
 
     @Override
-    public String generateLoginToken(CallerPrincipal callerPrincipal, List<String> groups) {
+    public String generateLoginToken(CallerPrincipal callerPrincipal, Set<String> groups) {
         String token = UUID.randomUUID().toString();
 
         // NOTE: FOR EXAMPLE ONLY. AS TOKENKEY WOULD EFFECTIVELY BECOME THE REPLACEMENT PASSWORD

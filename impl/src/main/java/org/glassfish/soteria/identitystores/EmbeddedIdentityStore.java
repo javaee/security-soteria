@@ -91,7 +91,7 @@ public class EmbeddedIdentityStore implements IdentityStore {
         if (credentials != null && usernamePasswordCredential.getPassword().compareTo(credentials.password())) {
             return new CredentialValidationResult(
                 new CallerPrincipal(credentials.callerName()), 
-                asList(credentials.groups())
+                new HashSet<>(asList(credentials.groups()))
             );
         }
 
@@ -99,11 +99,10 @@ public class EmbeddedIdentityStore implements IdentityStore {
     }
     
     @Override
-    public Set<String> getGroupsByCallerPrincipal(CallerPrincipal callerPrincipal) {
-        
-        Credentials credentials = callerToCredentials.get(callerPrincipal.getName());
-        
-        return credentials != null? new HashSet<>(asList(credentials.groups())) : emptySet();
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+        Credentials credentials = callerToCredentials.get(validationResult.getCallerPrincipal().getName());
+
+        return credentials != null ? new HashSet<>(asList(credentials.groups())) : emptySet();
     }
 
     public int priority() {

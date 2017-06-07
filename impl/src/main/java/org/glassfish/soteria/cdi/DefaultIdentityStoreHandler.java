@@ -47,8 +47,9 @@ import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.security.CallerPrincipal;
 import javax.security.identitystore.CredentialValidationResult;
@@ -104,7 +105,7 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
         }
 
         CallerPrincipal callerPrincipal = validationResult.getCallerPrincipal();
-        List<String> groups = new ArrayList<>();
+        Set<String> groups = new HashSet<>();
 
         // Take the groups from the identity store that validated the credentials only
         // if it has been set to provide groups.
@@ -115,7 +116,7 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
         // Ask all stores that were configured for group providing only to get the groups for the
         // authenticated caller
         for (IdentityStore authorizationIdentityStore : authorizationIdentityStores) {
-            groups.addAll(authorizationIdentityStore.getGroupsByCallerPrincipal(callerPrincipal));
+            groups.addAll(authorizationIdentityStore.getCallerGroups(validationResult));
         }
 
         return new CredentialValidationResult(callerPrincipal, groups);

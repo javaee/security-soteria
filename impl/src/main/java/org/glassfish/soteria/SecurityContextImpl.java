@@ -45,7 +45,7 @@ import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastAuthenticati
 
 import java.io.Serializable;
 import java.security.Principal;
-import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.security.AuthenticationStatus;
@@ -82,9 +82,9 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     public boolean isCallerInRole(String role) {
     	return callerDetailsResolver.isCallerInRole(role);
     }
-    
-    @Override
-    public List<String> getAllDeclaredCallerRoles() {
+
+    // Implementation specific method, not present in API.
+    public Set<String> getAllDeclaredCallerRoles() {
         return callerDetailsResolver.getAllDeclaredCallerRoles();
     }
     
