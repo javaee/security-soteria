@@ -67,6 +67,16 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
+        
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-javaee-security-maven</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/javaee-security-spec/maven</url>
+        </repository>
+        
 	</repositories>
 
 	<distributionManagement>
