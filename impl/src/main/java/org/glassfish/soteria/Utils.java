@@ -278,12 +278,7 @@ public final class Utils {
 				String[] pair = parameter.split(quote("="));
 				String key = decodeURL(pair[0]);
 				String value = (pair.length > 1 && !isEmpty(pair[1])) ? decodeURL(pair[1]) : "";
-				List<String> values = parameterMap.get(key);
-
-				if (values == null) {
-					values = new ArrayList<>(1);
-					parameterMap.put(key, values);
-				}
+				List<String> values = parameterMap.computeIfAbsent(key, k -> new ArrayList<>(1));
 
 				values.add(value);
 			}

@@ -164,6 +164,6 @@ public class CdiDecorator<T> extends CdiProducer<T> implements Decorator<T> {
             return false;
         }
       
-    };
+    }
 
 }

@@ -178,7 +178,7 @@ public class CdiUtils {
         List<T> result = new ArrayList<>(beans.size());
 
         for (Bean<?> bean : beans) {
-            result.add(getContextualReference(type, beanManager, Collections.<Bean<?>>singleton(bean)));
+            result.add(getContextualReference(type, beanManager, Collections.singleton(bean)));
         }
 
         return result;

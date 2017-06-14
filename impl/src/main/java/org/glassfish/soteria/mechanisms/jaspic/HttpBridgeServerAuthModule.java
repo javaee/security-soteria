@@ -72,7 +72,6 @@ import org.glassfish.soteria.mechanisms.HttpMessageContextImpl;
 public class HttpBridgeServerAuthModule implements ServerAuthModule {
 
         private CallbackHandler handler;
-        private Map<String, String> options;
         private final Class<?>[] supportedMessageTypes = new Class[] { HttpServletRequest.class, HttpServletResponse.class };
         private final CDIPerRequestInitializer cdiPerRequestInitializer;
         
@@ -81,10 +80,9 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
         }
         
         @Override
-        @SuppressWarnings("unchecked")
         public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, @SuppressWarnings("rawtypes") Map options) throws AuthException {
             this.handler = handler;
-            this.options = options;
+            // options not supported.
         }
 
         /**
@@ -99,7 +97,7 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
         @Override
         public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
             
-            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, clientSubject);
+            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, messageInfo, clientSubject);
             
             if (cdiPerRequestInitializer != null) {
                 cdiPerRequestInitializer.init(msgContext.getRequest());
@@ -130,7 +128,7 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
 
         @Override
         public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
-            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, null);
+            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, messageInfo, null);
         
             AuthenticationStatus status = CDI.current()
                                              .select(HttpAuthenticationMechanism.class).get()
@@ -152,7 +150,7 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
          */
         @Override
         public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
-            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, options, messageInfo, subject);
+            HttpMessageContext msgContext = new HttpMessageContextImpl(handler, messageInfo, subject);
             
             CDI.current()
                .select(HttpAuthenticationMechanism.class).get()

@@ -170,7 +170,7 @@ public class AppMemCustomFormIT extends ArquillianBase {
         
         // 3. Submit the form on the login page with the wrong credentials
         
-        HtmlForm form = ((HtmlPage) loginPage).getForms().get(0);
+        HtmlForm form = loginPage.getForms().get(0);
         
         form.getInputByName("form:username")
             .setValueAttribute("romo");
@@ -211,7 +211,7 @@ public class AppMemCustomFormIT extends ArquillianBase {
         
         // 3. Submit the form on the login page with the wrong credentials
         
-        HtmlForm form = ((HtmlPage) loginPage).getForms().get(0);
+        HtmlForm form = loginPage.getForms().get(0);
         
         form.getInputByName("form:username")
             .setValueAttribute("reza");
@@ -252,7 +252,7 @@ public class AppMemCustomFormIT extends ArquillianBase {
         
         // 3. Submit the form on the login page with the wrong credentials
         
-        HtmlForm form = ((HtmlPage) loginPage).getForms().get(0);
+        HtmlForm form = loginPage.getForms().get(0);
         
         form.getInputByName("form:username")
             .setValueAttribute("reza");

@@ -39,18 +39,6 @@
  */
 package org.glassfish.soteria.test;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
-import static javax.interceptor.Interceptor.Priority.APPLICATION;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
-import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
-import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
@@ -60,6 +48,18 @@ import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
 import javax.security.identitystore.IdentityStoreHandler;
 import javax.security.identitystore.credential.Credential;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+import static javax.interceptor.Interceptor.Priority.APPLICATION;
+import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
+import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
 /**
  *
@@ -89,10 +89,10 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
-        CredentialValidationResult  validationResult = null;
+        CredentialValidationResult validationResult = null;
         IdentityStore identityStore = null;
 
-        // Check stores to validate until one succeeds.
+        // Check all stores and stop when one marks it as invalid.
         for (IdentityStore authenticationIdentityStore : validatingIdentityStores) {
             CredentialValidationResult temp = authenticationIdentityStore.validate(credential);
             switch (temp.getStatus()) {
@@ -108,8 +108,16 @@ public class CustomIdentityStoreHandler implements IdentityStoreHandler {
                     identityStore = authenticationIdentityStore;
                     break;
                 default:
-                    throw new IllegalArgumentException("Value not supported "+temp.getStatus());
+                    throw new IllegalArgumentException("Value not supported " + temp.getStatus());
             }
+            if (validationResult != null && validationResult.getStatus() == CredentialValidationResult.Status.INVALID) {
+                break;
+            }
+        }
+
+        if (validationResult == null) {
+            // No authentication store at all
+            return INVALID_RESULT;
         }
 
         if (validationResult.getStatus() != VALID) {

@@ -49,6 +49,7 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.security.identitystore.CredentialValidationResult;
 import javax.security.identitystore.IdentityStore;
+import javax.security.identitystore.credential.Credential;
 import javax.security.identitystore.credential.UsernamePasswordCredential;
 
 /**
@@ -57,10 +58,16 @@ import javax.security.identitystore.credential.UsernamePasswordCredential;
 @ApplicationScoped
 public class BlackListedIdentityStore implements IdentityStore {
 
-    public CredentialValidationResult validate(UsernamePasswordCredential credential) {
+    @Override
+    public CredentialValidationResult validate(Credential credential) {
         CredentialValidationResult result = NOT_VALIDATED_RESULT;
-        if ("rudy".equals(credential.getCaller())) {
-            result = INVALID_RESULT;
+        if (credential instanceof UsernamePasswordCredential) {
+            UsernamePasswordCredential usernamePassword = (UsernamePasswordCredential) credential;
+
+            if ("rudy".equals(usernamePassword.getCaller())) {
+
+                result = INVALID_RESULT;
+            }
         }
         return result;
     }

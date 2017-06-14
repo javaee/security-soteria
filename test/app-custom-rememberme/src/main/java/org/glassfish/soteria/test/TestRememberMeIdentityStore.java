@@ -41,7 +41,6 @@ package org.glassfish.soteria.test;
 
 import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;

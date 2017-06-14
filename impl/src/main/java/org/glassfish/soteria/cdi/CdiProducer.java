@@ -175,7 +175,7 @@ public class CdiProducer<T> implements Bean<T>, PassivationCapable {
     
     @SafeVarargs
     protected static <T> Set<T> asSet(T... a) {
-        return new HashSet<T>(asList(a));
+        return new HashSet<>(asList(a));
     }
     
 }

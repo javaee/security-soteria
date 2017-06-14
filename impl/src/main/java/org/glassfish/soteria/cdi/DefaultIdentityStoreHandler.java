@@ -47,7 +47,6 @@ import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_
 import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
