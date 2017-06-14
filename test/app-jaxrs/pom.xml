@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-m06-SNAPSHOT</version>
+        <version>1.0-b06</version>
     </parent>
 	
 	<artifactId>app-jaxrs</artifactId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.glassfish.soteria.test</groupId>
             <artifactId>common</artifactId>
-            <version>1.0-m06-SNAPSHOT</version>
+            <version>1.0-b06</version>
         </dependency>
     </dependencies>
     
