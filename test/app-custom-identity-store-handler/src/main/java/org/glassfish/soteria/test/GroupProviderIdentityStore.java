@@ -41,8 +41,8 @@ package org.glassfish.soteria.test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
-import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.Utils.unmodifiableSet;
 
 import java.util.HashMap;
@@ -52,9 +52,9 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
 /**
  *

@@ -50,8 +50,8 @@ import static javax.naming.Context.SECURITY_AUTHENTICATION;
 import static javax.naming.Context.SECURITY_CREDENTIALS;
 import static javax.naming.Context.SECURITY_PRINCIPAL;
 import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -64,12 +64,12 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
-import javax.security.identitystore.credential.Credential;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.security.enterprise.CallerPrincipal;
+import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.credential.UsernamePasswordCredential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
 public class LdapIdentityStore implements IdentityStore {
 

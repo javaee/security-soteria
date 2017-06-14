@@ -39,7 +39,6 @@
  */
 package org.glassfish.soteria.test;
 
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
 
 import java.util.Map;
 import java.util.Set;
@@ -47,10 +46,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.RememberMeIdentityStore;
-import javax.security.identitystore.credential.RememberMeCredential;
+import javax.security.enterprise.CallerPrincipal;
+import javax.security.enterprise.credential.RememberMeCredential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.RememberMeIdentityStore;
+
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 
 @ApplicationScoped
 public class TestRememberMeIdentityStore implements RememberMeIdentityStore {

@@ -44,18 +44,18 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Credential;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.security.enterprise.CallerPrincipal;
+import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.credential.UsernamePasswordCredential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
 
 import org.glassfish.soteria.identitystores.annotation.Credentials;
 import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;

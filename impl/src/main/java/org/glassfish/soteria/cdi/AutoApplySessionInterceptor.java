@@ -41,7 +41,7 @@ package org.glassfish.soteria.cdi;
 
 import static java.lang.Boolean.TRUE;
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
-import static javax.security.AuthenticationStatus.SUCCESS;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
 
@@ -55,8 +55,8 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
-import javax.security.authentication.mechanism.http.HttpMessageContext;
-import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
+import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
 
 @Interceptor

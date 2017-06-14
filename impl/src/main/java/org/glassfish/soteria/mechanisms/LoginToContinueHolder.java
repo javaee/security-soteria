@@ -39,7 +39,8 @@
  */
 package org.glassfish.soteria.mechanisms;
 
-import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
+
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 public interface LoginToContinueHolder {
 

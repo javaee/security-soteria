@@ -21,9 +21,9 @@
     
     <dependencies>
         <dependency>
-            <groupId>javax.security</groupId>
-            <artifactId>javax.security-api</artifactId>
-            <version>1.0-m05-SNAPSHOT</version>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
+            <version>1.0-b06</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

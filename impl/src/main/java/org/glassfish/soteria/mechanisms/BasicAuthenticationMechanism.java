@@ -40,19 +40,19 @@
 package org.glassfish.soteria.mechanisms;
 
 import static java.lang.String.format;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
 import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static org.glassfish.soteria.Utils.isEmpty;
 
 import javax.enterprise.inject.spi.CDI;
-import javax.security.AuthenticationStatus;
+import javax.security.enterprise.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.authentication.mechanism.http.HttpMessageContext;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStoreHandler;
-import javax.security.identitystore.credential.Password;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.credential.Password;
+import javax.security.enterprise.credential.UsernamePasswordCredential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

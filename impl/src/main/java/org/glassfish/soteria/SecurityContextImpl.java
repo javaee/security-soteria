@@ -39,8 +39,8 @@
  */
 package org.glassfish.soteria;
 
-import static javax.security.AuthenticationStatus.SEND_FAILURE;
-import static javax.security.AuthenticationStatus.SUCCESS;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.getLastAuthenticationStatus;
 
 import java.io.Serializable;
@@ -48,9 +48,9 @@ import java.security.Principal;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.security.AuthenticationStatus;
-import javax.security.SecurityContext;
-import javax.security.authentication.mechanism.http.AuthenticationParameters;
+import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.SecurityContext;
+import javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

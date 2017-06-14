@@ -39,18 +39,18 @@
  */
 package org.glassfish.soteria.test;
 
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.Utils.unmodifiableSet;
 
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.credential.Credential;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.credential.UsernamePasswordCredential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
 
 /**
  *

@@ -70,8 +70,8 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import javax.interceptor.InvocationContext;
-import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
@@ -85,7 +85,7 @@ import javax.xml.bind.DatatypeConverter;
 public final class Utils {
     
     public final static Method validateRequestMethod = getMethod(
-        HttpAuthenticationMechanism.class, 
+        HttpAuthenticationMechanism.class,
         "validateRequest",
         HttpServletRequest.class, HttpServletResponse.class, HttpMessageContext.class);
         
