@@ -492,7 +492,7 @@ public class SubjectParser {
                         }
                         break;
                 // TODO: depend on this directly later 
-                case "javax.security.CallerPrincipal":
+                case "javax.security.enterprise.CallerPrincipal":
                     return principal;
             }
         }

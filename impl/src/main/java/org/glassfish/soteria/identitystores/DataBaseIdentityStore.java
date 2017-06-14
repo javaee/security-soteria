@@ -41,8 +41,8 @@ package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
 import java.sql.Connection;
@@ -54,12 +54,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
-import javax.security.identitystore.credential.Credential;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.security.enterprise.CallerPrincipal;
+import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.credential.UsernamePasswordCredential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.IdentityStore;
 import javax.sql.DataSource;
 
 public class DataBaseIdentityStore implements IdentityStore {

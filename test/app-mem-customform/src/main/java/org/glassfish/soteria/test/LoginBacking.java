@@ -40,20 +40,20 @@
 package org.glassfish.soteria.test;
 
 import static javax.faces.application.FacesMessage.SEVERITY_ERROR;
-import static javax.security.AuthenticationStatus.SEND_FAILURE;
-import static javax.security.AuthenticationStatus.SEND_CONTINUE;
-import static javax.security.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static javax.security.enterprise.AuthenticationStatus.SEND_CONTINUE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.security.AuthenticationStatus;
-import javax.security.SecurityContext;
-import javax.security.identitystore.credential.Credential;
-import javax.security.identitystore.credential.Password;
-import javax.security.identitystore.credential.UsernamePasswordCredential;
+import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.SecurityContext;
+import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.credential.Password;
+import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;

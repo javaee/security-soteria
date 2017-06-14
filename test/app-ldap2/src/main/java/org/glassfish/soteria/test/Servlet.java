@@ -40,7 +40,7 @@
 package org.glassfish.soteria.test;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.identitystore.annotation.LdapIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

@@ -42,7 +42,7 @@ package org.glassfish.soteria.test;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 import javax.inject.Inject;
-import javax.security.SecurityContext;
+import javax.security.enterprise.SecurityContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;

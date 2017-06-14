@@ -39,23 +39,24 @@
  */
 package org.glassfish.soteria.cdi;
 
+import javax.security.enterprise.CallerPrincipal;
+import javax.security.enterprise.credential.Credential;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.IdentityStoreHandler;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
-import static javax.security.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
-import static javax.security.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
-import static javax.security.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.CallerPrincipal;
-import javax.security.identitystore.CredentialValidationResult;
-import javax.security.identitystore.IdentityStore;
-import javax.security.identitystore.IdentityStoreHandler;
-import javax.security.identitystore.credential.Credential;
 
 /**
  *

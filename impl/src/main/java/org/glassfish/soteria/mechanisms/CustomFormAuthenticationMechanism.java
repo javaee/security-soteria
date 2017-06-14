@@ -41,13 +41,13 @@ package org.glassfish.soteria.mechanisms;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
-import javax.security.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
-import javax.security.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.authentication.mechanism.http.HttpMessageContext;
-import javax.security.authentication.mechanism.http.annotation.AutoApplySession;
-import javax.security.authentication.mechanism.http.annotation.LoginToContinue;
-import javax.security.identitystore.IdentityStoreHandler;
+import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

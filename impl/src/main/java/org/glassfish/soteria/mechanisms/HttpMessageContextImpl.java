@@ -42,23 +42,23 @@ package org.glassfish.soteria.mechanisms;
 import org.glassfish.soteria.Utils;
 import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
-import javax.security.AuthenticationStatus;
-import javax.security.CallerPrincipal;
+import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.CallerPrincipal;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.MessageInfo;
-import javax.security.authentication.mechanism.http.AuthenticationParameters;
-import javax.security.authentication.mechanism.http.HttpMessageContext;
-import javax.security.identitystore.CredentialValidationResult;
+import javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Set;
 
-import static javax.security.AuthenticationStatus.*;
-import static javax.security.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.enterprise.AuthenticationStatus.*;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 

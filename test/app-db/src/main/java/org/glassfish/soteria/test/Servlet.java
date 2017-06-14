@@ -42,7 +42,7 @@ package org.glassfish.soteria.test;
 import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.identitystore.annotation.DataBaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
