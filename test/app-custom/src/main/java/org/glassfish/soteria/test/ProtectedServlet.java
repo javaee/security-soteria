@@ -40,7 +40,6 @@
 package org.glassfish.soteria.test;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.security.enterprise.SecurityContext;
@@ -95,7 +94,6 @@ public class ProtectedServlet extends HttpServlet {
         response.getWriter().write("context user has role \"kaz\": " + securityContext.isCallerInRole("kaz") + "\n");
         
         response.getWriter().write("has access " + securityContext.hasAccessToWebResource("/servlets"));
-        
         
     }
 

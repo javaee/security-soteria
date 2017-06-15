@@ -129,13 +129,14 @@
             <id>provided</id>
             <dependencies>
                 <dependency>
-                   <groupId>javax.security</groupId>
-                   <artifactId>javax.security-api</artifactId>
-                   <version>1.0-b06</version>
+                    <groupId>javax.security.enterprise</groupId>
+                    <artifactId>javax.security.enterprise-api</artifactId>
+                   <version>1.0-b07-SNAPSHOT</version>
                    <scope>provided</scope>
                 </dependency>
             </dependencies>
         </profile>  
+        
             
         <!-- 
             This profile assumes a target that does not have the Soteria libraries. 
@@ -238,6 +239,20 @@
                     <groupId>org.jboss.arquillian.container</groupId>
                     <artifactId>arquillian-glassfish-embedded-3.1</artifactId>
                     <version>1.0.0.CR4</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        
+        
+        <profile>
+            <id>payara-remote</id>
+            
+            <dependencies>
+                <dependency>
+                    <groupId>org.omnifaces</groupId>
+                    <artifactId>arquillian-payara-server-4-remote</artifactId> 
+                    <version>1.0-beta-SNAPSHOT</version> 
                     <scope>test</scope>
                 </dependency>
             </dependencies>

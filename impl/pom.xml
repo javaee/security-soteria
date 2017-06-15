@@ -23,7 +23,7 @@
         <dependency>
             <groupId>javax.security.enterprise</groupId>
             <artifactId>javax.security.enterprise-api</artifactId>
-            <version>1.0-b06</version>
+            <version>1.0-b07-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
