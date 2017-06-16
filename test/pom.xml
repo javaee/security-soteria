@@ -7,13 +7,13 @@
        <artifactId>parent</artifactId>
        <version>1.0-b07-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>org.glassfish.soteria.test</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
-    
+
     <name>Soteria ${project.version} Integration tests and examples</name>
-    
+
     <properties>
         <!-- Test servers -->
         <payara.version>4.1.2.172</payara.version>
@@ -26,10 +26,10 @@
 
     <modules>
         <module>common</module>
-        
+
         <module>app-securitycontext</module>
         <module>app-securitycontext-auth</module>
-    
+
         <!-- app-[identity-store] -->
         <module>app-mem</module>
         <module>app-db</module>
@@ -43,7 +43,7 @@
         <module>app-mem-basic</module>
         <module>app-mem-form</module>
         <module>app-mem-customform</module>
-        
+
         <!-- app-[identity-store]-[service] -->
         <module>app-custom-session</module>
         <module>app-custom-rememberme</module>
@@ -52,7 +52,7 @@
 
         <module>app-jaxrs</module>
     </modules>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -64,7 +64,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -78,22 +78,21 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
             <version>2.23</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.9.2</version>
         </dependency>
     </dependencies>
-    
-    
+
     <build>
         <plugins>
             <plugin>
@@ -116,32 +115,32 @@
             </plugin>
         </plugins>
     </build>
-    
-    
+
     <profiles>
-        
-        <!-- 
-            This profile assumes a target that already has the Soteria libraries. 
+
+        <!--
+            This profile assumes a target that already has the Soteria libraries.
             In Java EE 8 that would be the default. E.g. in the case of GlassFish/Payara
-            a soteria-1.0-b07-SNAPSHOT.jar in [gf_home]/glassfish/modules
+            a javax.security.enterprise-1.0-b07-SNAPSHOT.jar in [gf_home]/glassfish/modules
           -->
         <profile>
             <id>provided</id>
             <dependencies>
                 <dependency>
-                   <groupId>javax.security</groupId>
-                   <artifactId>javax.security-api</artifactId>
-                   <version>1.0-b06</version>
+                   <groupId>javax.security.enterprise</groupId>
+                   <artifactId>javax.security.enterprise-api</artifactId>
+                   <version>${api_dependency_version}</version>
                    <scope>provided</scope>
                 </dependency>
             </dependencies>
-        </profile>  
-            
-        <!-- 
-            This profile assumes a target that does not have the Soteria libraries. 
+        </profile>
+
+        <!--
+            This profile assumes a target that does not have the Soteria libraries.
             E.g. a Java EE 7 server or Servlet container such as Tomcat or Jetty.
-            
-            With this profile e.g. soteria-1.0-b07-SNAPSHOT.jar will end up in WEB-INF/lib
+
+            With this profile e.g. javax.security.enterprise-1.0-b07-SNAPSHOT.jar
+            will end up in WEB-INF/lib
         -->
         <profile>
             <id>bundled</id>
@@ -151,19 +150,19 @@
             <dependencies>
                 <dependency>
                     <groupId>org.glassfish.soteria</groupId>
-                    <artifactId>soteria</artifactId>
+                    <artifactId>javax.security.enterprise</artifactId>
                     <version>1.0-b07-SNAPSHOT</version>
                 </dependency>
             </dependencies>
-        </profile> 
-        
+        </profile>
+
         <profile>
             <id>payara</id>
-            
+
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-			
+
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.arquillian.container</groupId>
@@ -172,7 +171,7 @@
                     <scope>test</scope>
                 </dependency>
             </dependencies>
-			
+
             <build>
                 <plugins>
                     <plugin>
@@ -221,8 +220,7 @@
                 </plugins>
             </build>
         </profile>
-        
-        
+
         <profile>
             <id>payara-embedded</id>
 
@@ -233,7 +231,7 @@
                     <version>${payara.version}</version>
                     <scope>test</scope>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>org.jboss.arquillian.container</groupId>
                     <artifactId>arquillian-glassfish-embedded-3.1</artifactId>
@@ -242,8 +240,7 @@
                 </dependency>
             </dependencies>
         </profile>
-        
-        
+
         <profile>
             <id>wildfly</id>
 
@@ -308,23 +305,23 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>tomee</id>
-            
+
             <repositories>
                 <repository>
-                    <id>apache.snapshots</id> 
-                    <url>https://repository.apache.org/content/repositories/snapshots/</url> 
-                    <releases> 
-                        <enabled>false</enabled> 
-                    </releases> 
-                    <snapshots> 
-                        <enabled>true</enabled> 
-                    </snapshots> 
-                </repository> 
+                    <id>apache.snapshots</id>
+                    <url>https://repository.apache.org/content/repositories/snapshots/</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
             </repositories>
-            
+
             <dependencies>
                 <dependency>
                     <groupId>org.apache.tomee</groupId>
@@ -334,7 +331,7 @@
                     <type>zip</type>
                     <classifier>plus</classifier>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>org.apache.tomee</groupId>
                     <artifactId>arquillian-tomee-remote</artifactId>
@@ -348,7 +345,7 @@
                     </exclusions>
                 </dependency>
             </dependencies>
-            
+
             <build>
                 <plugins>
                     <plugin>
@@ -360,7 +357,7 @@
                                 <tomee.httpPort>-1</tomee.httpPort>
                                 <tomee.httpsPort>-1</tomee.httpsPort>
                                 <tomee.ajpPort>-1</tomee.ajpPort>
-                                
+
                                 <tomee.dir>target/tomee/server</tomee.dir>
                                 <tomee.appWorkingDir>target/tomee/arquillian</tomee.appWorkingDir>
                                 <tomee.cleanOnStartUp>true</tomee.cleanOnStartUp>
@@ -374,7 +371,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>liberty</id>
 
@@ -455,7 +452,7 @@
         </profile>
         <profile>
             <id>wildfly-docker</id>
-            <build>            
+            <build>
                 <plugins>
                     <plugin>
                         <groupId>io.fabric8</groupId>
@@ -488,7 +485,7 @@
         </profile>
         <profile>
             <id>payara-docker</id>
-            <build>            
+            <build>
                 <plugins>
                     <plugin>
                         <groupId>io.fabric8</groupId>
@@ -525,6 +522,6 @@
             </build>
         </profile>
     </profiles>
-    
 
 </project>
+
