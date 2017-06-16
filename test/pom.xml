@@ -242,6 +242,20 @@
         </profile>
 
         <profile>
+            <id>payara-remote</id>
+            
+            <dependencies>
+                <dependency>
+                    <groupId>org.omnifaces</groupId>
+                    <artifactId>arquillian-payara-server-4-remote</artifactId> 
+                    <version>1.0-beta-SNAPSHOT</version> 
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        
+        
+        <profile>
             <id>wildfly</id>
 
             <dependencies>

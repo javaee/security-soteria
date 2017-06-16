@@ -52,9 +52,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.glassfish.soteria.identitystores.annotation.Credentials;
-import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
-
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
@@ -64,12 +61,6 @@ import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefi
         loginPage="/login-servlet",
         errorPage="/login-error-servlet"
     )
-)
-
-@EmbeddedIdentityStoreDefinition({ 
-    @Credentials(callerName = "reza", password = "secret1", groups = { "foo", "bar" }),
-    @Credentials(callerName = "alex", password = "secret2", groups = { "foo", "kaz" }),
-    @Credentials(callerName = "arjan", password = "secret3", groups = { "foo" }) }
 )
 
 @WebServlet("/servlet")

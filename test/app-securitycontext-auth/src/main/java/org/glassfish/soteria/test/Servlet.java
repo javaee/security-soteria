@@ -39,7 +39,10 @@
  */
 package org.glassfish.soteria.test;
 
-import org.glassfish.soteria.SecurityContextImpl;
+import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static org.glassfish.soteria.test.Utils.notNull;
+
+import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
 import javax.inject.Inject;
@@ -51,11 +54,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Set;
-
-import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
-import static org.glassfish.soteria.Utils.notNull;
 
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether
@@ -112,13 +110,6 @@ public class Servlet extends HttpServlet {
 
         response.getWriter().write("has access to /protectedServlet: " + securityContext.hasAccessToWebResource("/protectedServlet") + "\n");
 
-        Set<String> roles = ((SecurityContextImpl) securityContext).getAllDeclaredCallerRoles();
-
-        response.getWriter().write("All declared roles of user " + roles + "\n");
-
-        response.getWriter().write("all roles has role \"foo\": " + roles.contains("foo") + "\n");
-        response.getWriter().write("all roles has role \"bar\": " + roles.contains("bar") + "\n");
-        response.getWriter().write("all roles has role \"kaz\": " + roles.contains("kaz") + "\n");
     }
 
 }
