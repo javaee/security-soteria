@@ -1,202 +1,188 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>net.java</groupId>
-		<artifactId>jvnet-parent</artifactId>
-		<version>5</version>
-	</parent>
+    <parent>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>5</version>
+    </parent>
 
-	<groupId>org.glassfish.soteria</groupId>
-	<artifactId>parent</artifactId>
-	<version>1.0-b07-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>org.glassfish.soteria</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0-b08-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<inceptionYear>2015</inceptionYear>
+    <inceptionYear>2015</inceptionYear>
 
-	<licenses>
-		<license>
-			<name>
+    <licenses>
+        <license>
+            <name>
                 Dual license consisting of the CDDL v1.1 and GPL v2
             </name>
-			<url>https://glassfish.java.net/public/CDDL+GPL_1_1.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
+            <url>https://glassfish.java.net/public/CDDL+GPL_1_1.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-	<modules>
-		<module>impl</module>
-		<module>test</module>
-	</modules>
+    <modules>
+        <module>impl</module>
+        <module>test</module>
+    </modules>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <properties>
+        <api_package>javax.security.enterprise</api_package>
+        <impl_namespace>org.glassfish.soteria</impl_namespace>
 
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+        <non_final>true</non_final>
 
-		<api_package>javax.security</api_package>
-		<impl_namespace>org.glassfish.soteria</impl_namespace>
+        <spec_version>0.0</spec_version>
+        <new_spec_version>1.0</new_spec_version>
+        <spec_build>06</spec_build>
+        <spec_impl_version>1.0-b06</spec_impl_version>
 
-		<spec_version>1.0</spec_version>
-		<spec_impl_version>1.0-SNAPSHOT</spec_impl_version>
-		<impl_version>1.0-SNAPSHOT</impl_version>
-	</properties>
+        <api_dependency_version>${spec_impl_version}</api_dependency_version>
 
-	<repositories>
-		<repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>Central Repository</name>
-			<url>https://repo.maven.apache.org/maven2</url>
-		</repository>
+        <impl_version>0.0</impl_version>
+        <new_impl_version>1.0</new_impl_version>
+        <impl_build>08</impl_build>
 
-		<repository>
-			<id>bintray-snapshot</id>
-			<name>libs-snapshot</name>
-			<url>http://oss.jfrog.org/artifactory/libs-snapshot</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-        
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>bintray-javaee-security-maven</id>
-            <name>bintray</name>
-            <url>https://dl.bintray.com/javaee-security-spec/maven</url>
-        </repository>
-        
-	</repositories>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-	<distributionManagement>
-		<repository>
-			<id>bintray-javaee-security-spec-maven</id>
-			<name>javaee-security-spec-maven</name>
-			<url>https://api.bintray.com/maven/javaee-security-spec/maven/org.glassfish.soteria:parent/;publish=1</url>
-		</repository>
-		<snapshotRepository>
-			<id>bintray-snapshot</id>
-			<name>oss-jfrog-artifactory-snapshot</name>
-			<url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+    <scm>
+        <connection>scm:git:https://github.com/javaee-security-spec/soteria.git</connection>
+        <developerConnection>scm:git:https://github.com/javaee-security-spec/soteria.git</developerConnection>
+        <url>https://github.com/javaee-security-spec/soteria</url>
+        <tag>HEAD</tag>
+    </scm>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.18.1</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.felix</groupId>
-					<artifactId>maven-bundle-plugin</artifactId>
-					<version>3.2.0</version>
-					<extensions>true</extensions>
-				</plugin>
-				<plugin>
-					<groupId>com.mycila</groupId>
-					<artifactId>license-maven-plugin</artifactId>
-					<version>3.0</version>
-					<executions>
-						<execution>
-							<goals>
-								<goal>check</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<header>src/license/header.txt</header>
-						<properties>
-							<owner>Oracle</owner>
-							<currentYear>2016</currentYear>
-						</properties>
-						<excludes>
-							<exclude>**/*.adoc</exclude>
-							<exclude>**/*.launch</exclude>
-							<exclude>**/*.sh</exclude>
-							<exclude>**/pom.xml</exclude>
-							<exclude>**/README</exclude>
-							<exclude>**/settings.xml</exclude>
-							<exclude>src/license/**</exclude>
-							<exclude>src/test/resources/**</exclude>
-							<exclude>src/main/resources/**</exclude>
-						</excludes>
-						<headerDefinitions>
-							<headerDefinition>src/license/headers.xml</headerDefinition>
-						</headerDefinitions>
-						<mapping>
-							<java>JAVA_STYLE</java>
-						</mapping>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+    <dependencies>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
-		<plugins>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <extensions>true</extensions>
+                </plugin>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>3.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <header>src/license/header.txt</header>
+                        <properties>
+                            <owner>Oracle</owner>
+                            <currentYear>2016</currentYear>
+                        </properties>
+                        <excludes>
+                            <exclude>**/*.adoc</exclude>
+                            <exclude>**/*.launch</exclude>
+                            <exclude>**/*.sh</exclude>
+                            <exclude>**/pom.xml</exclude>
+                            <exclude>**/README</exclude>
+                            <exclude>**/settings.xml</exclude>
+                            <exclude>src/license/**</exclude>
+                            <exclude>src/test/resources/**</exclude>
+                            <exclude>src/main/resources/**</exclude>
+                        </excludes>
+                        <headerDefinitions>
+                            <headerDefinition>src/license/headers.xml</headerDefinition>
+                        </headerDefinitions>
+                        <mapping>
+                            <java>JAVA_STYLE</java>
+                        </mapping>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
 
-			<!-- Configure the jar with the sources (or rather, convince Maven that 
-				we want sources at all) -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.4</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+        <plugins>
 
-			<!-- Configure the jar with the javadoc (or rather, convince Maven that 
-				we want javadoc at all) -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
-				<configuration>
-					<javadocVersion>1.8</javadocVersion>
-					<notimestamp>true</notimestamp>
-					<splitindex>true</splitindex>
-					<doctitle>Soteria API documentation</doctitle>
-					<links>
-						<link>https://docs.oracle.com/javaee/7/api/</link>
-					</links>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
+            <!-- Configure the jar with the sources (or rather, convince Maven that
+                we want sources at all) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-	</build>
+            <!-- Configure the jar with the javadoc (or rather, convince Maven that
+                we want javadoc at all) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <configuration>
+                    <javadocVersion>1.8</javadocVersion>
+                    <notimestamp>true</notimestamp>
+                    <splitindex>true</splitindex>
+                    <doctitle>Soteria API documentation</doctitle>
+                    <links>
+                        <link>https://docs.oracle.com/javaee/7/api/</link>
+                    </links>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
+                    <arguments>${release.arguments}</arguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+
+    </build>
 </project>
