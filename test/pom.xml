@@ -5,7 +5,7 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-b07-SNAPSHOT</version>
+       <version>1.0-b07</version>
     </parent>
 
     <groupId>org.glassfish.soteria.test</groupId>
@@ -151,7 +151,7 @@
                 <dependency>
                     <groupId>org.glassfish.soteria</groupId>
                     <artifactId>javax.security.enterprise</artifactId>
-                    <version>1.0-b07-SNAPSHOT</version>
+                    <version>1.0-b07</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -425,11 +425,7 @@
                                     <tasks>
                                         <!--  there has to be a better way... -->
                                         <echo>Copying server.xml</echo>
-                                        <copy
-                                            file="../common/src/main/resources/server.xml"
-                                            tofile="${project.build.directory}/wlp/templates/servers/defaultServer/server.xml"
-                                            failOnError="false"
-                                        />
+                                        <copy file="../common/src/main/resources/server.xml" tofile="${project.build.directory}/wlp/templates/servers/defaultServer/server.xml" failOnError="false" />
                                     </tasks>
                                 </configuration>
                             </execution>
