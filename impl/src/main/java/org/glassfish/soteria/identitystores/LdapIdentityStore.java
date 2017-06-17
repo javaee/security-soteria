@@ -119,35 +119,39 @@ public class LdapIdentityStore implements IdentityStore {
                 ldapIdentityStoreDefinition.baseDn(),
                 ldapIdentityStoreDefinition.password());
         if (ldapContext != null) {
-            String callerDn = searchCaller(ldapContext, ldapIdentityStoreDefinition.searchBase(),
-                    String.format(ldapIdentityStoreDefinition.searchExpression(), usernamePasswordCredential.getCaller()));
+            try {
+                String callerDn = searchCaller(ldapContext, ldapIdentityStoreDefinition.searchBase(),
+                        String.format(ldapIdentityStoreDefinition.searchExpression(), usernamePasswordCredential.getCaller()));
 
 
-            LdapContext ldapContextCaller = null;
+                LdapContext ldapContextCaller = null;
 
-            if (callerDn != null) {
-                // If this doesn't throw an exception internally, the password is correct
+                if (callerDn != null) {
+                    // If this doesn't throw an exception internally, the password is correct
 
-                ldapContextCaller = createLdapContext(
-                        ldapIdentityStoreDefinition.url(),
-                        callerDn,
-                        new String(usernamePasswordCredential.getPassword().getValue())
-                );
-            }
+                    ldapContextCaller = createLdapContext(
+                            ldapIdentityStoreDefinition.url(),
+                            callerDn,
+                            new String(usernamePasswordCredential.getPassword().getValue())
+                    );
+                }
 
-            if (ldapContextCaller == null) {
+                if (ldapContextCaller == null) {
+                    closeContext(ldapContext);
+                    return INVALID_RESULT;
+                }
+
+                Set<String> groups = retrieveGroupInformation(callerDn, ldapContext);
+
                 closeContext(ldapContext);
-                return INVALID_RESULT;
+
+                return new CredentialValidationResult(
+                        new CallerPrincipal(usernamePasswordCredential.getCaller()),
+                        groups
+                );
+            } catch (IllegalStateException e) {
+                return NOT_VALIDATED_RESULT;
             }
-
-            Set<String> groups = retrieveGroupInformation(callerDn, ldapContext);
-
-            closeContext(ldapContext);
-
-            return new CredentialValidationResult(
-                    new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                    groups
-            );
 
         }
 
