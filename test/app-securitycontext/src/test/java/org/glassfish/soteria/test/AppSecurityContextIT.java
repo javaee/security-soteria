@@ -44,8 +44,6 @@ import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Logger;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -55,10 +53,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 public class AppSecurityContextIT extends ArquillianBase {
-    
-    private static final Logger logger = Logger.getLogger(AppSecurityContextIT.class.getName());
-    
-    @Deployment(testable = false)
+
+	@Deployment(testable = false)
     public static Archive<?> createDeployment() {
         return mavenWar();
     }

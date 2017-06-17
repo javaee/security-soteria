@@ -41,7 +41,7 @@ package org.glassfish.soteria.test;
 
 import static java.util.Arrays.asList;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static org.glassfish.soteria.Utils.notNull;
+import static org.glassfish.soteria.test.Utils.notNull;
 
 import java.util.HashSet;
 

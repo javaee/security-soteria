@@ -1,29 +1,29 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-m06-SNAPSHOT</version>
+       <version>1.0-b08-SNAPSHOT</version>
     </parent>
 
-    <artifactId>soteria</artifactId>
+    <artifactId>${api_package}</artifactId>
     <packaging>bundle</packaging>
 
     <name>Soteria ${project.version} Java EE Security RI</name>
+    <description>Java EE Security API Reference Implementation</description>
 
     <properties>
         <packages.export>
             org.glassfish.soteria.*
         </packages.export>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>javax.security.enterprise</groupId>
             <artifactId>javax.security.enterprise-api</artifactId>
-            <version>1.0-b06</version>
+            <version>${api_dependency_version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -33,14 +33,6 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>bintray-javaee-security-spec-maven</id>
-            <name>javaee-security-spec-maven</name>
-            <url>https://api.bintray.com/maven/javaee-security-spec/maven/org.glassfish.soteria:soteria/;publish=1</url>
-        </repository>
-    </distributionManagement>
-
     <build>
         <plugins>
             <plugin>
@@ -48,13 +40,17 @@
                 <artifactId>spec-version-maven-plugin</artifactId>
                 <configuration>
                     <spec>
-                        <nonFinal>false</nonFinal>
+                        <nonFinal>${non_final}</nonFinal>
                         <jarType>impl</jarType>
-                        <specVersion>${spec_version}</specVersion>
-                        <specImplVersion>${spec_impl_version}</specImplVersion>
-                        <implVersion>${impl_version}</implVersion>
                         <apiPackage>${api_package}</apiPackage>
                         <implNamespace>${impl_namespace}</implNamespace>
+                        <specVersion>${spec_version}</specVersion>
+                        <newSpecVersion>${new_spec_version}</newSpecVersion>
+                        <specImplVersion>${spec_impl_version}</specImplVersion>
+                        <specBuild>${spec_build}</specBuild>
+                        <implVersion>${impl_version}</implVersion>
+                        <newImplVersion>${new_impl_version}</newImplVersion>
+                        <implBuild>${impl_build}</implBuild>
                     </spec>
                 </configuration>
                 <executions>
@@ -78,56 +74,62 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <!-- TODO: is it spec plugin bug ? the spec.bundle.version returns 1.0 ?
-                                                <Bundle-Version>${spec.bundle.version}</Bundle-Version>
-                        -->
-                        <Bundle-Version>${spec.implementation.version}</Bundle-Version>
                         <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
+                        <Bundle-Version>${spec.bundle.version}</Bundle-Version>
                         <Extension-Name>${spec.extension.name}</Extension-Name>
                         <Implementation-Version>${spec.implementation.version}</Implementation-Version>
-                        <Specification-Version>${spec.specification.version}</Specification-Version>
+                        <!--
+                            The spec-version-maven-plugin doesn't seem to be generating the correct
+                            Specification-Version as specified by the Glassfish Maven Versioning Rules
+                            document. Hard-wire it here.
+
+                            https://javaee.github.io/glassfish/wiki-archive/Maven%20Versioning%20Rules.html
+
+                            <Specification-Version>${spec.specification.version}</Specification-Version>
+                        -->
+                        <Specification-Version>${spec_version}.99.${spec_build}</Specification-Version>
                         <Export-Package>${packages.export}</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>
-        									org.glassfish.build
-        								</groupId>
-        								<artifactId>
-        									spec-version-maven-plugin
-        								</artifactId>
-        								<versionRange>
-        									[1.2,)
-        								</versionRange>
-        								<goals>
-        									<goal>
-        										set-spec-properties
-        									</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.glassfish.build
+                                        </groupId>
+                                        <artifactId>
+                                            spec-version-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>
+                                                set-spec-properties
+                                            </goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
         </pluginManagement>
     </build>
-    
+
 </project>

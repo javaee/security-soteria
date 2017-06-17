@@ -96,7 +96,6 @@ public class ProtectedServlet extends HttpServlet {
         
         response.getWriter().write("has access " + securityContext.hasAccessToWebResource("/servlets"));
         
-        
     }
 
 }
