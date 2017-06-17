@@ -39,27 +39,9 @@
  */
 package org.glassfish.soteria.identitystores;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.list;
-import static java.util.Collections.unmodifiableSet;
-import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
-import static javax.naming.Context.PROVIDER_URL;
-import static javax.naming.Context.SECURITY_AUTHENTICATION;
-import static javax.naming.Context.SECURITY_CREDENTIALS;
-import static javax.naming.Context.SECURITY_PRINCIPAL;
-import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
-
 import javax.naming.AuthenticationException;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
@@ -70,8 +52,21 @@ import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static javax.naming.Context.*;
+import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
 public class LdapIdentityStore implements IdentityStore {
+
+    private static final Logger LOGGER = Logger.getLogger(LdapIdentityStore.class.getName());
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
     private final Set<ValidationType> validationTypes;
@@ -99,14 +94,14 @@ public class LdapIdentityStore implements IdentityStore {
         }
 
     }
-    
+
     @Override
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
         LdapContext ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.baseDn(),
                 ldapIdentityStoreDefinition.password());
-        
+
         if (ldapContext != null) {
             try {
                 return new HashSet<>(retrieveGroupInformation(validationResult.getCallerPrincipal().getName(), ldapContext));
@@ -114,7 +109,7 @@ public class LdapIdentityStore implements IdentityStore {
                 closeContext(ldapContext);
             }
         }
-        
+
         return emptySet();
     }
 
@@ -291,12 +286,17 @@ public class LdapIdentityStore implements IdentityStore {
 
     private static List<?> get(SearchResult searchResult, String attributeName) {
         try {
-            return list(searchResult.getAttributes().get(attributeName).getAll());
+            Attribute attribute = searchResult.getAttributes().get(attributeName);
+            if (attribute == null) {
+                LOGGER.log(Level.WARNING, "Attribute name '{0}' is invalid, returning empty List", new Object[]{attributeName});
+                return Collections.emptyList();
+            }
+            return list(attribute.getAll());
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
     }
-    
+
     @Override
     public int priority() {
         return ldapIdentityStoreDefinition.priority();
