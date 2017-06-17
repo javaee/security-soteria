@@ -9,9 +9,3 @@ env:
   - SERVER=tomee
 script: mvn clean package -P $SERVER -P bundled
 
-deploy:
-   provider: script
-   script: mvn deploy -Dmaven.test.skip -s settings.xml
-   on:
-      branch: master
-      condition: "$SERVER = payara"
