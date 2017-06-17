@@ -40,6 +40,7 @@
 package org.glassfish.soteria.test;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.security.enterprise.SecurityContext;
