@@ -158,10 +158,7 @@
         <profile>
             <id>glassfish</id>
             
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <repositories>
+           <repositories>
                 <repository>
                     <id>glassfish Promoted</id>
                     <url>https://maven.java.net/content/repositories/promoted/</url>
