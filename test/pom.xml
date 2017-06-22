@@ -17,7 +17,7 @@
     <properties>
         <!-- Test servers -->
         <payara.version>4.1.2.172</payara.version>
-        <glassfish.version>5.0-b08</glassfish.version>
+        <glassfish.version>5.0-b09</glassfish.version>
         <wildfly.version>10.1.0.Final</wildfly.version>
         <tomee.version>7.0.2</tomee.version>
         <liberty.version>16.0.0.3</liberty.version>
