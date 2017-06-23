@@ -45,6 +45,8 @@ Testing against any of these is done by activating the maven profile with the sa
 
 ``mvn clean install -Ptomee,bundled``
 
+Testing against glassfish (which provides soteria integration):
+``mvn clean verify -Pglassfish,provided``
 
 Compatibility
 -------------
