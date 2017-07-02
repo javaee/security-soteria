@@ -7,8 +7,8 @@
        <version>1.0-b08-SNAPSHOT</version>
     </parent>
 
-    <artifactId>${api_package}</artifactId>
-    <packaging>bundle</packaging>
+    <artifactId>javax.security.enterprise</artifactId>
+    <packaging>jar</packaging>
 
     <name>Soteria ${project.version} Java EE Security RI</name>
     <description>Java EE Security API Reference Implementation</description>

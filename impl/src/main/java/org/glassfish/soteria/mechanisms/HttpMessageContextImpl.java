@@ -215,7 +215,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#responseUnAuthorized()
      */
     @Override
-    public AuthenticationStatus responseUnAuthorized() {
+    public AuthenticationStatus responseUnauthorized() {
         try {
             getResponse().sendError(SC_UNAUTHORIZED);
         } catch (IOException e) {

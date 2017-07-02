@@ -93,7 +93,7 @@ public class BasicAuthenticationMechanism implements HttpAuthenticationMechanism
 
 		if (httpMsgContext.isProtected()) {
 			response.setHeader("WWW-Authenticate", basicHeaderValue);
-			return httpMsgContext.responseUnAuthorized();
+			return httpMsgContext.responseUnauthorized();
 		}
 
 		return httpMsgContext.doNothing();
