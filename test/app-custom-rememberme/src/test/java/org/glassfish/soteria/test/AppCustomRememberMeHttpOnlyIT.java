@@ -42,8 +42,10 @@ package org.glassfish.soteria.test;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.glassfish.soteria.test.alternatives.TestAuthenticationMechanismHttpOnlyFalse;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -54,18 +56,19 @@ import com.gargoylesoftware.htmlunit.util.Cookie;
 
 
 @RunWith(Arquillian.class)
-public class AppCustomRememberMeIT extends ArquillianBase {
+public class AppCustomRememberMeHttpOnlyIT extends ArquillianBase {
     
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
-        return mavenWar();
+        return mavenWar()
+                .addClass(TestAuthenticationMechanismHttpOnlyFalse.class);
     }
     
     @Test
     public void testHttpOnlyIsFalse() {
         readFromServer("/servlet?name=reza&password=secret1&rememberme=true");
         
-        assertTrue(getWebClient().getCookieManager().getCookie("JREMEMBERMEID").isHttpOnly());
+        assertFalse(getWebClient().getCookieManager().getCookie("JREMEMBERMEID").isHttpOnly());
     }
 
     @Test

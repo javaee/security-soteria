@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,11 @@ package org.glassfish.soteria.cdi;
 
 import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
-import static org.glassfish.soteria.Utils.*;
+import static org.glassfish.soteria.Utils.cleanSubjectMethod;
+import static org.glassfish.soteria.Utils.getParam;
+import static org.glassfish.soteria.Utils.isEmpty;
+import static org.glassfish.soteria.Utils.isImplementationOf;
+import static org.glassfish.soteria.Utils.validateRequestMethod;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 import static org.glassfish.soteria.servlet.CookieHandler.getCookie;
 import static org.glassfish.soteria.servlet.CookieHandler.removeCookie;
@@ -159,7 +163,12 @@ public class RememberMeInterceptor implements Serializable {
                     httpMessageContext.getGroups()
                 );
                 
-                saveCookie(request, response, rememberMeAnnotation.cookieName(), token, rememberMeAnnotation.cookieMaxAgeSeconds());
+                saveCookie(
+                    request, response, 
+                    rememberMeAnnotation.cookieName(), 
+                    token, 
+                    rememberMeAnnotation.cookieMaxAgeSeconds(),
+                    rememberMeAnnotation.cookieHttpOnly());
             }
         }
         
