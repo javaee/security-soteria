@@ -68,6 +68,16 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <repositories>
+       <repository>
+          <id>glassfish snapshots</id>
+          <url>https://maven.java.net/content/repositories/snapshots/</url>
+          <snapshots>
+              <enabled>true</enabled>
+          </snapshots>
+       </repository>
+     </repositories>
+
 
     <build>
         <pluginManagement>
