@@ -68,6 +68,16 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <repositories>
+       <repository>
+          <id>jvnet-nexus-snapshots</id>
+          <url>${jvnetDistMgmtSnapshotsUrl}</url>
+          <snapshots>
+              <enabled>true</enabled>
+          </snapshots>
+       </repository>
+     </repositories>
+
 
     <build>
         <pluginManagement>
