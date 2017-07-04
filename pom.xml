@@ -70,8 +70,8 @@
     </dependencies>
     <repositories>
        <repository>
-          <id>glassfish snapshots</id>
-          <url>https://maven.java.net/content/repositories/snapshots/</url>
+          <id>jvnet-nexus-snapshots</id>
+          <url>${jvnetDistMgmtSnapshotsUrl}</url>
           <snapshots>
               <enabled>true</enabled>
           </snapshots>
