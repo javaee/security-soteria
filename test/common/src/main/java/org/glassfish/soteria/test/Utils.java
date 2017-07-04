@@ -69,6 +69,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.el.ELProcessor;
 import javax.interceptor.InvocationContext;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
@@ -222,6 +223,12 @@ public final class Utils {
 
 		return Collections.unmodifiableSet(set);
 	}
+	
+	public static ELProcessor getELProcessor(String name, Object bean) {
+        ELProcessor elProcessor = new ELProcessor();
+        elProcessor.defineBean(name, bean);
+        return elProcessor;
+    }
 
 	public static String encodeURL(String string) {
 		if (string == null) {

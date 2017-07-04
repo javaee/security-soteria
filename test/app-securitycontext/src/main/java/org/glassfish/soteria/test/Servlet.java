@@ -40,6 +40,7 @@
 package org.glassfish.soteria.test;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.annotation.security.DeclareRoles;
 import javax.inject.Inject;
@@ -60,6 +61,9 @@ public class Servlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    @Inject
+    private TestEJB testEJB;
+    
     @Inject
     private SecurityContext securityContext;
 
@@ -83,6 +87,17 @@ public class Servlet extends HttpServlet {
         if (securityContext.getCallerPrincipal() != null) {
             contextName = securityContext.getCallerPrincipal().getName();
         }
+        
+        String ejbName = null;
+        if (testEJB.getUserPrincipalFromEJBContext() != null) {
+            ejbName = testEJB.getUserPrincipalFromEJBContext().getName();
+        }
+
+        response.getWriter().write("ejb username: " + ejbName + "\n");
+
+        response.getWriter().write("ejb user has role \"foo\": " + testEJB.isCallerInRoleFromEJBContext("foo") + "\n");
+        response.getWriter().write("ejb user has role \"bar\": " + testEJB.isCallerInRoleFromEJBContext("bar") + "\n");
+        response.getWriter().write("ejb user has role \"kaz\": " + testEJB.isCallerInRoleFromEJBContext("kaz") + "\n");
 
         response.getWriter().write("context username: " + contextName + "\n");
 
@@ -92,6 +107,11 @@ public class Servlet extends HttpServlet {
 
         response.getWriter().write("has access to /protectedServlet: " + securityContext.hasAccessToWebResource("/protectedServlet") + "\n");
 
+        // This method test a method that was removed from the API, but is present in the RI
+        Set<String> roles = testEJB.getAllDeclaredCallerRoles();
+
+        response.getWriter().write("All declared roles of user " + roles + "\n");
+        
     }
 
 }
