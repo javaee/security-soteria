@@ -60,8 +60,16 @@ public class AppSecurityContextIT extends ArquillianBase {
     }
 
     @Test
-    public void testAuthenticated() {
+    public void testWebAuthenticated() {
         assertDefaultAuthenticated(
+            readFromServer("/servlet?name=reza&password=secret1"));
+    }
+    
+    @Test
+    public void testEJBContextAuthenticated() {
+        Assert.assertAuthenticated(
+            "ejb",
+            "reza",
             readFromServer("/servlet?name=reza&password=secret1"));
     }
     

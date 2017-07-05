@@ -39,18 +39,27 @@
  */
 package org.glassfish.soteria.authorization;
 
-import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
-import javax.security.jacc.WebResourcePermission;
-import javax.security.jacc.WebRoleRefPermission;
-import java.security.*;
+import static java.security.Policy.getPolicy;
+import static java.util.Collections.list;
+import static org.glassfish.soteria.authorization.EJB.getCurrentEJBName;
+import static org.glassfish.soteria.authorization.EJB.getEJBContext;
+
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.Principal;
+import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.security.Policy.getPolicy;
-import static java.util.Collections.list;
+import javax.ejb.EJBContext;
+import javax.security.auth.Subject;
+import javax.security.jacc.EJBRoleRefPermission;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
+import javax.security.jacc.WebResourcePermission;
+import javax.security.jacc.WebRoleRefPermission;
 
 public class JACC {
 
@@ -59,7 +68,33 @@ public class JACC {
     }
 
     public static boolean isCallerInRole(String role) {
-        return hasPermission(getSubject(), new WebRoleRefPermission("", role));
+        
+        Subject subject = getSubject();
+        
+        if (hasPermission(subject, new WebRoleRefPermission("", role))) {
+            return true;
+        }
+        
+        EJBContext ejbContext = getEJBContext();
+        
+        if (ejbContext != null) {
+            
+            // We're called from an EJB
+            
+            // To ask for the permission, get the EJB name first.
+            // Unlike the Servlet container there's no automatic mapping
+            // to a global ("") name.
+            String ejbName = getCurrentEJBName(ejbContext);
+            if (ejbName != null) {
+                return hasPermission(subject, new EJBRoleRefPermission(ejbName, role));
+            }
+            
+            // EJB name not supported for current container, fallback to going fully through
+            // ejbContext
+            return ejbContext.isCallerInRole(role);
+        }
+        
+        return false;
     }
 
     public static boolean hasAccessToWebResource(String resource, String... methods) {
@@ -70,9 +105,10 @@ public class JACC {
         // Get the permissions associated with the Subject we obtained
         PermissionCollection permissionCollection = getPermissionCollection(getSubject());
 
-        // Resolve any potentially unresolved permissions
+        // Resolve any potentially unresolved role permissions
         permissionCollection.implies(new WebRoleRefPermission("", "nothing"));
-
+        permissionCollection.implies(new EJBRoleRefPermission("", "nothing"));
+        
         // Filter just the roles from all the permissions, which may include things like 
         // java.net.SocketPermission, java.io.FilePermission, and obtain the actual role names.
         return filterRoles(permissionCollection);
@@ -90,7 +126,7 @@ public class JACC {
     public static Set<String> filterRoles(PermissionCollection permissionCollection) {
         Set<String> roles = new HashSet<>();
         for (Permission permission : list(permissionCollection.elements())) {
-            if (permission instanceof WebRoleRefPermission) {
+            if (isRolePermission(permission)) {
                 String role = permission.getActions();
 
                 // Note that the WebRoleRefPermission is given for every Servlet in the application, even when
@@ -122,5 +158,11 @@ public class JACC {
             throw new IllegalStateException(e);
         }
     }
+    
+    public static boolean isRolePermission(Permission permission) {
+        return permission instanceof WebRoleRefPermission || permission instanceof EJBRoleRefPermission;
+    }
+    
+  
 
 }
