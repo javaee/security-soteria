@@ -42,6 +42,7 @@ package org.glassfish.soteria.test;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -66,6 +67,13 @@ public class AppCustomRememberMeIT extends ArquillianBase {
         readFromServer("/servlet?name=reza&password=secret1&rememberme=true");
         
         assertTrue(getWebClient().getCookieManager().getCookie("JREMEMBERMEID").isHttpOnly());
+    }
+    
+    @Test
+    public void testSecureOnlyIsFalse() {
+        readFromServer("/servlet?name=reza&password=secret1&rememberme=true");
+        
+        assertFalse(getWebClient().getCookieManager().getCookie("JREMEMBERMEID").isSecure());
     }
 
     @Test

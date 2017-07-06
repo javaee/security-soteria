@@ -50,6 +50,7 @@ import org.glassfish.soteria.test.TestAuthenticationMechanism;
 @RememberMe(
     cookieMaxAgeSeconds = 3600,
     cookieHttpOnly = false,
+    cookieSecureOnly = false,
     isRememberMeExpression ="self.isRememberMe(httpMessageContext)"
 )
 @RequestScoped
