@@ -168,6 +168,7 @@ public class RememberMeInterceptor implements Serializable {
                     rememberMeAnnotation.cookieName(), 
                     token, 
                     rememberMeAnnotation.cookieMaxAgeSeconds(),
+                    rememberMeAnnotation.cookieSecureOnly(),
                     rememberMeAnnotation.cookieHttpOnly());
             }
         }
