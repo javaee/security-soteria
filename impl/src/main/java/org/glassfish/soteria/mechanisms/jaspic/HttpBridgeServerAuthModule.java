@@ -47,7 +47,6 @@ import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.setLastAuthenticati
 import java.util.Map;
 
 import javax.enterprise.inject.spi.CDI;
-import javax.security.enterprise.AuthenticationStatus;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.AuthException;
@@ -56,6 +55,8 @@ import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
 import javax.security.auth.message.config.ServerAuthContext;
 import javax.security.auth.message.module.ServerAuthModule;
+import javax.security.enterprise.AuthenticationException;
+import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
@@ -113,12 +114,12 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
                                 msgContext.getRequest(), 
                                 msgContext.getResponse(), 
                                 msgContext);
-            } catch (AuthException e) {
+            } catch (AuthenticationException e) {
                 // In case of an explicit AuthException, status will
                 // be set to SEND_FAILURE, for any other (non checked) exception
                 // the status will be the default NOT_DONE
                 setLastAuthenticationStatus(msgContext.getRequest(), SEND_FAILURE);
-                throw e;
+                throw (AuthException) new AuthException("Authentication failure in HttpAuthenticationMechanism").initCause(e);
             }
             
             setLastAuthenticationStatus(msgContext.getRequest(), status);
@@ -130,18 +131,22 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
         public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
             HttpMessageContext msgContext = new HttpMessageContextImpl(handler, messageInfo, null);
         
-            AuthenticationStatus status = CDI.current()
-                                             .select(HttpAuthenticationMechanism.class).get()
-                                             .secureResponse(
-                                                 msgContext.getRequest(), 
-                                                 msgContext.getResponse(), 
-                                                 msgContext);
-        
-            if (cdiPerRequestInitializer != null) {
-                cdiPerRequestInitializer.destroy(msgContext.getRequest());
+            try {
+                AuthenticationStatus status = CDI.current()
+                                                 .select(HttpAuthenticationMechanism.class).get()
+                                                 .secureResponse(
+                                                     msgContext.getRequest(), 
+                                                     msgContext.getResponse(), 
+                                                     msgContext);
+                return fromAuthenticationStatus(status);
+            } catch (AuthenticationException e) {
+                throw (AuthException) new AuthException("Secure response failure in HttpAuthenticationMechanism").initCause(e);
+            } finally {
+                if (cdiPerRequestInitializer != null) {
+                    cdiPerRequestInitializer.destroy(msgContext.getRequest());
+                }
             }
             
-            return fromAuthenticationStatus(status);
         }
 
         /**

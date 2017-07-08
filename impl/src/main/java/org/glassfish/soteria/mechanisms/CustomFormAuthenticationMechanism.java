@@ -41,7 +41,7 @@ package org.glassfish.soteria.mechanisms;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
-import javax.security.auth.message.AuthException;
+import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
@@ -67,7 +67,7 @@ public class CustomFormAuthenticationMechanism implements HttpAuthenticationMech
     private LoginToContinue loginToContinue;
     
 	@Override
-	public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+	public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
         
         if (hasCredential(httpMessageContext)) {
 

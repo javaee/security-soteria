@@ -45,8 +45,8 @@ import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static org.glassfish.soteria.Utils.isEmpty;
 
 import javax.enterprise.inject.spi.CDI;
+import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
-import javax.security.auth.message.AuthException;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.credential.Password;
@@ -75,7 +75,7 @@ public class BasicAuthenticationMechanism implements HttpAuthenticationMechanism
     }
 
 	@Override
-	public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMsgContext) throws AuthException {
+	public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMsgContext) throws AuthenticationException {
 
 		String[] credentials = getCredentials(request);
 		if (!isEmpty(credentials)) {
