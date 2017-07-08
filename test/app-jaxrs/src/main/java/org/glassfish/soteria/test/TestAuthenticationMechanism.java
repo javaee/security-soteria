@@ -46,7 +46,7 @@ import static org.glassfish.soteria.test.Utils.notNull;
 import java.util.HashSet;
 
 import javax.enterprise.context.RequestScoped;
-import javax.security.auth.message.AuthException;
+import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
@@ -59,7 +59,7 @@ import javax.servlet.http.HttpServletResponse;
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
 
     @Override
-    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
 
         String name = request.getParameter("name");
         String password = request.getParameter("password");
