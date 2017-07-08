@@ -61,13 +61,13 @@ import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.enterprise.authentication.mechanism.http.*;
-import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
 import org.glassfish.soteria.SecurityContextImpl;
-import org.glassfish.soteria.identitystores.DataBaseIdentityStore;
+import org.glassfish.soteria.identitystores.DatabaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
 import org.glassfish.soteria.identitystores.JPAIdentityStore;
 import org.glassfish.soteria.identitystores.LdapIdentityStore;
@@ -118,16 +118,16 @@ public class CdiExtension implements Extension {
             );
         });
 
-        Optional<DataBaseIdentityStoreDefinition> optionalDBStore = getAnnotation(beanManager, event.getAnnotated(), DataBaseIdentityStoreDefinition.class);
+        Optional<DatabaseIdentityStoreDefinition> optionalDBStore = getAnnotation(beanManager, event.getAnnotated(), DatabaseIdentityStoreDefinition.class);
         optionalDBStore.ifPresent(dataBaseIdentityStoreDefinition -> {
-            logActivatedIdentityStore(DataBaseIdentityStoreDefinition.class, beanClass);
+            logActivatedIdentityStore(DatabaseIdentityStoreDefinition.class, beanClass);
 
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
-                    .types(Object.class, IdentityStore.class, DataBaseIdentityStore.class)
-                    .addToId(DataBaseIdentityStoreDefinition.class)
-                    .create(e -> new DataBaseIdentityStore(dataBaseIdentityStoreDefinition))
+                    .types(Object.class, IdentityStore.class, DatabaseIdentityStore.class)
+                    .addToId(DatabaseIdentityStoreDefinition.class)
+                    .create(e -> new DatabaseIdentityStore(dataBaseIdentityStoreDefinition))
             );
         });
         
