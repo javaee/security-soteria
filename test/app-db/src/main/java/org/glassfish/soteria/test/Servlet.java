@@ -42,7 +42,7 @@ package org.glassfish.soteria.test;
 import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -55,7 +55,7 @@ import javax.servlet.http.HttpServletResponse;
  * 
  *
  */
-@DataBaseIdentityStoreDefinition(
+@DatabaseIdentityStoreDefinition(
     dataSourceLookup="java:global/MyDS", 
     callerQuery="select password from caller where name = ?",
     groupsQuery="select group_name from caller_groups where caller_name = ?"
