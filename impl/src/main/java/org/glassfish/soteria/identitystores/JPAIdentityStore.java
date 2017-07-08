@@ -43,34 +43,30 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.Persistence;
 
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
-import javax.sql.DataSource;
+import org.glassfish.soteria.identitystores.annotation.JPAIdentityStoreDefinition;
 
-public class DataBaseIdentityStore implements IdentityStore {
+public class JPAIdentityStore implements IdentityStore {
 
-    private final DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
+    private final JPAIdentityStoreDefinition jpaIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
 
-    public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
-        this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
-        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
+    public JPAIdentityStore(JPAIdentityStoreDefinition jpaIdentityStoreDefinition) {
+        this.jpaIdentityStoreDefinition = jpaIdentityStoreDefinition;
+        validationTypes = unmodifiableSet(new HashSet<>(asList(jpaIdentityStoreDefinition.useFor())));
     }
 
     @Override
@@ -83,64 +79,51 @@ public class DataBaseIdentityStore implements IdentityStore {
     }
 
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
+        CredentialValidationResult result = INVALID_RESULT;
 
-        DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
-        
-        List<String> passwords = executeQuery(
-            dataSource, 
-            dataBaseIdentityStoreDefinition.callerQuery(),
-            usernamePasswordCredential.getCaller()
-        ); 
-        
+        EntityManager em = Persistence.createEntityManagerFactory(jpaIdentityStoreDefinition.persistenceUnitName()).
+                createEntityManager();
+
+        String password = null;
+        try {
+            password = (String) em.createQuery(jpaIdentityStoreDefinition.callerQuery()).
+                    setParameter(1, usernamePasswordCredential.getCaller()).
+                    getSingleResult();
+        } catch (NoResultException e) {
+            // Do nothing 
+        }
+
         // TODO Support for hashed passwords.
-        if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
-            return new CredentialValidationResult(
-                new CallerPrincipal(usernamePasswordCredential.getCaller()), 
-                new HashSet<>(executeQuery(
-                    dataSource,
-                    dataBaseIdentityStoreDefinition.groupsQuery(),
-                    usernamePasswordCredential.getCaller()
-                ))
-            );
+        if (usernamePasswordCredential.getPassword().compareTo(password)) {
+            List<String> groups = (List<String>) em.createQuery(jpaIdentityStoreDefinition.groupsQuery()).
+                    setParameter(1, usernamePasswordCredential.getCaller()).
+                    getResultList();
+
+            result = new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), new HashSet<>(groups));
         }
 
-        return INVALID_RESULT;
-    }
-    
-    @Override
-    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
-        
-        DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
-        
-        return new HashSet<>(executeQuery(
-            dataSource,
-            dataBaseIdentityStoreDefinition.groupsQuery(),
-            validationResult.getCallerPrincipal().getName())
-        );
-    }
-
-    private List<String> executeQuery(DataSource dataSource, String query, String parameter) {
-        List<String> result = new ArrayList<>();
-
-        try (Connection connection = dataSource.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, parameter);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        result.add(resultSet.getString(1));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
-        }
+        em.close();
 
         return result;
     }
 
     @Override
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+        EntityManager em = Persistence.createEntityManagerFactory(jpaIdentityStoreDefinition.persistenceUnitName()).
+                createEntityManager();
+
+        List<String> groups = (List<String>) em.createQuery(jpaIdentityStoreDefinition.groupsQuery()).
+                setParameter(1, validationResult.getCallerPrincipal().getName()).
+                getResultList();
+
+        em.close();
+
+        return new HashSet<>(groups);
+    }
+
+    @Override
     public int priority() {
-        return dataBaseIdentityStoreDefinition.priority();
+        return jpaIdentityStoreDefinition.priority();
     }
 
     @Override

@@ -33,6 +33,7 @@
         <!-- app-[identity-store] -->
         <module>app-mem</module>
         <module>app-db</module>
+        <module>app-jpa</module>
         <module>app-ldap</module>
         <module>app-ldap2</module>
         <module>app-custom</module>
