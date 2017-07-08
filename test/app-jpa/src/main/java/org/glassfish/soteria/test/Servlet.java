@@ -55,9 +55,8 @@ import org.glassfish.soteria.identitystores.annotation.JPAIdentityStoreDefinitio
  *
  */
 @JPAIdentityStoreDefinition(
-        persistenceUnitName = "defaultPU",
-        callerQuery = "SELECT u.password FROM User u WHERE u.name = ?1",
-        groupsQuery = "SELECT g.name FROM Group g JOIN g.users u WHERE u.name = ?1"
+    callerQuery = "SELECT u.password FROM User u WHERE u.name = ?1",
+    groupsQuery = "SELECT g.name FROM Group g JOIN g.users u WHERE u.name = ?1"
 )
 @DeclareRoles({"foo", "bar", "kaz"})
 @WebServlet("/servlet")

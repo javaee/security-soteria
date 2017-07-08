@@ -60,9 +60,13 @@ public @interface JPAIdentityStoreDefinition {
     /**
      * Name of the persistence unit name on which queries will be performed.
      *
+     * Optional: if there's only one container managed persistence unit, and no
+     * value has been provided for this attribute, that persistence unit will be
+     * used.
+     *
      * @return persistence unit name
      */
-    String persistenceUnitName();
+    String persistenceUnitName() default "";
 
     /**
      * JPQL query to validate the {caller, password} pair.

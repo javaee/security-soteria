@@ -39,14 +39,23 @@
  */
 package org.glassfish.soteria.identitystores;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
 import static java.util.Arrays.asList;
+import java.util.Collections;
 import static java.util.Collections.unmodifiableSet;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
@@ -56,17 +65,32 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.glassfish.soteria.identitystores.annotation.JPAIdentityStoreDefinition;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class JPAIdentityStore implements IdentityStore {
 
+    private static final Logger LOGGER = Logger.getLogger(JPAIdentityStore.class.getName());
+
     private final JPAIdentityStoreDefinition jpaIdentityStoreDefinition;
+    private final String persistenceUnitName;
 
     private final Set<ValidationType> validationTypes;
 
     public JPAIdentityStore(JPAIdentityStoreDefinition jpaIdentityStoreDefinition) {
         this.jpaIdentityStoreDefinition = jpaIdentityStoreDefinition;
         validationTypes = unmodifiableSet(new HashSet<>(asList(jpaIdentityStoreDefinition.useFor())));
+        persistenceUnitName = findPersistenceUnitName();
     }
 
     @Override
@@ -79,9 +103,13 @@ public class JPAIdentityStore implements IdentityStore {
     }
 
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
+        if (persistenceUnitName == null) {
+            return INVALID_RESULT; // TODO: should have been thrown an exception at deployment time?
+        }
+
         CredentialValidationResult result = INVALID_RESULT;
 
-        EntityManager em = Persistence.createEntityManagerFactory(jpaIdentityStoreDefinition.persistenceUnitName()).
+        EntityManager em = Persistence.createEntityManagerFactory(persistenceUnitName).
                 createEntityManager();
 
         String password = null;
@@ -109,7 +137,11 @@ public class JPAIdentityStore implements IdentityStore {
 
     @Override
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
-        EntityManager em = Persistence.createEntityManagerFactory(jpaIdentityStoreDefinition.persistenceUnitName()).
+        if (persistenceUnitName == null) {
+            return Collections.emptySet(); // TODO: should have been thrown an exception at deployment time?
+        }
+
+        EntityManager em = Persistence.createEntityManagerFactory(persistenceUnitName).
                 createEntityManager();
 
         List<String> groups = (List<String>) em.createQuery(jpaIdentityStoreDefinition.groupsQuery()).
@@ -129,5 +161,55 @@ public class JPAIdentityStore implements IdentityStore {
     @Override
     public Set<ValidationType> validationTypes() {
         return validationTypes;
+    }
+
+    private String findPersistenceUnitName() {
+        if (!jpaIdentityStoreDefinition.persistenceUnitName().isEmpty()) {
+            return jpaIdentityStoreDefinition.persistenceUnitName();
+        }
+
+        try {
+            List<URL> resources = Collections.list(Thread.currentThread().getContextClassLoader().getResources("META-INF/persistence.xml"));
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(false);
+            factory.setNamespaceAware(false);
+            factory.setExpandEntityReferences(false);
+
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.newDocument();
+            document.appendChild(document.createElement("root"));
+
+            Element documentElement = document.getDocumentElement();
+
+            for (URL resource : resources) {
+                URLConnection connection = resource.openConnection();
+                connection.setUseCaches(false);
+                try (InputStream input = connection.getInputStream()) {
+                    NodeList children = builder.parse(input).getDocumentElement().getChildNodes();
+
+                    for (int i = 0; i < children.getLength(); i++) {
+                        documentElement.appendChild(document.importNode(children.item(i), true));
+                    }
+                }
+            }
+
+            NodeList persistenceUnitNodes = (NodeList) XPathFactory.
+                    newInstance().
+                    newXPath().
+                    compile("persistence-unit/@name").
+                    evaluate(documentElement, XPathConstants.NODESET);
+
+            if (persistenceUnitNodes.getLength() != 1) {
+                LOGGER.log(Level.WARNING, "There's not a default persistence unit to authenticate and no name has been provided. Validation on this identity store will inevitably fail.");
+                return null;
+            }
+
+            return persistenceUnitNodes.item(0).getTextContent();
+        } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
+            LOGGER.log(Level.WARNING, "Error while trying to find default persistence unit. Validation on this identity store will inevitably fail: ", ex);
+        }
+
+        return null;
     }
 }
