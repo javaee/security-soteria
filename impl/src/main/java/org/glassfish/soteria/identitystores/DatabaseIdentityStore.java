@@ -58,17 +58,17 @@ import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.sql.DataSource;
 
-public class DataBaseIdentityStore implements IdentityStore {
+public class DatabaseIdentityStore implements IdentityStore {
 
-    private final DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
+    private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
 
-    public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
+    public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
         validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
     }
