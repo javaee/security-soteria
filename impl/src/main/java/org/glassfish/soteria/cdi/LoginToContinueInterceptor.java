@@ -47,6 +47,7 @@ import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.notNull;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 import static org.glassfish.soteria.servlet.RequestCopier.copy;
 
@@ -61,8 +62,8 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.security.enterprise.AuthenticationStatus;
 import javax.security.auth.message.AuthException;
+import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
@@ -182,10 +183,10 @@ public class LoginToContinueInterceptor implements Serializable {
             
             if (loginToContinueAnnotation.useForwardToLogin()) {
                 return httpMessageContext.forward(
-                    loginToContinueAnnotation.loginPage());
+                    evalELExpression(loginToContinueAnnotation.loginPage()));
             } else {
                 return httpMessageContext.redirect(
-                    getBaseURL(request) + loginToContinueAnnotation.loginPage());
+                    getBaseURL(request) + evalELExpression(loginToContinueAnnotation.loginPage()));
             }
         }
         
@@ -231,7 +232,7 @@ public class LoginToContinueInterceptor implements Serializable {
                 
             } else if (authstatus == AuthenticationStatus.SEND_FAILURE)  {
                 
-                String errorPage = getLoginToContinueAnnotation(invocationContext).errorPage();
+                String errorPage = evalELExpression(getLoginToContinueAnnotation(invocationContext).errorPage());
                 
                 if (isEmpty(errorPage)) {
                     return authstatus;
