@@ -50,7 +50,7 @@ public class AnnotationELPProcessor {
     }
     
     @SafeVarargs
-    private static boolean hasAnyELExpression(String... expressions) {
+    public static boolean hasAnyELExpression(String... expressions) {
         return stream(expressions).anyMatch(expr -> isELExpression(expr));
     }
     
