@@ -105,7 +105,7 @@ public class JPAIdentityStore implements IdentityStore {
 
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
         if (persistenceUnitName == null) {
-            return INVALID_RESULT; // TODO: should have been thrown an exception at deployment time?
+            return INVALID_RESULT; // TODO: should have thrown an exception at deployment time?
         }
 
         CredentialValidationResult result = INVALID_RESULT;
