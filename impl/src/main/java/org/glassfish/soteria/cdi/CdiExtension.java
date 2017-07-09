@@ -60,7 +60,13 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
-import javax.security.enterprise.authentication.mechanism.http.*;
+import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
+import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.CustomFormAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import javax.security.enterprise.authentication.mechanism.http.RememberMe;
 import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
@@ -164,14 +170,11 @@ public class CdiExtension implements Extension {
                     .types(Object.class, HttpAuthenticationMechanism.class)
                     .addToId(FormAuthenticationMechanismDefinition.class)
                     .create(e -> {
-                        FormAuthenticationMechanism formAuthenticationMechanism = CDI.current()
+                        return CDI.current()
                                 .select(FormAuthenticationMechanism.class)
-                                .get();
-
-                        formAuthenticationMechanism.setLoginToContinue(
-                                formAuthenticationMechanismDefinition.loginToContinue());
-
-                        return formAuthenticationMechanism;
+                                .get()
+                                .loginToContinue(
+                                    AnnotationELPProcessor.process(formAuthenticationMechanismDefinition.loginToContinue()));
                     });
         });
 
