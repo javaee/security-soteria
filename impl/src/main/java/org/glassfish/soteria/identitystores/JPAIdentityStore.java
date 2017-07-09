@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
 import static java.util.Arrays.asList;
 import java.util.Collections;
 import static java.util.Collections.unmodifiableSet;
@@ -52,7 +51,6 @@ import static javax.security.enterprise.identitystore.CredentialValidationResult
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +66,6 @@ import javax.security.enterprise.identitystore.IdentityStore;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -78,6 +75,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ *
+ * @author Guillermo González de Agüero
+ */
 public class JPAIdentityStore implements IdentityStore {
 
     private static final Logger LOGGER = Logger.getLogger(JPAIdentityStore.class.getName());
@@ -123,11 +124,14 @@ public class JPAIdentityStore implements IdentityStore {
 
         // TODO Support for hashed passwords.
         if (usernamePasswordCredential.getPassword().compareTo(password)) {
-            List<String> groups = (List<String>) em.createQuery(jpaIdentityStoreDefinition.groupsQuery()).
-                    setParameter(1, usernamePasswordCredential.getCaller()).
-                    getResultList();
+            Set<String> groups = Collections.emptySet();
+            if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+                groups = new HashSet<>((List<String>) em.createQuery(jpaIdentityStoreDefinition.groupsQuery()).
+                        setParameter(1, usernamePasswordCredential.getCaller()).
+                        getResultList());
+            }
 
-            result = new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), new HashSet<>(groups));
+            result = new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), groups);
         }
 
         em.close();

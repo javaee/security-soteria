@@ -48,6 +48,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.IdentityStore.ValidationType;
 
 /**
  *
@@ -60,9 +61,8 @@ public @interface JPAIdentityStoreDefinition {
     /**
      * Name of the persistence unit name on which queries will be performed.
      *
-     * Optional: if there's only one container managed persistence unit, and no
-     * value has been provided for this attribute, that persistence unit will be
-     * used.
+     * Optional: when there's only one container managed persistence unit, that
+     * one will be used
      *
      * @return persistence unit name
      */
@@ -70,6 +70,9 @@ public @interface JPAIdentityStoreDefinition {
 
     /**
      * JPQL query to validate the {caller, password} pair.
+     *
+     * Only needed when {@link #useFor()} contains
+     * {@link ValidationType#VALIDATE}.
      *
      * <p>
      * The name of the caller that is to be authenticated has to be set as the
@@ -86,11 +89,14 @@ public @interface JPAIdentityStoreDefinition {
      *
      * @return JPQL query to validate
      */
-    String callerQuery();
+    String callerQuery() default "";
 
     /**
      * JPQL query to retrieve the groups associated with the caller when
      * authentication succeeds.
+     *
+     * Only needed when {@link #useFor()} contains
+     * {@link ValidationType#PROVIDE_GROUPS}.
      *
      * <p>
      * The name of the caller that has been authenticated has to be set as the
@@ -107,7 +113,7 @@ public @interface JPAIdentityStoreDefinition {
      *
      * @return JPQL query to retrieve the groups
      */
-    String groupsQuery();
+    String groupsQuery() default "";
 
     /**
      * Hash algorithm applied to plain text password for comparison with
@@ -136,6 +142,6 @@ public @interface JPAIdentityStoreDefinition {
      *
      * @return the type the identity store is used for
      */
-    IdentityStore.ValidationType[] useFor() default {VALIDATE, PROVIDE_GROUPS};
+    ValidationType[] useFor() default {VALIDATE, PROVIDE_GROUPS};
 
 }
