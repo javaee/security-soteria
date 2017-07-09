@@ -56,8 +56,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 @DatabaseIdentityStoreDefinition(
-    dataSourceLookup="java:global/MyDS", 
-    callerQuery="select password from caller where name = ?",
+    dataSourceLookup="${'java:global/MyDS'}", 
+    callerQuery="#{'select password from caller where name = ?'}",
     groupsQuery="select group_name from caller_groups where caller_name = ?"
 )
 @DeclareRoles({ "foo", "bar", "kaz" })
