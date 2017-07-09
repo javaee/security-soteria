@@ -54,6 +54,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.el.ELProcessor;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -130,9 +131,13 @@ public class CdiUtils {
         return empty();
     }
     
+    public static BeanManager getBeanManager() {
+        return jndiLookup("java:comp/BeanManager");
+    }
+    
     // 
     public static <T> T getBeanReference(Class<T> type, Annotation... qualifiers) {
-        return type.cast(getBeanReferenceByType(jndiLookup("java:comp/BeanManager"), type, qualifiers));
+        return type.cast(getBeanReferenceByType(getBeanManager(), type, qualifiers));
     }
     
     /**
@@ -171,7 +176,7 @@ public class CdiUtils {
     }
 
     public static <T> List<T> getBeanReferencesByType(Class<T> type, boolean optional) {
-        BeanManager beanManager =  jndiLookup("java:comp/BeanManager");
+        BeanManager beanManager =  getBeanManager();
 
         Set<Bean<?>> beans = getBeanDefinitions(type, optional, beanManager);
 
@@ -182,6 +187,13 @@ public class CdiUtils {
         }
 
         return result;
+    }
+    
+    public static ELProcessor getELProcessor() {
+        ELProcessor elProcessor = new ELProcessor();
+        elProcessor.getELManager().addELResolver(getBeanManager().getELResolver());
+        
+        return elProcessor;
     }
 
     private static <T> Set<Bean<?>> getBeanDefinitions(Class<T> type, boolean optional, BeanManager beanManager) {

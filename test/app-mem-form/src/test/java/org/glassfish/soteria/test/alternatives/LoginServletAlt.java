@@ -37,63 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.test.alternatives;
 
 import java.io.IOException;
 
-import javax.annotation.security.DeclareRoles;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Test Servlet that prints out the name of the authenticated caller and whether
- * this caller is in any of the roles {foo, bar, kaz}
+ * Servlet that is invoked when it's determined that the called needs to authenticate/login.
+ *
  */
-@WebServlet("/servlet")
-@DeclareRoles({ "foo", "bar", "kaz" })
-@ServletSecurity(@HttpConstraint(rolesAllowed = "foo"))
-public class Servlet extends HttpServlet {
+@WebServlet({"/login-servlet-alt"})
+public class LoginServletAlt extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        String webName = null;
-        if (request.getUserPrincipal() != null) {
-            webName = request.getUserPrincipal().getName();
-        }
-        
         response.getWriter().write(
-                "<html><body> This is a servlet <br><br>\n" +
-        
-                    "web username: " + webName + "<br><br>\n" +
-                            
-                    "web user has role \"foo\": " + request.isUserInRole("foo") + "<br>\n" +
-                    "web user has role \"bar\": " + request.isUserInRole("bar") + "<br>\n" +
-                    "web user has role \"kaz\": " + request.isUserInRole("kaz") + "<br><br>\n" + 
-
-                        
-                    "<form method=\"POST\">" +
-                        "<input type=\"hidden\" name=\"logout\" value=\"true\"  >" +
-                        "<input type=\"submit\" value=\"Logout\">" +
-                    "</form>" +
-                "</body></html>");
-    }
-    
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if ("true".equals(request.getParameter("logout"))) {
-            request.logout();
-            request.getSession().invalidate();
-        }
-        
-        doGet(request, response);
+            "<html><body> Login to continue ALT \n" +
+                "<form method=\"POST\" action=\"j_security_check\">" +
+                    "<p><strong>Username </strong>" +
+                    "<input type=\"text\" name=\"j_username\">" +
+                    
+                    "<p><strong>Password </strong>" +
+                    "<input type=\"password\" name=\"j_password\">" +
+                    "<p>" +
+                    "<input type=\"submit\" value=\"Submit\">" +
+                "</form>" +
+            "</body></html>");
     }
 
 }
