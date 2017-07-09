@@ -131,7 +131,8 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, DatabaseIdentityStore.class)
                     .addToId(DatabaseIdentityStoreDefinition.class)
-                    .create(e -> new DatabaseIdentityStore(dataBaseIdentityStoreDefinition))
+                    .create(e -> new DatabaseIdentityStore(
+                                    DatabaseIdentityStoreDefinitionAnnotationLiteral.eval(dataBaseIdentityStoreDefinition)))
             );
         });
 
