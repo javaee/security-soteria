@@ -50,6 +50,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -92,16 +93,16 @@ public class DatabaseIdentityStore implements IdentityStore {
             usernamePasswordCredential.getCaller()
         ); 
         
+        
         // TODO Support for hashed passwords.
         if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
-            return new CredentialValidationResult(
-                new CallerPrincipal(usernamePasswordCredential.getCaller()), 
-                new HashSet<>(executeQuery(
-                    dataSource,
-                    dataBaseIdentityStoreDefinition.groupsQuery(),
-                    usernamePasswordCredential.getCaller()
-                ))
-            );
+            Set<String> groups = Collections.emptySet();
+
+            if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+                groups = new HashSet<>(executeQuery(dataSource, dataBaseIdentityStoreDefinition.groupsQuery(), usernamePasswordCredential.getCaller()));
+            }
+
+            return new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), groups);
         }
 
         return INVALID_RESULT;
