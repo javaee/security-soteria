@@ -115,7 +115,7 @@ public class DatabaseIdentityStore implements IdentityStore {
         if (passwords.isEmpty()) {
             return INVALID_RESULT;
         }
-        
+
         if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             Set<String> groups = emptySet();
             if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {

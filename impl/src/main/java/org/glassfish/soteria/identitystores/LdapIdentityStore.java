@@ -147,7 +147,7 @@ public class LdapIdentityStore implements IdentityStore {
                     return INVALID_RESULT;
                 }
 
-                Set<String> groups = Collections.emptySet();
+                Set<String> groups = emptySet();
                 if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
                     groups = (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() && ldapIdentityStoreDefinition.groupSearchBase().isEmpty())
                             ? retrieveGroupInformationMemberOf(callerDn, ldapContext) : retrieveGroupInformation(callerDn, ldapContext);
