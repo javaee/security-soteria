@@ -43,64 +43,47 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
 import javax.enterprise.util.AnnotationLiteral;
-import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 
 /**
- * An annotation literal for <code>@LoginToContinue</code>.
+ * An annotation literal for <code>@BasicAuthenticationMechanismDefinition</code>.
  * 
  */
 @SuppressWarnings("all")
-public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToContinue> implements LoginToContinue {
+public class BasicAuthenticationMechanismDefinitionAnnotationLiteral extends AnnotationLiteral<BasicAuthenticationMechanismDefinition> implements BasicAuthenticationMechanismDefinition {
     
     private static final long serialVersionUID = 1L;
 
-    private final String loginPage;
-    private final boolean useForwardToLogin;
-    private final String errorPage;
+    private final String realmName;
     
     private boolean hasDeferredExpressions;
 
-    public LoginToContinueAnnotationLiteral(String loginPage, boolean useForwardToLogin, String errorPage) {
-        this.loginPage = loginPage;
-        this.useForwardToLogin = useForwardToLogin;
-        this.errorPage = errorPage;
+    public BasicAuthenticationMechanismDefinitionAnnotationLiteral(String realmName) {
+        this.realmName = realmName;
     }
     
-    public static LoginToContinue eval(LoginToContinue in) {
+    public static BasicAuthenticationMechanismDefinition eval(BasicAuthenticationMechanismDefinition in) {
         if (!hasAnyELExpression(in)) {
             return in;
         }
         
-        LoginToContinueAnnotationLiteral out =
-            new LoginToContinueAnnotationLiteral(
-                    evalImmediate(in.loginPage()), 
-                    in.useForwardToLogin(), 
-                    evalImmediate(in.errorPage()));
+        BasicAuthenticationMechanismDefinitionAnnotationLiteral out =
+            new BasicAuthenticationMechanismDefinitionAnnotationLiteral(
+                    evalImmediate(in.realmName()));
         
         out.setHasDeferredExpressions(hasAnyELExpression(out));
         
         return out;
     }
     
-    public static boolean hasAnyELExpression(LoginToContinue in) {
+    public static boolean hasAnyELExpression(BasicAuthenticationMechanismDefinition in) {
         return AnnotationELPProcessor.hasAnyELExpression(
-            in.loginPage(), 
-            in.errorPage());
+                in.realmName());
     }
 
     @Override
-    public String loginPage() {
-        return hasDeferredExpressions? evalELExpression(loginPage) : loginPage;
-    }
-
-    @Override
-    public boolean useForwardToLogin() {
-        return useForwardToLogin;
-    }
-
-    @Override
-    public String errorPage() {
-        return hasDeferredExpressions? evalELExpression(errorPage) : errorPage;
+    public String realmName() {
+        return hasDeferredExpressions? evalELExpression(realmName) : realmName;
     }
     
     public boolean isHasDeferredExpressions() {
@@ -110,4 +93,7 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
     public void setHasDeferredExpressions(boolean hasDeferredExpressions) {
         this.hasDeferredExpressions = hasDeferredExpressions;
     }
+    
+
+    
 }
