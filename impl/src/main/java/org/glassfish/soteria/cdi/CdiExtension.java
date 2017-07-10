@@ -158,7 +158,9 @@ public class CdiExtension implements Extension {
                     .beanClass(BasicAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class, BasicAuthenticationMechanism.class)
                     .addToId(BasicAuthenticationMechanismDefinition.class)
-                    .create(e -> new BasicAuthenticationMechanism(basicAuthenticationMechanismDefinition.realmName()));
+                    .create(e -> new BasicAuthenticationMechanism(
+                        BasicAuthenticationMechanismDefinitionAnnotationLiteral.eval(
+                            basicAuthenticationMechanismDefinition)));
         });
 
         Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
