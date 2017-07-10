@@ -190,14 +190,13 @@ public class CdiExtension implements Extension {
                     .types(Object.class, HttpAuthenticationMechanism.class)
                     .addToId(CustomFormAuthenticationMechanismDefinition.class)
                     .create(e -> {
-                        CustomFormAuthenticationMechanism customFormAuthenticationMechanism = CDI.current()
-                                .select(CustomFormAuthenticationMechanism.class)
-                                .get();
+                        return CDI.current()
+                                  .select(CustomFormAuthenticationMechanism.class)
+                                  .get()
+                                  .loginToContinue(
+                                      LoginToContinueAnnotationLiteral.eval(
+                                        customFormAuthenticationMechanismDefinition.loginToContinue()));
 
-                        customFormAuthenticationMechanism.setLoginToContinue(
-                                customFormAuthenticationMechanismDefinition.loginToContinue());
-
-                        return customFormAuthenticationMechanism;
                     });
         });
 
