@@ -175,7 +175,8 @@ public class CdiExtension implements Extension {
                                 .select(FormAuthenticationMechanism.class)
                                 .get()
                                 .loginToContinue(
-                                    AnnotationELPProcessor.process(formAuthenticationMechanismDefinition.loginToContinue()));
+                                    LoginToContinueAnnotationLiteral.eval(
+                                        formAuthenticationMechanismDefinition.loginToContinue()));
                     });
         });
 

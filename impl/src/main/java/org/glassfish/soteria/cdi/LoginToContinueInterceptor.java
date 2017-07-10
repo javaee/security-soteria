@@ -47,7 +47,6 @@ import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.Utils.isImplementationOf;
 import static org.glassfish.soteria.Utils.notNull;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 import static org.glassfish.soteria.servlet.RequestCopier.copy;
 
@@ -183,10 +182,10 @@ public class LoginToContinueInterceptor implements Serializable {
             
             if (loginToContinueAnnotation.useForwardToLogin()) {
                 return httpMessageContext.forward(
-                    evalELExpression(loginToContinueAnnotation.loginPage()));
+                    loginToContinueAnnotation.loginPage());
             } else {
                 return httpMessageContext.redirect(
-                    getBaseURL(request) + evalELExpression(loginToContinueAnnotation.loginPage()));
+                    getBaseURL(request) + loginToContinueAnnotation.loginPage());
             }
         }
         
@@ -232,7 +231,7 @@ public class LoginToContinueInterceptor implements Serializable {
                 
             } else if (authstatus == AuthenticationStatus.SEND_FAILURE)  {
                 
-                String errorPage = evalELExpression(getLoginToContinueAnnotation(invocationContext).errorPage());
+                String errorPage = getLoginToContinueAnnotation(invocationContext).errorPage();
                 
                 if (isEmpty(errorPage)) {
                     return authstatus;
