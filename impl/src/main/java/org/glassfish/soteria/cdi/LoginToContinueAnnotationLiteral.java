@@ -56,13 +56,15 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
 
     private final String loginPage;
     private final boolean useForwardToLogin;
+    private final String useForwardToLoginExpression;
     private final String errorPage;
     
     private boolean hasDeferredExpressions;
 
-    public LoginToContinueAnnotationLiteral(String loginPage, boolean useForwardToLogin, String errorPage) {
+    public LoginToContinueAnnotationLiteral(String loginPage, boolean useForwardToLogin, String useForwardToLoginExpression, String errorPage) {
         this.loginPage = loginPage;
         this.useForwardToLogin = useForwardToLogin;
+        this.useForwardToLoginExpression = useForwardToLoginExpression;
         this.errorPage = errorPage;
     }
     
@@ -75,7 +77,9 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
             new LoginToContinueAnnotationLiteral(
                     evalImmediate(in.loginPage()), 
                     in.useForwardToLogin(), 
-                    evalImmediate(in.errorPage()));
+                    evalImmediate(in.useForwardToLoginExpression()), 
+                    evalImmediate(in.errorPage())
+            );
         
         out.setHasDeferredExpressions(hasAnyELExpression(out));
         
@@ -85,7 +89,9 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
     public static boolean hasAnyELExpression(LoginToContinue in) {
         return AnnotationELPProcessor.hasAnyELExpression(
             in.loginPage(), 
-            in.errorPage());
+            in.errorPage(),
+            in.useForwardToLoginExpression()
+        );
     }
 
     @Override
@@ -96,6 +102,11 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
     @Override
     public boolean useForwardToLogin() {
         return useForwardToLogin;
+    }
+    
+    @Override
+    public String useForwardToLoginExpression() {
+        return hasDeferredExpressions? evalELExpression(useForwardToLoginExpression) : useForwardToLoginExpression;
     }
 
     @Override
