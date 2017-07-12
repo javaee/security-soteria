@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,49 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.servlet;
 
-import java.io.IOException;
+import static java.util.Collections.unmodifiableSet;
 
-import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Set;
 
 /**
- * Test Servlet that prints out the name of the authenticated caller and whether
- * this caller is in any of the roles {foo, bar, kaz}
- *
+ * This class holds stores "authentication data" (principal and groups).
+ * 
+ * <p>
+ * This is intended as a temporary storage in the HTTP session for this data specifically 
+ * during an HTTP redirect, which is why this class is in the servlet package.
+ * 
+ * @author Arjan Tijms
  */
-@LdapIdentityStoreDefinition(
-    url = "ldap://localhost:33389/",
-    callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-    groupSearchBase = "ou=group,dc=jsr375,dc=net"
-)
-@DeclareRoles({ "foo", "bar", "kaz" })
-@WebServlet("/servlet")
-public class Servlet extends HttpServlet {
+public class AuthenticationData implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        response.getWriter().write("This is a servlet \n");
-
-        String webName = null;
-        if (request.getUserPrincipal() != null) {
-            webName = request.getUserPrincipal().getName();
-        }
-
-        response.getWriter().write("web username: " + webName + "\n");
-
-        response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
-        response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
-        response.getWriter().write("web user has role \"kaz\": " + request.isUserInRole("kaz") + "\n");
+    
+    private final Principal principal;
+    private final Set<String> groups;
+    
+    public AuthenticationData(Principal principal, Set<String> groups) {
+        this.principal = principal;
+        this.groups =  unmodifiableSet(groups);
+    }
+    
+    public Principal getPrincipal() {
+        return principal;
     }
 
+    public Set<String> getGroups() {
+        return groups;
+    }
+    
 }

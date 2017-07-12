@@ -62,7 +62,7 @@ import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 @LdapIdentityStoreDefinition(
         url = "ldap://localhost:33389/",
         callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-        groupBaseDn = "ou=group,dc=jsr375,dc=net",
+        groupSearchBase = "ou=group,dc=jsr375,dc=net",
         useFor = VALIDATE
 )
 @ApplicationScoped

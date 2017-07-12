@@ -45,6 +45,7 @@ import static org.glassfish.soteria.Utils.cleanSubjectMethod;
 import static org.glassfish.soteria.Utils.getParam;
 import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.Utils.isImplementationOf;
+import static org.glassfish.soteria.Utils.toCallerPrincipal;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 import static org.glassfish.soteria.servlet.CookieHandler.getCookie;
@@ -159,7 +160,7 @@ public class RememberMeInterceptor implements Serializable {
             
             if (isRememberMe) {
                 String token = rememberMeIdentityStore.generateLoginToken(
-                    httpMessageContext.getCallerPrincipal(),
+                    toCallerPrincipal(httpMessageContext.getCallerPrincipal()),
                     httpMessageContext.getGroups()
                 );
                 

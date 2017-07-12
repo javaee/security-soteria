@@ -65,12 +65,12 @@ import javax.security.auth.message.AuthException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
+import org.glassfish.soteria.servlet.AuthenticationData;
 import org.glassfish.soteria.servlet.HttpServletRequestDelegator;
 import org.glassfish.soteria.servlet.RequestData;
 
@@ -222,7 +222,7 @@ public class LoginToContinueInterceptor implements Serializable {
                     // Store the authenticated data before redirecting to the right
                     // URL. This is needed since the underlying JASPIC runtime does not
                     // remember the authenticated identity if we redirect.
-                    saveAuthentication(request, new CredentialValidationResult(
+                    saveAuthentication(request, new AuthenticationData(
                             httpMessageContext.getCallerPrincipal(),
                             httpMessageContext.getGroups()));
                     
@@ -252,15 +252,15 @@ public class LoginToContinueInterceptor implements Serializable {
             
             // Remove all the data we saved
             RequestData requestData = removeSavedRequest(request);
-            CredentialValidationResult result = removeSavedAuthentication(request);
+            AuthenticationData authenticationData = removeSavedAuthentication(request);
             
             // Wrap the request to provide all the original request data again, such as the original
             // headers and the HTTP method, authenticate and then invoke the originally requested resource
             return httpMessageContext
                 .withRequest(new HttpServletRequestDelegator(request, requestData))
                 .notifyContainerAboutLogin(
-                    result.getCallerPrincipal(), 
-                    result.getCallerGroups());
+                    authenticationData.getPrincipal(), 
+                    authenticationData.getGroups());
             
         }
        
@@ -313,10 +313,10 @@ public class LoginToContinueInterceptor implements Serializable {
     private boolean isOnOriginalURLAfterAuthenticate(HttpServletRequest request) {
         
         RequestData savedRequest = getSavedRequest(request);
-        CredentialValidationResult credentialValidationResult = getSavedAuthentication(request);
+        AuthenticationData authenticationData = getSavedAuthentication(request);
         
         return
-            notNull(savedRequest, credentialValidationResult) && 
+            notNull(savedRequest, authenticationData) && 
             savedRequest.matchesRequest(request);
         
     }
@@ -377,25 +377,25 @@ public class LoginToContinueInterceptor implements Serializable {
         return requestData;
     }
     
-    private void saveAuthentication(HttpServletRequest request, CredentialValidationResult credentialValidationResult) {
-        request.getSession().setAttribute(AUTHENTICATION_DATA_SESSION_NAME, credentialValidationResult);
+    private void saveAuthentication(HttpServletRequest request, AuthenticationData authenticationData) {
+        request.getSession().setAttribute(AUTHENTICATION_DATA_SESSION_NAME, authenticationData);
     }
 
-    private CredentialValidationResult getSavedAuthentication(HttpServletRequest request) {
+    private AuthenticationData getSavedAuthentication(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
             return null;
         }
 
-        return (CredentialValidationResult) session.getAttribute(AUTHENTICATION_DATA_SESSION_NAME);
+        return (AuthenticationData) session.getAttribute(AUTHENTICATION_DATA_SESSION_NAME);
     }
 
-    private CredentialValidationResult removeSavedAuthentication(HttpServletRequest request) {
-        CredentialValidationResult result = getSavedAuthentication(request);
+    private AuthenticationData removeSavedAuthentication(HttpServletRequest request) {
+        AuthenticationData authenticationData = getSavedAuthentication(request);
         
         request.getSession().removeAttribute(AUTHENTICATION_DATA_SESSION_NAME);
         
-        return result;
+        return authenticationData;
     }
  
 }

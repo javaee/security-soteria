@@ -87,7 +87,7 @@ public class LdapIdentityStore implements IdentityStore {
 
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
 
-        if (ldapIdentityStoreDefinition.baseDn().isEmpty()) {
+        if (ldapIdentityStoreDefinition.bindDn().isEmpty()) {
             return checkDirectBinding(usernamePasswordCredential);
         } else {
             return checkThroughSearch(usernamePasswordCredential);
@@ -99,8 +99,8 @@ public class LdapIdentityStore implements IdentityStore {
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
         LdapContext ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
-                ldapIdentityStoreDefinition.baseDn(),
-                ldapIdentityStoreDefinition.password());
+                ldapIdentityStoreDefinition.bindDn(),
+                ldapIdentityStoreDefinition.bindDnPassword());
 
         if (ldapContext != null) {
             try {
@@ -115,14 +115,17 @@ public class LdapIdentityStore implements IdentityStore {
 
     private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential) {
         LdapContext ldapContext = createLdapContext(
-                ldapIdentityStoreDefinition.url(),
-                ldapIdentityStoreDefinition.baseDn(),
-                ldapIdentityStoreDefinition.password());
+            ldapIdentityStoreDefinition.url(),
+            ldapIdentityStoreDefinition.bindDn(),
+            ldapIdentityStoreDefinition.bindDnPassword());
+        
         if (ldapContext != null) {
             try {
-                String callerDn = searchCaller(ldapContext, ldapIdentityStoreDefinition.searchBase(),
-                        String.format(ldapIdentityStoreDefinition.searchExpression(), usernamePasswordCredential.getCaller()));
-
+                String callerDn = 
+                    searchCaller(
+                        ldapContext, 
+                        ldapIdentityStoreDefinition.callerSearchBase(),
+                        format(ldapIdentityStoreDefinition.callerSearchFilter(), usernamePasswordCredential.getCaller()));
 
                 LdapContext ldapContextCaller = null;
 
@@ -130,9 +133,9 @@ public class LdapIdentityStore implements IdentityStore {
                     // If this doesn't throw an exception internally, the password is correct
 
                     ldapContextCaller = createLdapContext(
-                            ldapIdentityStoreDefinition.url(),
-                            callerDn,
-                            new String(usernamePasswordCredential.getPassword().getValue())
+                        ldapIdentityStoreDefinition.url(),
+                        callerDn,
+                        new String(usernamePasswordCredential.getPassword().getValue())
                     );
                 }
 
@@ -149,8 +152,8 @@ public class LdapIdentityStore implements IdentityStore {
                 closeContext(ldapContext);
 
                 return new CredentialValidationResult(
-                        new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                        groups
+                    new CallerPrincipal(usernamePasswordCredential.getCaller()),
+                    groups
                 );
             } catch (IllegalStateException e) {
                 return NOT_VALIDATED_RESULT;
@@ -222,8 +225,8 @@ public class LdapIdentityStore implements IdentityStore {
         // Return groupNameAttribute
         List<SearchResult> searchResults = search(
                 ldapContext,
-                ldapIdentityStoreDefinition.groupBaseDn(),
-                ldapIdentityStoreDefinition.groupCallerDnAttribute(),
+                ldapIdentityStoreDefinition.groupSearchBase(),
+                ldapIdentityStoreDefinition.groupMemberAttribute(),
                 callerDn,
                 ldapIdentityStoreDefinition.groupNameAttribute()
         );
