@@ -37,49 +37,63 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.cdi;
 
-import java.io.IOException;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
-import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 
 /**
- * Test Servlet that prints out the name of the authenticated caller and whether
- * this caller is in any of the roles {foo, bar, kaz}
- *
+ * An annotation literal for <code>@BasicAuthenticationMechanismDefinition</code>.
+ * 
  */
-@LdapIdentityStoreDefinition(
-    url = "ldap://localhost:33389/",
-    callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-    groupSearchBase = "ou=group,dc=jsr375,dc=net"
-)
-@DeclareRoles({ "foo", "bar", "kaz" })
-@WebServlet("/servlet")
-public class Servlet extends HttpServlet {
-
+@SuppressWarnings("all")
+public class BasicAuthenticationMechanismDefinitionAnnotationLiteral extends AnnotationLiteral<BasicAuthenticationMechanismDefinition> implements BasicAuthenticationMechanismDefinition {
+    
     private static final long serialVersionUID = 1L;
 
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private final String realmName;
+    
+    private boolean hasDeferredExpressions;
 
-        response.getWriter().write("This is a servlet \n");
-
-        String webName = null;
-        if (request.getUserPrincipal() != null) {
-            webName = request.getUserPrincipal().getName();
+    public BasicAuthenticationMechanismDefinitionAnnotationLiteral(String realmName) {
+        this.realmName = realmName;
+    }
+    
+    public static BasicAuthenticationMechanismDefinition eval(BasicAuthenticationMechanismDefinition in) {
+        if (!hasAnyELExpression(in)) {
+            return in;
         }
-
-        response.getWriter().write("web username: " + webName + "\n");
-
-        response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
-        response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
-        response.getWriter().write("web user has role \"kaz\": " + request.isUserInRole("kaz") + "\n");
+        
+        BasicAuthenticationMechanismDefinitionAnnotationLiteral out =
+            new BasicAuthenticationMechanismDefinitionAnnotationLiteral(
+                    evalImmediate(in.realmName()));
+        
+        out.setHasDeferredExpressions(hasAnyELExpression(out));
+        
+        return out;
+    }
+    
+    public static boolean hasAnyELExpression(BasicAuthenticationMechanismDefinition in) {
+        return AnnotationELPProcessor.hasAnyELExpression(
+                in.realmName());
     }
 
+    @Override
+    public String realmName() {
+        return hasDeferredExpressions? evalELExpression(realmName) : realmName;
+    }
+    
+    public boolean isHasDeferredExpressions() {
+        return hasDeferredExpressions;
+    }
+
+    public void setHasDeferredExpressions(boolean hasDeferredExpressions) {
+        this.hasDeferredExpressions = hasDeferredExpressions;
+    }
+    
+
+    
 }

@@ -40,10 +40,7 @@
 package org.glassfish.soteria.mechanisms;
 
 import static org.glassfish.soteria.Utils.notNull;
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
-import static org.glassfish.soteria.cdi.CdiUtils.getELProcessor;
 
-import javax.el.ELProcessor;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
 import javax.security.enterprise.AuthenticationException;
@@ -71,7 +68,6 @@ import javax.servlet.http.HttpServletResponse;
 @Typed(FormAuthenticationMechanism.class) // Omit HttpAuthenticationMechanism type so it won't qualify directly as mechanism
 public class FormAuthenticationMechanism implements HttpAuthenticationMechanism, LoginToContinueHolder {
 	
-    private ELProcessor elProcessor;
     private LoginToContinue loginToContinue;
     
 	@Override
@@ -104,9 +100,6 @@ public class FormAuthenticationMechanism implements HttpAuthenticationMechanism,
 
     public void setLoginToContinue(LoginToContinue loginToContinue) {
         this.loginToContinue = loginToContinue;
-        if (hasAnyELExpression(loginToContinue)) {
-            elProcessor = getELProcessor();
-        }
     }
     
     public FormAuthenticationMechanism loginToContinue(LoginToContinue loginToContinue) {

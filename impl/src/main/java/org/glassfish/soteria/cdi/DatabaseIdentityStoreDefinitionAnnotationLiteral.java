@@ -60,9 +60,10 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     private final String callerQuery;
     private final String groupsQuery;
     private final String hashAlgorithm;
-    private final String hashEncoding;
     private final int priority;
+    private final String priorityExpression;
     private final ValidationType[] useFor;
+    private final String useForExpression;
     
     private boolean hasDeferredExpressions;
 
@@ -72,17 +73,21 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
         String callerQuery, 
         String groupsQuery, 
         String hashAlgorithm, 
-        String hashEncoding,
         int priority,
-        ValidationType[] useFor) {
+        String priorityExpression,
+        ValidationType[] useFor,
+        String useForExpression
+        
+            ) {
         
         this.dataSourceLookup = dataSourceLookup;
         this.callerQuery = callerQuery;
         this.groupsQuery = groupsQuery;
         this.hashAlgorithm = hashAlgorithm;
-        this.hashEncoding = hashEncoding;
         this.priority = priority;
+        this.priorityExpression = priorityExpression;
         this.useFor = useFor;
+        this.useForExpression = useForExpression;
     }
     
     public static DatabaseIdentityStoreDefinition eval(DatabaseIdentityStoreDefinition in) {
@@ -95,9 +100,10 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
             evalImmediate(in.callerQuery()), 
             evalImmediate(in.groupsQuery()), 
             evalImmediate(in.hashAlgorithm()), 
-            evalImmediate(in.hashEncoding()),
             in.priority(),
-            in.useFor()
+            evalImmediate(in.priorityExpression()), 
+            in.useFor(),
+            evalImmediate(in.useForExpression())
         );
         
         out.setHasDeferredExpressions(hasAnyELExpression(out));
@@ -110,8 +116,10 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
             in.dataSourceLookup(),
             in.callerQuery(), 
             in.groupsQuery(), 
-            in.hashAlgorithm(), 
-            in.hashEncoding());
+            in.hashAlgorithm(),
+            in.priorityExpression(),
+            in.useForExpression()
+       );
     }
     
     @Override
@@ -135,18 +143,25 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     }
     
     @Override
-    public String hashEncoding() {
-        return hasDeferredExpressions? evalELExpression(hashEncoding) : hashEncoding;
-    }
-    
-    @Override
     public int priority() {
         return priority;
     }
     
     @Override
+    public String priorityExpression() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
     public ValidationType[] useFor() {
         return useFor;
+    }
+    
+    @Override
+    public String useForExpression() {
+        // TODO Auto-generated method stub
+        return null;
     }
     
     public boolean isHasDeferredExpressions() {
