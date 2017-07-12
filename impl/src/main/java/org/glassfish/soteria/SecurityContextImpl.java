@@ -75,22 +75,22 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     
     @Override
     public Principal getCallerPrincipal() {
-    	return callerDetailsResolver.getCallerPrincipal();
+        return callerDetailsResolver.getCallerPrincipal();
     }
     
     @Override
     public boolean isCallerInRole(String role) {
-    	return callerDetailsResolver.isCallerInRole(role);
+        return callerDetailsResolver.isCallerInRole(role);
+    }
+    
+    @Override
+    public <T extends Principal> Set<T> getPrincipalsByType(Class<T> pType) {
+        return null; // TODO
     }
 
     // Implementation specific method, not present in API.
     public Set<String> getAllDeclaredCallerRoles() {
         return callerDetailsResolver.getAllDeclaredCallerRoles();
-    }
-    
-    @Override
-    public boolean hasAccessToWebResource(String resource) {
-        return resourceAccessResolver.hasAccessToWebResource(resource, "GET");
     }
     
     @Override

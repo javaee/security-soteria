@@ -158,7 +158,9 @@ public class CdiExtension implements Extension {
                     .beanClass(BasicAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class, BasicAuthenticationMechanism.class)
                     .addToId(BasicAuthenticationMechanismDefinition.class)
-                    .create(e -> new BasicAuthenticationMechanism(basicAuthenticationMechanismDefinition.realmName()));
+                    .create(e -> new BasicAuthenticationMechanism(
+                        BasicAuthenticationMechanismDefinitionAnnotationLiteral.eval(
+                            basicAuthenticationMechanismDefinition)));
         });
 
         Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
@@ -175,7 +177,8 @@ public class CdiExtension implements Extension {
                                 .select(FormAuthenticationMechanism.class)
                                 .get()
                                 .loginToContinue(
-                                    AnnotationELPProcessor.process(formAuthenticationMechanismDefinition.loginToContinue()));
+                                    LoginToContinueAnnotationLiteral.eval(
+                                        formAuthenticationMechanismDefinition.loginToContinue()));
                     });
         });
 
@@ -189,14 +192,13 @@ public class CdiExtension implements Extension {
                     .types(Object.class, HttpAuthenticationMechanism.class)
                     .addToId(CustomFormAuthenticationMechanismDefinition.class)
                     .create(e -> {
-                        CustomFormAuthenticationMechanism customFormAuthenticationMechanism = CDI.current()
-                                .select(CustomFormAuthenticationMechanism.class)
-                                .get();
+                        return CDI.current()
+                                  .select(CustomFormAuthenticationMechanism.class)
+                                  .get()
+                                  .loginToContinue(
+                                      LoginToContinueAnnotationLiteral.eval(
+                                        customFormAuthenticationMechanismDefinition.loginToContinue()));
 
-                        customFormAuthenticationMechanism.setLoginToContinue(
-                                customFormAuthenticationMechanismDefinition.loginToContinue());
-
-                        return customFormAuthenticationMechanism;
                     });
         });
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,49 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria;
 
-import java.io.IOException;
+import java.security.Principal;
 
-import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.security.enterprise.CallerPrincipal;
 
-/**
- * Test Servlet that prints out the name of the authenticated caller and whether
- * this caller is in any of the roles {foo, bar, kaz}
- *
- */
-@LdapIdentityStoreDefinition(
-    url = "ldap://localhost:33389/",
-    callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-    groupSearchBase = "ou=group,dc=jsr375,dc=net"
-)
-@DeclareRoles({ "foo", "bar", "kaz" })
-@WebServlet("/servlet")
-public class Servlet extends HttpServlet {
+public class WrappingCallerPrincipal extends CallerPrincipal {
+    
+    private final Principal wrapped;
 
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        response.getWriter().write("This is a servlet \n");
-
-        String webName = null;
-        if (request.getUserPrincipal() != null) {
-            webName = request.getUserPrincipal().getName();
-        }
-
-        response.getWriter().write("web username: " + webName + "\n");
-
-        response.getWriter().write("web user has role \"foo\": " + request.isUserInRole("foo") + "\n");
-        response.getWriter().write("web user has role \"bar\": " + request.isUserInRole("bar") + "\n");
-        response.getWriter().write("web user has role \"kaz\": " + request.isUserInRole("kaz") + "\n");
+    public WrappingCallerPrincipal(Principal wrapped) {
+        super(wrapped.getName());
+        this.wrapped = wrapped;
+    }
+    
+    public Principal getWrapped() {
+        return wrapped;
     }
 
 }

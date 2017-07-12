@@ -48,6 +48,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -78,7 +79,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     private Subject clientSubject;
     private AuthenticationParameters authParameters;
 
-    private CallerPrincipal callerPrincipal;
+    private Principal callerPrincipal;
     private Set<String> groups;
 
     public HttpMessageContextImpl(CallbackHandler handler, MessageInfo messageInfo, Subject clientSubject) {
@@ -268,7 +269,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
 
     @Override
-    public AuthenticationStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, Set<String> groups) {
+    public AuthenticationStatus notifyContainerAboutLogin(Principal callerPrincipal, Set<String> groups) {
         this.callerPrincipal = callerPrincipal;
         if (callerPrincipal != null) {
             this.groups = groups;
@@ -299,7 +300,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
 
     @Override
-    public CallerPrincipal getCallerPrincipal() {
+    public Principal getCallerPrincipal() {
         return callerPrincipal;
     }
 

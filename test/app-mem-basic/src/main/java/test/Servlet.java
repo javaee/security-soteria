@@ -56,7 +56,7 @@ import javax.servlet.http.HttpServletResponse;
  * this caller is in any of the roles {foo, bar, kaz}
  */
 @BasicAuthenticationMechanismDefinition(
-    realmName="test realm"
+    realmName="${'test realm'}" // Doesn't need to be expression, just for example
 )
 
 @WebServlet("/servlet")
