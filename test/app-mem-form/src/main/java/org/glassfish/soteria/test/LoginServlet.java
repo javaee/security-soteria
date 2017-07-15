@@ -48,7 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet that is invoked when it's determined that the called needs to authenticate/login.
+ * Servlet that is invoked when it's determined that the caller needs to authenticate/login.
  *
  */
 @WebServlet({"/login-servlet"})

@@ -55,12 +55,55 @@ public class AnnotationELPProcessor {
         return (String) getELProcessor().eval(toRawExpression(expression));
     }
     
+    public static boolean evalImmediate(String expression, boolean defaultValue) {
+        if (!isELExpression(expression) || isDeferredExpression(expression)) {
+            return defaultValue;
+        }
+        
+        Object outcome = getELProcessor().eval(toRawExpression(expression));
+        if (outcome instanceof Boolean) {
+            return (Boolean) outcome;
+        }
+        
+        throw new IllegalStateException(
+            "Expression " + expression + " should evaluate to boolean but evaluated to " +
+             outcome == null? " null" : (outcome.getClass() + " " + outcome));
+    }
+    
+    public static int evalImmediate(String expression, int defaultValue) {
+        if (!isELExpression(expression) || isDeferredExpression(expression)) {
+            return defaultValue;
+        }
+        
+        return (Integer) getELProcessor().eval(toRawExpression(expression));
+    }
+    
+    public static String emptyIfImmediate(String expression) {
+        return isImmediateExpression(expression)? "" : expression;
+    }
+    
     public static String evalELExpression(String expression) {
         if (!isELExpression(expression)) {
             return expression;
         }
         
         return (String) getELProcessor().eval(toRawExpression(expression));
+    }
+    
+    public static boolean evalELExpression(String expression, boolean defaultValue) {
+        if (!isELExpression(expression)) {
+            return defaultValue;
+        }
+        
+        return (Boolean) getELProcessor().eval(toRawExpression(expression));
+    }
+    
+    public static int evalELExpression(String expression, int defaultValue) {
+        if (!isELExpression(expression)) {
+            return defaultValue;
+        }
+        
+        return (Integer) getELProcessor().eval(toRawExpression(expression));
     }
     
     public static String evalELExpression(ELProcessor elProcessor, String expression) {
@@ -77,15 +120,15 @@ public class AnnotationELPProcessor {
     }
     
     private static boolean isELExpression(String expression) {
-        return !isEmpty(expression) && (isDeferredExpression(expression) || isImmediateExpression(expression)) && expression.endsWith("}");
+        return !isEmpty(expression) && (isDeferredExpression(expression) || isImmediateExpression(expression));
     }
     
     private static boolean isDeferredExpression(String expression) {
-        return expression.startsWith("#{");
+        return expression.startsWith("#{") && expression.endsWith("}");
     }
     
     private static boolean isImmediateExpression(String expression) {
-        return expression.startsWith("${");
+        return expression.startsWith("${") && expression.endsWith("}");
     }
     
     private static String toRawExpression(String expression) {
