@@ -76,13 +76,20 @@ public class AppMemFormImmediateIT extends ArquillianBase {
         HtmlPage loginPage = pageFromServer("/servlet");
         
         
-        // 2. Server should forward to login page
+        // 2. Server should redirect to login page
         
         assertTrue(
             "The login page should have been displayed, but was not",
             loginPage.getWebResponse().getContentAsString().contains("Login to continue ALT")
         );
         
+        // 2a. If a redirect was used, we should see the actual URL of the Servlet now
+        
+        assertTrue(
+            "The login page should have been reached via redirect, but was not",
+            loginPage.getUrl().toString().endsWith("/login-servlet-alt")
+        );
+
         
         // 3. Submit the form on the login page with the correct credentials
         
