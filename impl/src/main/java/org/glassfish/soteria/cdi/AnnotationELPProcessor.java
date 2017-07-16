@@ -48,19 +48,27 @@ import javax.el.ELProcessor;
 public class AnnotationELPProcessor {
     
     public static String evalImmediate(String expression) {
+        return evalImmediate(null, expression);
+    }
+    
+    public static String evalImmediate(ELProcessor getELProcessor, String expression) {
         if (!isELExpression(expression) || isDeferredExpression(expression)) {
             return expression;
         }
         
-        return (String) getELProcessor().eval(toRawExpression(expression));
+        return (String) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
     public static boolean evalImmediate(String expression, boolean defaultValue) {
+        return evalImmediate(null, expression, defaultValue);
+    }
+    
+    public static boolean evalImmediate(ELProcessor getELProcessor, String expression, boolean defaultValue) {
         if (!isELExpression(expression) || isDeferredExpression(expression)) {
             return defaultValue;
         }
         
-        Object outcome = getELProcessor().eval(toRawExpression(expression));
+        Object outcome = getELProcessor(getELProcessor).eval(toRawExpression(expression));
         if (outcome instanceof Boolean) {
             return (Boolean) outcome;
         }
@@ -71,11 +79,15 @@ public class AnnotationELPProcessor {
     }
     
     public static int evalImmediate(String expression, int defaultValue) {
+        return evalImmediate(null, defaultValue);
+    }
+    
+    public static int evalImmediate(ELProcessor getELProcessor, String expression, int defaultValue) {
         if (!isELExpression(expression) || isDeferredExpression(expression)) {
             return defaultValue;
         }
         
-        return (Integer) getELProcessor().eval(toRawExpression(expression));
+        return (Integer) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
     public static String emptyIfImmediate(String expression) {
@@ -83,35 +95,39 @@ public class AnnotationELPProcessor {
     }
     
     public static String evalELExpression(String expression) {
+        return evalELExpression(null, expression);
+    }
+    
+    public static String evalELExpression(ELProcessor getELProcessor, String expression) {
         if (!isELExpression(expression)) {
             return expression;
         }
         
-        return (String) getELProcessor().eval(toRawExpression(expression));
+        return (String) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
     public static boolean evalELExpression(String expression, boolean defaultValue) {
+        return evalELExpression(null, expression, defaultValue);
+    }
+    
+    public static boolean evalELExpression(ELProcessor getELProcessor, String expression, boolean defaultValue) {
         if (!isELExpression(expression)) {
             return defaultValue;
         }
         
-        return (Boolean) getELProcessor().eval(toRawExpression(expression));
+        return (Boolean) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
     public static int evalELExpression(String expression, int defaultValue) {
+        return evalELExpression(null, expression, defaultValue);
+    }
+    
+    public static int evalELExpression(ELProcessor getELProcessor, String expression, int defaultValue) {
         if (!isELExpression(expression)) {
             return defaultValue;
         }
         
-        return (Integer) getELProcessor().eval(toRawExpression(expression));
-    }
-    
-    public static String evalELExpression(ELProcessor elProcessor, String expression) {
-        if (elProcessor == null || !isELExpression(expression)) {
-            return expression;
-        }
-        
-        return (String) elProcessor.eval(toRawExpression(expression));
+        return (Integer) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
     @SafeVarargs
