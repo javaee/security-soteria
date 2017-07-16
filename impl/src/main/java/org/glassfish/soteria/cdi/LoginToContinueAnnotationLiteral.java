@@ -39,6 +39,7 @@
  */
 package org.glassfish.soteria.cdi;
 
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.emptyIfImmediate;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
@@ -73,17 +74,23 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
             return in;
         }
         
+        try {
         LoginToContinueAnnotationLiteral out =
             new LoginToContinueAnnotationLiteral(
                     evalImmediate(in.loginPage()), 
-                    in.useForwardToLogin(), 
-                    evalImmediate(in.useForwardToLoginExpression()), 
+                    evalImmediate(in.useForwardToLoginExpression(), in.useForwardToLogin()), 
+                    emptyIfImmediate(in.useForwardToLoginExpression()),
                     evalImmediate(in.errorPage())
             );
         
         out.setHasDeferredExpressions(hasAnyELExpression(out));
         
         return out;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            
+            throw t;
+        }
     }
     
     public static boolean hasAnyELExpression(LoginToContinue in) {
@@ -101,12 +108,12 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
 
     @Override
     public boolean useForwardToLogin() {
-        return useForwardToLogin;
+        return hasDeferredExpressions? evalELExpression(useForwardToLoginExpression, useForwardToLogin) : useForwardToLogin;
     }
     
     @Override
     public String useForwardToLoginExpression() {
-        return hasDeferredExpressions? evalELExpression(useForwardToLoginExpression) : useForwardToLoginExpression;
+        return useForwardToLoginExpression;
     }
 
     @Override

@@ -39,25 +39,23 @@
  */
 package org.glassfish.soteria.test.alternatives;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import javax.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition;
-import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
-@FormAuthenticationMechanismDefinition(
-    loginToContinue = @LoginToContinue(
-        loginPage="${applicationConfigImmediate.loginPage}",
-        useForwardToLoginExpression="${false}",
-        errorPage="/login-error-servlet"
-    )
+import javax.annotation.Priority;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Alternative;
+import javax.security.enterprise.authentication.mechanism.http.RememberMe;
+
+import org.glassfish.soteria.test.TestAuthenticationMechanism;
+
+@RememberMe(
+    cookieMaxAgeSeconds = 3600,
+    cookieHttpOnlyExpression = "#{false}",
+    cookieSecureOnly = false,
+    isRememberMeExpression ="#{self.isRememberMe(httpMessageContext)}"
 )
-@ApplicationScoped
-@Named
-public class ApplicationConfigImmediate {
+@RequestScoped
+@Priority(1000)
+@Alternative
+public class TestAuthenticationMechanismHttpOnlyFalseImmediate extends TestAuthenticationMechanism {
     
-    public String getLoginPage() {
-        System.out.print("returning servlet");
-        return "/login-servlet-alt";
-    }
-
 }
