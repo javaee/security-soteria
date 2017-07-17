@@ -69,7 +69,9 @@ public class ReflectionAndJaccCallerDetailsResolver implements CallerDetailsReso
         Subject subject = JACC.getSubject();
 
         if (subject == null) {
-            return null;
+            // Ensure behavior exactly matches that of Subject
+            // when returning an empty Set, and when pType == null.
+            subject = new Subject();
         }
         return subject.getPrincipals(pType);
     }
