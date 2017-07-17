@@ -48,7 +48,7 @@ import javax.el.ELProcessor;
 public class AnnotationELPProcessor {
     
     public static String evalImmediate(String expression) {
-        return evalImmediate(null, expression);
+        return evalImmediate((ELProcessor)null, expression);
     }
     
     public static String evalImmediate(ELProcessor getELProcessor, String expression) {
@@ -79,7 +79,7 @@ public class AnnotationELPProcessor {
     }
     
     public static int evalImmediate(String expression, int defaultValue) {
-        return evalImmediate(null, defaultValue);
+        return evalImmediate(null, expression, defaultValue);
     }
     
     public static int evalImmediate(ELProcessor getELProcessor, String expression, int defaultValue) {
@@ -90,12 +90,21 @@ public class AnnotationELPProcessor {
         return (Integer) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
+    @SuppressWarnings("unchecked")
+    public static <T> T evalImmediate(String expression, T defaultValue) {
+        if (!isELExpression(expression) || isDeferredExpression(expression)) {
+            return defaultValue;
+        }
+        
+        return (T) getELProcessor(getELProcessor(null)).eval(toRawExpression(expression));
+    }
+    
     public static String emptyIfImmediate(String expression) {
         return isImmediateExpression(expression)? "" : expression;
     }
     
     public static String evalELExpression(String expression) {
-        return evalELExpression(null, expression);
+        return evalELExpression((ELProcessor)null, expression);
     }
     
     public static String evalELExpression(ELProcessor getELProcessor, String expression) {
@@ -116,6 +125,19 @@ public class AnnotationELPProcessor {
         }
         
         return (Boolean) getELProcessor(getELProcessor).eval(toRawExpression(expression));
+    }
+    
+    public static <T> T evalELExpression(String expression, T defaultValue) {
+        return evalELExpression(null, expression, defaultValue);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T evalELExpression(ELProcessor getELProcessor, String expression, T defaultValue) {
+        if (!isELExpression(expression)) {
+            return defaultValue;
+        }
+        
+        return (T) getELProcessor(getELProcessor).eval(toRawExpression(expression));
     }
     
     public static int evalELExpression(String expression, int defaultValue) {
