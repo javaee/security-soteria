@@ -65,6 +65,16 @@ public class ReflectionAndJaccCallerDetailsResolver implements CallerDetailsReso
     }
 
     @Override
+    public <T extends Principal> Set<T> getPrincipalsByType(Class<T> pType) {
+        Subject subject = JACC.getSubject();
+
+        if (subject == null) {
+            return null;
+        }
+        return subject.getPrincipals(pType);
+    }
+
+    @Override
     public boolean isCallerInRole(String role) {
         return JACC.isCallerInRole(role);
     }
