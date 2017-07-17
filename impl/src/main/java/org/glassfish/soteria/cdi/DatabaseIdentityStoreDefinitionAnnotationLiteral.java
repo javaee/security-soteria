@@ -40,6 +40,7 @@
 package org.glassfish.soteria.cdi;
 
 
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.emptyIfImmediate;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
@@ -100,10 +101,10 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
             evalImmediate(in.callerQuery()), 
             evalImmediate(in.groupsQuery()), 
             evalImmediate(in.hashAlgorithm()), 
-            in.priority(),
-            evalImmediate(in.priorityExpression()), 
-            in.useFor(),
-            evalImmediate(in.useForExpression())
+            evalImmediate(in.priorityExpression(), in.priority()),
+            emptyIfImmediate(in.priorityExpression()),
+            evalImmediate(in.useForExpression(), in.useFor()),
+            emptyIfImmediate(in.useForExpression())
         );
         
         out.setHasDeferredExpressions(hasAnyELExpression(out));
@@ -144,24 +145,22 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     
     @Override
     public int priority() {
-        return priority;
+        return hasDeferredExpressions? evalELExpression(priorityExpression, priority) : priority;
     }
     
     @Override
     public String priorityExpression() {
-        // TODO Auto-generated method stub
-        return null;
+        return priorityExpression;
     }
     
     @Override
     public ValidationType[] useFor() {
-        return useFor;
+        return hasDeferredExpressions? evalELExpression(useForExpression, useFor) : useFor;
     }
     
     @Override
     public String useForExpression() {
-        // TODO Auto-generated method stub
-        return null;
+        return useForExpression;
     }
     
     public boolean isHasDeferredExpressions() {
