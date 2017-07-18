@@ -41,19 +41,30 @@ package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.function.Function.identity;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.el.ELContext;
+import javax.el.ExpressionFactory;
+import javax.el.MethodExpression;
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
@@ -62,15 +73,35 @@ import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.sql.DataSource;
 
+import org.glassfish.soteria.cdi.CdiUtils;
+
 public class DatabaseIdentityStore implements IdentityStore {
 
     private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
+    private final Function<String, String> hashFunction;
+    
+    private final byte[] salt = new byte[16]; // TODO
 
     public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
         validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
+        
+        if (hasAnyELExpression(dataBaseIdentityStoreDefinition.hashAlgorithm())) {
+            ELContext elContext = CdiUtils.getELProcessor().getELManager().getELContext();
+            
+            MethodExpression hashMethodExpression = ExpressionFactory.newInstance().createMethodExpression(
+                elContext, 
+                dataBaseIdentityStoreDefinition.hashAlgorithm(), 
+                String.class, new  Class<?>[] {String.class} );
+            
+            hashFunction =  s -> (String) hashMethodExpression.invoke(elContext, new Object[] {s});
+        } else if ("PBKDF2".equals(dataBaseIdentityStoreDefinition.hashAlgorithm())) {
+            hashFunction = s -> pbkdf2(s, salt);
+        } else {
+            hashFunction = identity();
+        }
     }
 
     @Override
@@ -92,8 +123,9 @@ public class DatabaseIdentityStore implements IdentityStore {
             usernamePasswordCredential.getCaller()
         ); 
         
-        // TODO Support for hashed passwords.
-        if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
+        String hashedPassword = hashFunction.apply(usernamePasswordCredential.getPasswordAsString());
+        
+        if (!passwords.isEmpty() && hashedPassword.equals(passwords.get(0))) {
             return new CredentialValidationResult(
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
                 new HashSet<>(executeQuery(
@@ -146,5 +178,20 @@ public class DatabaseIdentityStore implements IdentityStore {
     @Override
     public Set<ValidationType> validationTypes() {
         return validationTypes;
+    }
+    
+    public String pbkdf2(String password, byte[] salt) {
+        try {
+            return 
+                Base64.getEncoder()
+                      .encodeToString(
+                          SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+                                          .generateSecret(
+                                             new PBEKeySpec(password.toCharArray(), salt, 1024, 64 * 8))
+                                          .getEncoded());
+            
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

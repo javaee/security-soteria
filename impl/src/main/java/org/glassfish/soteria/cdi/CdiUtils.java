@@ -197,7 +197,7 @@ public class CdiUtils {
         return getELProcessor();
     }
     
-    private static ELProcessor getELProcessor() {
+    public static ELProcessor getELProcessor() {
         ELProcessor elProcessor = new ELProcessor();
         elProcessor.getELManager().addELResolver(getBeanManager().getELResolver());
         
