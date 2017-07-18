@@ -43,6 +43,8 @@ import static java.util.Arrays.stream;
 import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.cdi.CdiUtils.getELProcessor;
 
+import java.lang.reflect.Array;
+
 import javax.el.ELProcessor;
 
 public class AnnotationELPProcessor {
@@ -137,7 +139,32 @@ public class AnnotationELPProcessor {
             return defaultValue;
         }
         
-        return (T) getELProcessor(getELProcessor).eval(toRawExpression(expression));
+        Object outcome = getELProcessor(getELProcessor).eval(toRawExpression(expression));
+        
+        // Convert string representations of enums to their target, if possible
+        
+        // Convert single enum name to single enum
+        if (defaultValue instanceof Enum  && outcome instanceof String) {
+            Enum<?> defaultValueEnum = (Enum<?>) defaultValue;
+            Enum<?> enumConstant = Enum.valueOf(defaultValueEnum.getClass(), (String) outcome);
+            
+            return (T) enumConstant;
+        }
+        
+        // Convert single enum name to enum array (multiple enum values not supported)
+        if (defaultValue instanceof Enum[]  && outcome instanceof String) {
+            Enum<?>[] defaultValueEnum = (Enum<?>[]) defaultValue;
+            
+            @SuppressWarnings("rawtypes")
+            Enum<?> enumConstant = Enum.valueOf( (Class<? extends Enum>) defaultValueEnum.getClass().getComponentType(), (String) outcome);
+            
+            Enum<?>[] outcomeArray = (Enum<?>[]) Array.newInstance(defaultValueEnum.getClass().getComponentType(), 1);
+            outcomeArray[0] = enumConstant;
+            
+            return (T) outcomeArray;
+        }
+        
+        return (T) outcome;
     }
     
     public static int evalELExpression(String expression, int defaultValue) {
