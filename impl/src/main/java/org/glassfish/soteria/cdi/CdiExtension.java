@@ -94,13 +94,13 @@ public class CdiExtension implements Extension {
 
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
         addAnnotatedTypes(beforeBean, beanManager,
-                AutoApplySessionInterceptor.class,
-                RememberMeInterceptor.class,
-                LoginToContinueInterceptor.class,
-                FormAuthenticationMechanism.class,
-                CustomFormAuthenticationMechanism.class,
-                SecurityContextImpl.class,
-                IdentityStoreHandler.class
+            AutoApplySessionInterceptor.class,
+            RememberMeInterceptor.class,
+            LoginToContinueInterceptor.class,
+            FormAuthenticationMechanism.class,
+            CustomFormAuthenticationMechanism.class,
+            SecurityContextImpl.class,
+            IdentityStoreHandler.class
         );
     }
 
@@ -132,7 +132,8 @@ public class CdiExtension implements Extension {
                     .types(Object.class, IdentityStore.class, DatabaseIdentityStore.class)
                     .addToId(DatabaseIdentityStoreDefinition.class)
                     .create(e -> new DatabaseIdentityStore(
-                                    DatabaseIdentityStoreDefinitionAnnotationLiteral.eval(dataBaseIdentityStoreDefinition)))
+                        DatabaseIdentityStoreDefinitionAnnotationLiteral.eval(
+                            dataBaseIdentityStoreDefinition)))
             );
         });
 
@@ -145,7 +146,9 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, LdapIdentityStore.class)
                     .addToId(LdapIdentityStoreDefinition.class)
-                    .create(e -> new LdapIdentityStore(ldapIdentityStoreDefinition))
+                    .create(e -> new LdapIdentityStore(
+                        LdapIdentityStoreDefinitionAnnotationLiteral.eval(
+                            ldapIdentityStoreDefinition)))
             );
         });
 
