@@ -144,7 +144,10 @@ public class LdapIdentityStore implements IdentityStore {
                     return INVALID_RESULT;
                 }
 
-                Set<String> groups = retrieveGroupInformation(callerDn, ldapContext);
+                Set<String> groups = Collections.emptySet();
+                if(validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+                    groups = retrieveGroupInformation(callerDn, ldapContext);
+                }
 
                 closeContext(ldapContext);
 
@@ -195,7 +198,10 @@ public class LdapIdentityStore implements IdentityStore {
             return INVALID_RESULT;
         }
 
-        Set<String> groups = retrieveGroupInformation(callerDn, ldapContext);
+        Set<String> groups = Collections.emptySet();
+        if(validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+            groups = retrieveGroupInformation(callerDn, ldapContext);
+        }
 
         closeContext(ldapContext);
 
