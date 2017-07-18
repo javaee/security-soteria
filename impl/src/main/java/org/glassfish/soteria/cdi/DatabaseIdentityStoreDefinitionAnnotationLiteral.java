@@ -140,7 +140,8 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     
     @Override
     public String hashAlgorithm() {
-        return hasDeferredExpressions? evalELExpression(hashAlgorithm) : hashAlgorithm;
+        // Used as method expression and lambda, so not processed here
+        return hashAlgorithm;
     }
     
     @Override
