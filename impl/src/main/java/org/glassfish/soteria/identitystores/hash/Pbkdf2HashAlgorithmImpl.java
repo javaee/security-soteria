@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,26 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.identitystores.hash;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
+import java.util.Map;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.IdentityHashAlgorithm;
+import javax.security.enterprise.identitystore.Pbkdf2HashAlgorithm;
 
-@DatabaseIdentityStoreDefinition(
-    dataSourceLookup="${'java:global/MyDS'}", 
-    callerQuery="#{'select password from caller where name = ?'}",
-    groupsQuery="select group_name from caller_groups where caller_name = ?",
-    hashAlgorithm = IdentityHashAlgorithm.class,
-    hashAlgorithmParameters = {"foo=bar", "kax=zak"} // just for test / example
-)
 @ApplicationScoped
-@Named
-public class ApplicationConfig {
+public class Pbkdf2HashAlgorithmImpl implements Pbkdf2HashAlgorithm {
 
-    public String doHash(String in) {
-        return in;
+    @Override
+    public boolean verifyHash(char[] password, String hashedPassword, Map<String, String> parameters) {
+        return 
+            pbkdf2(
+                password, 
+                parameters.get("PBKDF2.salt").getBytes(),
+                Integer.valueOf(parameters.get("PBKDF2.iterationCount"))
+            )
+            .equals(hashedPassword);
+    }
+    
+    private String pbkdf2(char[] password, byte[] salt, int iterationCount) {
+        try {
+            return 
+                Base64.getEncoder()
+                      .encodeToString(
+                          SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+                                          .generateSecret(
+                                             new PBEKeySpec(password, salt, iterationCount, 64 * 8))
+                                          .getEncoded());
+            
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
 }
