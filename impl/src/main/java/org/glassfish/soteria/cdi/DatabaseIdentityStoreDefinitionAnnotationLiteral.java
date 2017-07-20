@@ -46,6 +46,7 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
 import javax.enterprise.util.AnnotationLiteral;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.HashAlgorithm;
 import javax.security.enterprise.identitystore.IdentityStore.ValidationType;
 
 /**
@@ -60,7 +61,8 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     private final String dataSourceLookup;
     private final String callerQuery;
     private final String groupsQuery;
-    private final String hashAlgorithm;
+    private final Class<? extends HashAlgorithm> hashAlgorithm;
+    private final String[] hashAlgorithmParameters;
     private final int priority;
     private final String priorityExpression;
     private final ValidationType[] useFor;
@@ -73,7 +75,8 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
         String dataSourceLookup, 
         String callerQuery, 
         String groupsQuery, 
-        String hashAlgorithm, 
+        Class<? extends HashAlgorithm> hashAlgorithm,
+        String[] hashAlgorithmParameters,
         int priority,
         String priorityExpression,
         ValidationType[] useFor,
@@ -85,6 +88,7 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
         this.callerQuery = callerQuery;
         this.groupsQuery = groupsQuery;
         this.hashAlgorithm = hashAlgorithm;
+        this.hashAlgorithmParameters = hashAlgorithmParameters;
         this.priority = priority;
         this.priorityExpression = priorityExpression;
         this.useFor = useFor;
@@ -100,7 +104,8 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
             evalImmediate(in.dataSourceLookup()),
             evalImmediate(in.callerQuery()), 
             evalImmediate(in.groupsQuery()), 
-            evalImmediate(in.hashAlgorithm()), 
+            in.hashAlgorithm(),
+            in.hashAlgorithmParameters(),
             evalImmediate(in.priorityExpression(), in.priority()),
             emptyIfImmediate(in.priorityExpression()),
             evalImmediate(in.useForExpression(), in.useFor()),
@@ -117,7 +122,6 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
             in.dataSourceLookup(),
             in.callerQuery(), 
             in.groupsQuery(), 
-            in.hashAlgorithm(),
             in.priorityExpression(),
             in.useForExpression()
        );
@@ -139,9 +143,13 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     }
     
     @Override
-    public String hashAlgorithm() {
-        // Used as method expression and lambda, so not processed here
+    public Class<? extends HashAlgorithm> hashAlgorithm() {
         return hashAlgorithm;
+    }
+    
+    @Override
+    public String[] hashAlgorithmParameters() {
+        return hashAlgorithmParameters;
     }
     
     @Override
