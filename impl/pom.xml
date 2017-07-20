@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>javax.security.enterprise</artifactId>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
 
     <name>Soteria ${project.version} Java EE Security RI</name>
     <description>Java EE Security API Reference Implementation</description>
