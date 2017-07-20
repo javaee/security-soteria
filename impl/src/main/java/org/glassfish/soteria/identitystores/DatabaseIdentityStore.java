@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,69 +40,57 @@
 package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
+<<<<<<< HEAD
 import static java.util.Collections.emptySet;
+=======
+import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableMap;
+>>>>>>> 3774c78... Configurable Database Hashing impl
 import static java.util.Collections.unmodifiableSet;
-import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
+import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.el.ELContext;
-import javax.el.ExpressionFactory;
-import javax.el.MethodExpression;
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.HashAlgorithm;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.sql.DataSource;
-
-import org.glassfish.soteria.cdi.CdiUtils;
 
 public class DatabaseIdentityStore implements IdentityStore {
 
     private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
-    private final Function<String, String> hashFunction;
-    
-    private final byte[] salt = new byte[16]; // TODO
+    private final Map<String, String> hashAlgorithmParameters;
 
     public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
         validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
         
-        if (hasAnyELExpression(dataBaseIdentityStoreDefinition.hashAlgorithm())) {
-            ELContext elContext = CdiUtils.getELProcessor().getELManager().getELContext();
-            
-            MethodExpression hashMethodExpression = ExpressionFactory.newInstance().createMethodExpression(
-                elContext, 
-                dataBaseIdentityStoreDefinition.hashAlgorithm(), 
-                String.class, new  Class<?>[] {String.class} );
-            
-            hashFunction =  s -> (String) hashMethodExpression.invoke(elContext, new Object[] {s});
-        } else if ("PBKDF2".equals(dataBaseIdentityStoreDefinition.hashAlgorithm())) {
-            hashFunction = s -> pbkdf2(s, salt);
-        } else {
-            hashFunction = identity();
-        }
+        hashAlgorithmParameters = 
+            unmodifiableMap(
+                stream(
+                    dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
+                .collect(toMap(
+                    s -> s.substring(0, s.indexOf('=')) , 
+                    s -> s.substring(s.indexOf('=') + 1)
+                )));
     }
 
     @Override
@@ -122,13 +110,16 @@ public class DatabaseIdentityStore implements IdentityStore {
             dataSource, 
             dataBaseIdentityStoreDefinition.callerQuery(),
             usernamePasswordCredential.getCaller()
-        ); 
-
-        String hashedPassword = hashFunction.apply(usernamePasswordCredential.getPasswordAsString());
+        );
         
-        if (!passwords.isEmpty() && hashedPassword.equals(passwords.get(0))) {
+        if (passwords.isEmpty()) {
+            return INVALID_RESULT;
+        }
+        
+        HashAlgorithm hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        
+        if (hashAlgorithm.verifyHash(usernamePasswordCredential.getPassword().getValue(), passwords.get(0), hashAlgorithmParameters)) {
             Set<String> groups = emptySet();
-
             if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
                 groups = new HashSet<>(executeQuery(dataSource, dataBaseIdentityStoreDefinition.groupsQuery(), usernamePasswordCredential.getCaller()));
             }
@@ -179,19 +170,5 @@ public class DatabaseIdentityStore implements IdentityStore {
     public Set<ValidationType> validationTypes() {
         return validationTypes;
     }
-    
-    public String pbkdf2(String password, byte[] salt) {
-        try {
-            return 
-                Base64.getEncoder()
-                      .encodeToString(
-                          SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-                                          .generateSecret(
-                                             new PBEKeySpec(password.toCharArray(), salt, 1024, 64 * 8))
-                                          .getEncoded());
-            
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new IllegalStateException(e);
-        }
-    }
+   
 }
