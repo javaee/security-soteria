@@ -64,7 +64,7 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.HashAlgorithm;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.sql.DataSource;
 
@@ -112,9 +112,9 @@ public class DatabaseIdentityStore implements IdentityStore {
             return INVALID_RESULT;
         }
         
-        HashAlgorithm hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        PasswordHash hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
         
-        if (hashAlgorithm.verifyHash(usernamePasswordCredential.getPassword().getValue(), passwords.get(0), hashAlgorithmParameters)) {
+        if (hashAlgorithm.verifyHash(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             return new CredentialValidationResult(
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
                 new HashSet<>(executeQuery(
