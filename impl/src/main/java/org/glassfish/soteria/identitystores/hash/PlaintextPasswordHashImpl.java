@@ -43,14 +43,18 @@ import java.util.Arrays;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.identitystore.IdentityHashAlgorithm;
+import javax.security.enterprise.identitystore.PlaintextPasswordHash;
 
 @ApplicationScoped
-public class IdentityHashAlgorithmImpl implements IdentityHashAlgorithm {
+public class PlaintextPasswordHashImpl implements PlaintextPasswordHash {
 
     @Override
-    public boolean verifyHash(char[] password, String hashedPassword, Map<String, String> parameters) {
-        return Arrays.equals(password, hashedPassword.toCharArray());
+    public String generateHash(char[] password) {
+        return new String(password);
     }
-    
+
+    @Override
+    public boolean verifyHash(char[] password, String hashedPassword) {
+        return PasswordHashCompare.compareChars(password, hashedPassword.toCharArray());
+    }
 }

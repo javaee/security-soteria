@@ -46,7 +46,7 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
 import javax.enterprise.util.AnnotationLiteral;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.HashAlgorithm;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.security.enterprise.identitystore.IdentityStore.ValidationType;
 
 /**
@@ -61,7 +61,7 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     private final String dataSourceLookup;
     private final String callerQuery;
     private final String groupsQuery;
-    private final Class<? extends HashAlgorithm> hashAlgorithm;
+    private final Class<? extends PasswordHash> hashAlgorithm;
     private final String[] hashAlgorithmParameters;
     private final int priority;
     private final String priorityExpression;
@@ -75,7 +75,7 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
         String dataSourceLookup, 
         String callerQuery, 
         String groupsQuery, 
-        Class<? extends HashAlgorithm> hashAlgorithm,
+        Class<? extends PasswordHash> hashAlgorithm,
         String[] hashAlgorithmParameters,
         int priority,
         String priorityExpression,
@@ -143,7 +143,7 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     }
     
     @Override
-    public Class<? extends HashAlgorithm> hashAlgorithm() {
+    public Class<? extends PasswordHash> hashAlgorithm() {
         return hashAlgorithm;
     }
     

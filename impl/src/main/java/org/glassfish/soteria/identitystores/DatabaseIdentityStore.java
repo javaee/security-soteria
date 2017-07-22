@@ -40,12 +40,9 @@
 package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
-<<<<<<< HEAD
-import static java.util.Collections.emptySet;
-=======
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
->>>>>>> 3774c78... Configurable Database Hashing impl
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
@@ -68,7 +65,7 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.HashAlgorithm;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.sql.DataSource;
 
@@ -116,9 +113,9 @@ public class DatabaseIdentityStore implements IdentityStore {
             return INVALID_RESULT;
         }
         
-        HashAlgorithm hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        PasswordHash hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
         
-        if (hashAlgorithm.verifyHash(usernamePasswordCredential.getPassword().getValue(), passwords.get(0), hashAlgorithmParameters)) {
+        if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             Set<String> groups = emptySet();
             if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
                 groups = new HashSet<>(executeQuery(dataSource, dataBaseIdentityStoreDefinition.groupsQuery(), usernamePasswordCredential.getCaller()));
