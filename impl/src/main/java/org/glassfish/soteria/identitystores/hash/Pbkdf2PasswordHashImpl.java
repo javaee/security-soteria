@@ -65,27 +65,80 @@ public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
             )));
 
     private static final String DEFAULT_ALGORITHM = "PBKDF2WithHmacSHA256";
-    private static final int DEFAULT_ITERATIONS = 2048;
-    private static final int DEFAULT_SALT_SIZE = 32;       // 32-byte/256-bit salt
-    private static final int DEFAULT_KEY_SIZE = 32;        // 32-byte/256-bit key/hash
 
-    private String defaultAlgorithm = DEFAULT_ALGORITHM;   // PBKDF2 algorithm to use
-    private int defaultIterations = DEFAULT_ITERATIONS;    // number of iterations
-    private int defaultSaltSizeBytes = DEFAULT_SALT_SIZE;  // salt size in bytes
-    private int defaultKeySizeBytes = DEFAULT_KEY_SIZE;    // derived key (i.e., password hash) size in bytes
+    private static final int DEFAULT_ITERATIONS = 2048;
+    private static final int DEFAULT_SALT_SIZE  = 32;         // 32-byte/256-bit salt
+    private static final int DEFAULT_KEY_SIZE   = 32;         // 32-byte/256-bit key/hash
+
+    private static final int MIN_ITERATIONS = 1024;
+    private static final int MIN_SALT_SIZE  = 16;             // 16-byte/128-bit minimum salt
+    private static final int MIN_KEY_SIZE   = 16;             // 16-byte/128-bit minimum key/hash
+
+    private static final String PROPERTY_ALGORITHM  = "Pbkdf2PasswordHash.Algorithm";
+    private static final String PROPERTY_ITERATIONS = "Pbkdf2PasswordHash.Iterations";
+    private static final String PROPERTY_SALTSIZE   = "Pbkdf2PasswordHash.SaltSizeBytes";
+    private static final String PROPERTY_KEYSIZE    = "Pbkdf2PasswordHash.KeySizeBytes";
+
+    private String configuredAlgorithm  = DEFAULT_ALGORITHM;   // PBKDF2 algorithm to use
+    private int configuredIterations    = DEFAULT_ITERATIONS;  // number of iterations
+    private int configuredSaltSizeBytes = DEFAULT_SALT_SIZE;   // salt size in bytes
+    private int configuredKeySizeBytes  = DEFAULT_KEY_SIZE;    // derived key (i.e., password hash) size in bytes
     
     private final SecureRandom random = new SecureRandom();
 
     @Override
     public void initialize(Map<String, String> parameters) {
-        // initialize here
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            if (entry.getKey().equals(PROPERTY_ALGORITHM)) {
+                if (!SUPPORTED_ALGORITHMS.contains(entry.getValue())) {
+                    throw new IllegalArgumentException("Bad Algorithm parameter: " + entry.getValue());
+                }
+                configuredAlgorithm = entry.getValue();
+            }
+            else if (entry.getKey().equals(PROPERTY_ITERATIONS)) {
+                try {
+                    configuredIterations = Integer.parseInt(entry.getValue());
+                }
+                catch (Exception e) {
+                    throw new IllegalArgumentException("Bad Iterations parameter: " + entry.getValue());
+                }
+                if (configuredIterations < MIN_ITERATIONS) {
+                    throw new IllegalArgumentException("Bad Iterations parameter: " + entry.getValue());
+                }
+            }
+            else if (entry.getKey().equals(PROPERTY_SALTSIZE)) {
+                try {
+                    configuredSaltSizeBytes = Integer.parseInt(entry.getValue());
+                }
+                catch (Exception e) {
+                    throw new IllegalArgumentException("Bad SaltSizeBytes parameter: " + entry.getValue());
+                }
+                if (configuredSaltSizeBytes < MIN_SALT_SIZE) {
+                    throw new IllegalArgumentException("Bad SaltSizeBytes parameter: " + entry.getValue());
+                }
+            }
+            else if (entry.getKey().equals(PROPERTY_KEYSIZE)) {
+                try {
+                    configuredKeySizeBytes = Integer.parseInt(entry.getValue());
+                }
+                catch (Exception e) {
+                    throw new IllegalArgumentException("Bad KeySizeBytes parameter: " + entry.getValue());
+                }
+                if (configuredKeySizeBytes < MIN_KEY_SIZE) {
+                    throw new IllegalArgumentException("Bad KeySizeBytes parameter: " + entry.getValue());
+                }
+            }
+            else {
+                throw new IllegalArgumentException("Unrecognized parameter for Pbkdf2PasswordHash");
+            }
+        }
     }
 
     @Override
     public String generate(char[] password) {
-        byte[] salt = getRandomSalt(new byte[defaultSaltSizeBytes]);
-        byte[] hash = pbkdf2(password, salt, defaultAlgorithm, defaultIterations, defaultKeySizeBytes);
-        return new EncodedPasswordHash(hash, salt, defaultAlgorithm, defaultIterations).getEncoded();
+        byte[] salt = getRandomSalt(new byte[configuredSaltSizeBytes]);
+        byte[] hash = pbkdf2(password, salt, configuredAlgorithm, configuredIterations, configuredKeySizeBytes);
+        return new EncodedPasswordHash(hash, salt, configuredAlgorithm, configuredIterations).getEncoded();
     }
 
     @Override
@@ -158,9 +211,14 @@ public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
                 throw new IllegalArgumentException("Bad hash encoding");
             }
             algorithm = tokens[0];
-            iterations = Integer.parseInt(tokens[1]);
-            salt = Base64.getDecoder().decode(tokens[2]);
-            hash = Base64.getDecoder().decode(tokens[3]);
+            try {
+                iterations = Integer.parseInt(tokens[1]);
+                salt = Base64.getDecoder().decode(tokens[2]);
+                hash = Base64.getDecoder().decode(tokens[3]);
+            }
+            catch (Exception e) {
+                throw new IllegalArgumentException("Bad hash encoding", e);
+            }
         }
     }
 
