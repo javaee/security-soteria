@@ -57,7 +57,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.security.enterprise.CallerPrincipal;
@@ -65,8 +64,8 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.PasswordHash;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.sql.DataSource;
 
 public class DatabaseIdentityStore implements IdentityStore {
@@ -74,20 +73,21 @@ public class DatabaseIdentityStore implements IdentityStore {
     private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
-    private final Map<String, String> hashAlgorithmParameters;
+    private final PasswordHash hashAlgorithm; // Note: effectively application scoped, no support for @PreDestroy now
 
     public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
-        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
         
-        hashAlgorithmParameters = 
+        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
+        hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        hashAlgorithm.initialize(
             unmodifiableMap(
-                stream(
-                    dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
-                .collect(toMap(
-                    s -> s.substring(0, s.indexOf('=')) , 
-                    s -> s.substring(s.indexOf('=') + 1)
-                )));
+                    stream(
+                        dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
+                    .collect(toMap(
+                        s -> s.substring(0, s.indexOf('=')) , 
+                        s -> s.substring(s.indexOf('=') + 1)
+                    ))));
     }
 
     @Override
@@ -112,8 +112,6 @@ public class DatabaseIdentityStore implements IdentityStore {
         if (passwords.isEmpty()) {
             return INVALID_RESULT;
         }
-        
-        PasswordHash hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
         
         if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             Set<String> groups = emptySet();
