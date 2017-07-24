@@ -114,7 +114,7 @@ public class DatabaseIdentityStore implements IdentityStore {
         
         PasswordHash hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
         
-        if (hashAlgorithm.verifyHash(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
+        if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             return new CredentialValidationResult(
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
                 new HashSet<>(executeQuery(

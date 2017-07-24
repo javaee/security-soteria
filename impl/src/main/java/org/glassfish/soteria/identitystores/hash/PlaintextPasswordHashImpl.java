@@ -49,12 +49,17 @@ import javax.security.enterprise.identitystore.PlaintextPasswordHash;
 public class PlaintextPasswordHashImpl implements PlaintextPasswordHash {
 
     @Override
-    public String generateHash(char[] password) {
+    public void initialize(Map<String, String> parameters) {
+        // do nothing -- parameters not supported
+    }
+
+    @Override
+    public String generate(char[] password) {
         return new String(password);
     }
 
     @Override
-    public boolean verifyHash(char[] password, String hashedPassword) {
+    public boolean verify(char[] password, String hashedPassword) {
         return PasswordHashCompare.compareChars(password, hashedPassword.toCharArray());
     }
 }

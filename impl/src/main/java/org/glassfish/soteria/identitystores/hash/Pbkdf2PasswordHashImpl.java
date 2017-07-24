@@ -77,14 +77,19 @@ public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
     private final SecureRandom random = new SecureRandom();
 
     @Override
-    public String generateHash(char[] password) {
+    public void initialize(Map<String, String> parameters) {
+        // initialize here
+    }
+
+    @Override
+    public String generate(char[] password) {
         byte[] salt = getRandomSalt(new byte[defaultSaltSizeBytes]);
         byte[] hash = pbkdf2(password, salt, defaultAlgorithm, defaultIterations, defaultKeySizeBytes);
         return new EncodedPasswordHash(hash, salt, defaultAlgorithm, defaultIterations).getEncoded();
     }
 
     @Override
-    public boolean verifyHash(char[] password, String hashedPassword) {
+    public boolean verify(char[] password, String hashedPassword) {
         EncodedPasswordHash encodedPasswordHash = new EncodedPasswordHash(hashedPassword);
         byte[] hashToVerify = pbkdf2(
                 password,
