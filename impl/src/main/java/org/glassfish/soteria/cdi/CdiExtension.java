@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,8 +75,10 @@ import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 import org.glassfish.soteria.SecurityContextImpl;
 import org.glassfish.soteria.identitystores.DatabaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
+import org.glassfish.soteria.identitystores.JPAIdentityStore;
 import org.glassfish.soteria.identitystores.LdapIdentityStore;
 import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
+import org.glassfish.soteria.identitystores.annotation.JPAIdentityStoreDefinition;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
@@ -134,6 +136,19 @@ public class CdiExtension implements Extension {
                     .create(e -> new DatabaseIdentityStore(
                         DatabaseIdentityStoreDefinitionAnnotationLiteral.eval(
                             dataBaseIdentityStoreDefinition)))
+            );
+        });
+        
+        Optional<JPAIdentityStoreDefinition> optionalJPAStore = getAnnotation(beanManager, event.getAnnotated(), JPAIdentityStoreDefinition.class);
+        optionalJPAStore.ifPresent(jpaIdentityStoreDefinition -> {
+            logActivatedIdentityStore(JPAIdentityStoreDefinition.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class, DataBaseIdentityStore.class)
+                    .addToId(DataBaseIdentityStoreDefinition.class)
+                    .create(e -> new JPAIdentityStore(jpaIdentityStoreDefinition))
             );
         });
 
