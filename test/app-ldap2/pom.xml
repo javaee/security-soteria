@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-b09-SNAPSHOT</version>
+        <version>1.0-b10-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.glassfish.soteria.test</groupId>
             <artifactId>common</artifactId>
-            <version>1.0-b09-SNAPSHOT</version>
+            <version>1.0-b10-SNAPSHOT</version>
         </dependency>
         
          <dependency>
