@@ -42,8 +42,9 @@ package org.glassfish.soteria.identitystores.hash;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import static java.util.Arrays.asList;
 import java.util.Base64;
-import java.util.Collections;
+import static java.util.Collections.unmodifiableSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -56,14 +57,13 @@ import javax.security.enterprise.identitystore.Pbkdf2PasswordHash;
 @ApplicationScoped
 public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
 
-    private static final Set<String> SUPPORTED_ALGORITHMS = getUnmodifiableSetFromStringArray(new String[] {
-            "PBKDF2WithHmacSHA1",
+    private static final Set<String> SUPPORTED_ALGORITHMS = unmodifiableSet(new HashSet<>(asList(
             "PBKDF2WithHmacSHA224",
             "PBKDF2WithHmacSHA256",
             "PBKDF2WithHmacSHA384",
             "PBKDF2WithHmacSHA512"
-    });
-    
+            )));
+
     private static final String DEFAULT_ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final int DEFAULT_ITERATIONS = 2048;
     private static final int DEFAULT_SALT_SIZE = 32;       // 32-byte/256-bit salt
@@ -109,14 +109,6 @@ public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
         return salt;
     }
 
-    private static Set<String> getUnmodifiableSetFromStringArray(String[] strings) {
-        HashSet<String> set = new HashSet<String>();
-        for (String s : strings) {
-            set.add(s);
-        }
-        return Collections.unmodifiableSet(set);
-    }
-
     private static class EncodedPasswordHash {
 
         private String algorithm;
@@ -147,12 +139,9 @@ public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
         String getEncoded() { return encoded; }
 
         private void encode() {
-            StringBuilder builder = new StringBuilder();
-            builder.append(algorithm + ":" + iterations + ":");
-            builder.append(Base64.getEncoder().encodeToString(salt));
-            builder.append(":");
-            builder.append(Base64.getEncoder().encodeToString(hash));
-            encoded = builder.toString();
+            encoded = algorithm + ":" + iterations + ":" +
+                    Base64.getEncoder().encodeToString(salt) + ":" +
+                    Base64.getEncoder().encodeToString(hash);
         }
 
         private void decode() {
