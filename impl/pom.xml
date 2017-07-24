@@ -4,7 +4,7 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-b09-SNAPSHOT</version>
+       <version>1.0-b09</version>
     </parent>
 
     <artifactId>javax.security.enterprise</artifactId>
