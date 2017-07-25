@@ -77,6 +77,7 @@ import org.glassfish.soteria.identitystores.DatabaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
 import org.glassfish.soteria.identitystores.LdapIdentityStore;
 import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
+import org.glassfish.soteria.identitystores.hash.PlaintextPasswordHashImpl;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
@@ -100,7 +101,8 @@ public class CdiExtension implements Extension {
             FormAuthenticationMechanism.class,
             CustomFormAuthenticationMechanism.class,
             SecurityContextImpl.class,
-            IdentityStoreHandler.class
+            IdentityStoreHandler.class,
+            PlaintextPasswordHashImpl.class
         );
     }
 

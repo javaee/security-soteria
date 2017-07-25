@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,32 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.identitystores.hash;
+
+import java.util.Arrays;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.PlaintextPasswordHash;
 
-@DatabaseIdentityStoreDefinition(
-    dataSourceLookup="${'java:global/MyDS'}", 
-    callerQuery="#{'select password from caller where name = ?'}",
-    groupsQuery="select group_name from caller_groups where caller_name = ?",
-    hashAlgorithm = PlaintextPasswordHash.class,
-    hashAlgorithmParameters = {
-        "foo=bar", 
-        "kax=zak", 
-        "foox=${'iop'}",
-        "${applicationConfig.dyna}"
-        
-    } // just for test / example
-)
 @ApplicationScoped
-@Named
-public class ApplicationConfig {
-    
-    public String[] getDyna() {
-        return new String[] {"dyn=1","dyna=2","dynam=3"};
+public class PlaintextPasswordHashImpl implements PlaintextPasswordHash {
+
+    @Override
+    public void initialize(Map<String, String> parameters) {
+        // do nothing -- parameters not supported
     }
-    
+
+    @Override
+    public String generate(char[] password) {
+        return new String(password);
+    }
+
+    @Override
+    public boolean verify(char[] password, String hashedPassword) {
+        return PasswordHashCompare.compareChars(password, hashedPassword.toCharArray());
+    }
 }
