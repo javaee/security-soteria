@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,69 +40,57 @@
 package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
+import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.el.ELContext;
-import javax.el.ExpressionFactory;
-import javax.el.MethodExpression;
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.sql.DataSource;
-
-import org.glassfish.soteria.cdi.CdiUtils;
 
 public class DatabaseIdentityStore implements IdentityStore {
 
     private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
-    private final Function<String, String> hashFunction;
-    
-    private final byte[] salt = new byte[16]; // TODO
+    private final PasswordHash hashAlgorithm; // Note: effectively application scoped, no support for @PreDestroy now
 
     public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
-        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
         
-        if (hasAnyELExpression(dataBaseIdentityStoreDefinition.hashAlgorithm())) {
-            ELContext elContext = CdiUtils.getELProcessor().getELManager().getELContext();
-            
-            MethodExpression hashMethodExpression = ExpressionFactory.newInstance().createMethodExpression(
-                elContext, 
-                dataBaseIdentityStoreDefinition.hashAlgorithm(), 
-                String.class, new  Class<?>[] {String.class} );
-            
-            hashFunction =  s -> (String) hashMethodExpression.invoke(elContext, new Object[] {s});
-        } else if ("PBKDF2".equals(dataBaseIdentityStoreDefinition.hashAlgorithm())) {
-            hashFunction = s -> pbkdf2(s, salt);
-        } else {
-            hashFunction = identity();
-        }
+        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
+        hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        hashAlgorithm.initialize(
+            unmodifiableMap(
+                    stream(
+                        dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
+                    .flatMap(s -> toStream(evalImmediate(s, (Object)s)))
+                    .collect(toMap(
+                        s -> s.substring(0, s.indexOf('=')) , 
+                        s -> evalImmediate(s.substring(s.indexOf('=') + 1))
+                    ))));
     }
 
     @Override
@@ -122,13 +110,14 @@ public class DatabaseIdentityStore implements IdentityStore {
             dataSource, 
             dataBaseIdentityStoreDefinition.callerQuery(),
             usernamePasswordCredential.getCaller()
-        ); 
-
-        String hashedPassword = hashFunction.apply(usernamePasswordCredential.getPasswordAsString());
+        );
         
-        if (!passwords.isEmpty() && hashedPassword.equals(passwords.get(0))) {
+        if (passwords.isEmpty()) {
+            return INVALID_RESULT;
+        }
+        
+        if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             Set<String> groups = emptySet();
-
             if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
                 groups = new HashSet<>(executeQuery(dataSource, dataBaseIdentityStoreDefinition.groupsQuery(), usernamePasswordCredential.getCaller()));
             }
@@ -180,18 +169,16 @@ public class DatabaseIdentityStore implements IdentityStore {
         return validationTypes;
     }
     
-    public String pbkdf2(String password, byte[] salt) {
-        try {
-            return 
-                Base64.getEncoder()
-                      .encodeToString(
-                          SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-                                          .generateSecret(
-                                             new PBEKeySpec(password.toCharArray(), salt, 1024, 64 * 8))
-                                          .getEncoded());
-            
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new IllegalStateException(e);
+    @SuppressWarnings("unchecked")
+    private Stream<String> toStream(Object raw) {
+        if (raw instanceof String[]) {
+            return stream((String[])raw);
         }
+        if (raw instanceof Stream<?>) {
+            return ((Stream<String>) raw).map(s -> s.toString());
+        }
+        
+        return asList(raw.toString()).stream();
     }
+   
 }
