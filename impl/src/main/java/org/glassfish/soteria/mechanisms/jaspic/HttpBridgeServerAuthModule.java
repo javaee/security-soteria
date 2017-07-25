@@ -45,6 +45,8 @@ import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.fromAuthenticationS
 import static org.glassfish.soteria.mechanisms.jaspic.Jaspic.setLastAuthenticationStatus;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.security.auth.Subject;
@@ -72,6 +74,8 @@ import org.glassfish.soteria.mechanisms.HttpMessageContextImpl;
  */
 public class HttpBridgeServerAuthModule implements ServerAuthModule {
 
+    private static final Logger LOGGER = Logger.getLogger(HttpBridgeServerAuthModule.class.getName());
+    
         private CallbackHandler handler;
         private final Class<?>[] supportedMessageTypes = new Class[] { HttpServletRequest.class, HttpServletResponse.class };
         private final CDIPerRequestInitializer cdiPerRequestInitializer;
@@ -120,6 +124,9 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
                 // the status will be the default NOT_DONE
                 setLastAuthenticationStatus(msgContext.getRequest(), SEND_FAILURE);
                 throw (AuthException) new AuthException("Authentication failure in HttpAuthenticationMechanism").initCause(e);
+            } catch(Exception e) {
+                LOGGER.log(Level.WARNING, "Unexpected exception when validating credentials", e);
+                throw e;
             }
             
             setLastAuthenticationStatus(msgContext.getRequest(), status);
