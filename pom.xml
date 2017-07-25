@@ -37,14 +37,14 @@
 
         <spec_version>0.0</spec_version>
         <new_spec_version>1.0</new_spec_version>
-        <spec_build>09</spec_build>
-        <spec_impl_version>1.0-b09</spec_impl_version>
+        <spec_build>10</spec_build>
+        <spec_impl_version>1.0-b10-SNAPSHOT</spec_impl_version>
 
         <api_dependency_version>${spec_impl_version}</api_dependency_version>
 
         <impl_version>0.0</impl_version>
         <new_impl_version>1.0</new_impl_version>
-        <impl_build>10</impl_build>
+        <impl_build>11</impl_build>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
