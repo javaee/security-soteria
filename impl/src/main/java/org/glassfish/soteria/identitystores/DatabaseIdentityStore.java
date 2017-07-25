@@ -47,6 +47,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
@@ -84,9 +86,10 @@ public class DatabaseIdentityStore implements IdentityStore {
             unmodifiableMap(
                     stream(
                         dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
+                    .flatMap(s -> toStream(evalImmediate(s, (Object)s)))
                     .collect(toMap(
                         s -> s.substring(0, s.indexOf('=')) , 
-                        s -> s.substring(s.indexOf('=') + 1)
+                        s -> evalImmediate(s.substring(s.indexOf('=') + 1))
                     ))));
     }
 
@@ -164,6 +167,18 @@ public class DatabaseIdentityStore implements IdentityStore {
     @Override
     public Set<ValidationType> validationTypes() {
         return validationTypes;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private Stream<String> toStream(Object raw) {
+        if (raw instanceof String[]) {
+            return stream((String[])raw);
+        }
+        if (raw instanceof Stream<?>) {
+            return ((Stream<String>) raw).map(s -> s.toString());
+        }
+        
+        return asList(raw.toString()).stream();
     }
    
 }

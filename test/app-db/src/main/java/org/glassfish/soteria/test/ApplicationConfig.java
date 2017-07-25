@@ -49,14 +49,20 @@ import javax.security.enterprise.identitystore.PlaintextPasswordHash;
     callerQuery="#{'select password from caller where name = ?'}",
     groupsQuery="select group_name from caller_groups where caller_name = ?",
     hashAlgorithm = PlaintextPasswordHash.class,
-    hashAlgorithmParameters = {"foo=bar", "kax=zak"} // just for test / example
+    hashAlgorithmParameters = {
+        "foo=bar", 
+        "kax=zak", 
+        "foox=${'iop'}",
+        "${applicationConfig.dyna}"
+        
+    } // just for test / example
 )
 @ApplicationScoped
 @Named
 public class ApplicationConfig {
-
-    public String doHash(String in) {
-        return in;
+    
+    public String[] getDyna() {
+        return new String[] {"dyn=1","dyna=2","dynam=3"};
     }
     
 }
