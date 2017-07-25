@@ -113,7 +113,7 @@ public class RememberMeAnnotationLiteral extends AnnotationLiteral<RememberMe> i
                     evalImmediate(elProcessor, in.cookieHttpOnlyExpression(), in.cookieHttpOnly()),
                     emptyIfImmediate(in.cookieHttpOnlyExpression()),
                     evalImmediate(elProcessor, in.cookieName()),
-                    evalImmediate(elProcessor, in.isRememberMeExpression(), true),
+                    evalImmediate(elProcessor, in.isRememberMeExpression(), in.isRememberMe()),
                     evalImmediate(elProcessor, in.isRememberMeExpression()),
                     elProcessor
                 );
@@ -173,6 +173,7 @@ public class RememberMeAnnotationLiteral extends AnnotationLiteral<RememberMe> i
         return hasDeferredExpressions? evalELExpression(elProcessor, cookieName) : cookieName;
     }
     
+    @Override
     public boolean isRememberMe() {
         return hasDeferredExpressions? evalELExpression(elProcessor, isRememberMeExpression, isRememberMe) : isRememberMe;
     }
