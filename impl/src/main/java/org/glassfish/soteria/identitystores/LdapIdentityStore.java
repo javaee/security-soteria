@@ -52,6 +52,7 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.IdentityStorePermission;
 import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 import static javax.security.enterprise.identitystore.LdapIdentityStoreDefinition.LdapSearchScope;
 import java.util.*;
@@ -101,6 +102,12 @@ public class LdapIdentityStore implements IdentityStore {
 
     @Override
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(new IdentityStorePermission("getGroups"));
+        }
+
         LdapContext ldapContext = createDefaultLdapContext();
 
         if (ldapContext != null) {

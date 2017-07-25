@@ -66,6 +66,7 @@ import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.IdentityStorePermission;
 import javax.security.enterprise.identitystore.PasswordHash;
 import javax.sql.DataSource;
 
@@ -131,7 +132,12 @@ public class DatabaseIdentityStore implements IdentityStore {
     
     @Override
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
-        
+
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(new IdentityStorePermission("getGroups"));
+        }
+
         DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
         
         return new HashSet<>(executeQuery(
