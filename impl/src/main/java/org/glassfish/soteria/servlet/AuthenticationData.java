@@ -37,39 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.servlet;
 
-import java.io.IOException;
+import static java.util.Collections.unmodifiableSet;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Set;
 
 /**
- * Servlet that is invoked when it's determined that the caller needs to authenticate/login.
- *
+ * This class holds stores "authentication data" (principal and groups).
+ * 
+ * <p>
+ * This is intended as a temporary storage in the HTTP session for this data specifically 
+ * during an HTTP redirect, which is why this class is in the servlet package.
+ * 
+ * @author Arjan Tijms
  */
-@WebServlet({"/login-servlet"})
-public class LoginServlet extends HttpServlet {
+public class AuthenticationData implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.getWriter().write(
-            "<html><body> Login to continue \n" +
-                "<form method=\"POST\" action=\"j_security_check\">" +
-                    "<p><strong>Username </strong>" +
-                    "<input type=\"text\" name=\"j_username\">" +
-                    
-                    "<p><strong>Password </strong>" +
-                    "<input type=\"password\" name=\"j_password\">" +
-                    "<p>" +
-                    "<input type=\"submit\" value=\"Submit\">" +
-                "</form>" +
-            "</body></html>");
+    
+    private final Principal principal;
+    private final Set<String> groups;
+    
+    public AuthenticationData(Principal principal, Set<String> groups) {
+        this.principal = principal;
+        this.groups =  unmodifiableSet(groups);
+    }
+    
+    public Principal getPrincipal() {
+        return principal;
     }
 
+    public Set<String> getGroups() {
+        return groups;
+    }
+    
 }

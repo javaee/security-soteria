@@ -53,12 +53,12 @@ import java.io.IOException;
  * this caller is in any of the roles {foo, bar, kaz}
  */
 @LdapIdentityStoreDefinition(
-        url = "ldap://localhost:33389/",
-        baseDn = "uid=ldap,ou=apps,dc=jsr375,dc=net",
-        password = "changeOnInstall",
-        searchBase = "dc=jsr375,dc=net",
-        searchExpression = "(&(uid=%s)(objectClass=person))",
-        groupBaseDn = "ou=group,dc=jsr375,dc=net"
+    url = "ldap://localhost:33389/",
+    bindDn = "uid=ldap,ou=apps,dc=jsr375,dc=net",
+    bindDnPassword = "changeOnInstall",
+    callerSearchBase = "dc=jsr375,dc=net",
+    callerSearchFilter = "(&(uid=%s)(objectClass=person))",
+    groupSearchBase = "ou=group,dc=jsr375,dc=net"
 )
 @DeclareRoles({"foo", "bar", "kaz"})
 @WebServlet("/servlet")

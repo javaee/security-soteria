@@ -66,33 +66,33 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
     
     private CallerDetailsResolver callerDetailsResolver;
     private ResourceAccessResolver resourceAccessResolver;
-    
+
     @PostConstruct
     public void init() {
        callerDetailsResolver = new ReflectionAndJaccCallerDetailsResolver();
        resourceAccessResolver = new JaccResourceAccessResolver();
     }
-    
+
     @Override
     public Principal getCallerPrincipal() {
-    	return callerDetailsResolver.getCallerPrincipal();
+        return callerDetailsResolver.getCallerPrincipal();
     }
-    
+
+    @Override
+    public <T extends Principal> Set<T> getPrincipalsByType(Class<T> pType) {
+        return callerDetailsResolver.getPrincipalsByType(pType);
+    }
+
     @Override
     public boolean isCallerInRole(String role) {
-    	return callerDetailsResolver.isCallerInRole(role);
+        return callerDetailsResolver.isCallerInRole(role);
     }
 
     // Implementation specific method, not present in API.
     public Set<String> getAllDeclaredCallerRoles() {
         return callerDetailsResolver.getAllDeclaredCallerRoles();
     }
-    
-    @Override
-    public boolean hasAccessToWebResource(String resource) {
-        return resourceAccessResolver.hasAccessToWebResource(resource, "GET");
-    }
-    
+
     @Override
     public boolean hasAccessToWebResource(String resource, String... methods) {
         return resourceAccessResolver.hasAccessToWebResource(resource, methods);
@@ -117,5 +117,5 @@ public class SecurityContextImpl implements SecurityContext, Serializable {
             return SEND_FAILURE;
         }
     }
-    
+
 }

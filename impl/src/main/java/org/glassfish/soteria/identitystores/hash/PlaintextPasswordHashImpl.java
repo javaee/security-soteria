@@ -37,39 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.identitystores.hash;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.enterprise.context.ApplicationScoped;
+import javax.security.enterprise.identitystore.PlaintextPasswordHash;
 
-/**
- * Servlet that is invoked when it's determined that the caller needs to authenticate/login.
- *
- */
-@WebServlet({"/login-servlet"})
-public class LoginServlet extends HttpServlet {
-
-    private static final long serialVersionUID = 1L;
+@ApplicationScoped
+public class PlaintextPasswordHashImpl implements PlaintextPasswordHash {
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.getWriter().write(
-            "<html><body> Login to continue \n" +
-                "<form method=\"POST\" action=\"j_security_check\">" +
-                    "<p><strong>Username </strong>" +
-                    "<input type=\"text\" name=\"j_username\">" +
-                    
-                    "<p><strong>Password </strong>" +
-                    "<input type=\"password\" name=\"j_password\">" +
-                    "<p>" +
-                    "<input type=\"submit\" value=\"Submit\">" +
-                "</form>" +
-            "</body></html>");
+    public String generateHash(char[] password) {
+        return new String(password);
     }
 
+    @Override
+    public boolean verifyHash(char[] password, String hashedPassword) {
+        return PasswordHashCompare.compareChars(password, hashedPassword.toCharArray());
+    }
 }

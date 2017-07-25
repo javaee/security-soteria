@@ -55,6 +55,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,6 +72,7 @@ import java.util.zip.InflaterInputStream;
 
 import javax.el.ELProcessor;
 import javax.interceptor.InvocationContext;
+import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
@@ -157,8 +159,6 @@ public final class Utils {
 		return false;
 	}
 	
-	
-	
 	@SuppressWarnings("unchecked")
     public static <T> T getParam(InvocationContext invocationContext, int param) {
 	    return (T) invocationContext.getParameters()[param];
@@ -198,6 +198,14 @@ public final class Utils {
         return elProcessor;
     }
 	
+    public static CallerPrincipal toCallerPrincipal(Principal principal) {
+        if (principal instanceof CallerPrincipal) {
+            return (CallerPrincipal) principal;
+        }
+        
+        return new WrappingCallerPrincipal(principal);
+    }
+    
 	public static void redirect(HttpServletRequest request, HttpServletResponse response, String location) {
 		try {
 			if (isFacesAjaxRequest(request)) {

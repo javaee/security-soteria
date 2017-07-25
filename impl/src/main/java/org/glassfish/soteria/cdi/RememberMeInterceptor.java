@@ -43,8 +43,8 @@ import static javax.interceptor.Interceptor.Priority.PLATFORM_BEFORE;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.Utils.cleanSubjectMethod;
 import static org.glassfish.soteria.Utils.getParam;
-import static org.glassfish.soteria.Utils.isEmpty;
 import static org.glassfish.soteria.Utils.isImplementationOf;
+import static org.glassfish.soteria.Utils.toCallerPrincipal;
 import static org.glassfish.soteria.Utils.validateRequestMethod;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 import static org.glassfish.soteria.servlet.CookieHandler.getCookie;
@@ -114,8 +114,8 @@ public class RememberMeInterceptor implements Serializable {
     
     private AuthenticationStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
-        RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
-        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted();
+        RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get();
+        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext));
         
         Cookie rememberMeCookie = getCookie(request, rememberMeAnnotation.cookieName());
         
@@ -151,15 +151,13 @@ public class RememberMeInterceptor implements Serializable {
             // to retrieve this stored identity later
             
             Boolean isRememberMe = true;
-            if (!isEmpty(rememberMeAnnotation.isRememberMeExpression())) {
-                ELProcessor elProcessor = getElProcessor(invocationContext, httpMessageContext);
-                
-                isRememberMe = (Boolean) elProcessor.eval(rememberMeAnnotation.isRememberMeExpression());
+            if (rememberMeAnnotation instanceof RememberMeAnnotationLiteral) { // tmp
+                isRememberMe = ((RememberMeAnnotationLiteral)rememberMeAnnotation).isRememberMe();
             }
             
             if (isRememberMe) {
                 String token = rememberMeIdentityStore.generateLoginToken(
-                    httpMessageContext.getCallerPrincipal(),
+                    toCallerPrincipal(httpMessageContext.getCallerPrincipal()),
                     httpMessageContext.getGroups()
                 );
                 
@@ -179,7 +177,7 @@ public class RememberMeInterceptor implements Serializable {
     private void cleanSubject(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
     
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
-        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted();
+        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext));
         
         Cookie rememberMeCookie = getCookie(request, rememberMeAnnotation.cookieName());
         
@@ -194,10 +192,10 @@ public class RememberMeInterceptor implements Serializable {
         
     }
     
-    private RememberMe getRememberMeFromIntercepted() {
+    private RememberMe getRememberMeFromIntercepted(ELProcessor elProcessor) {
         Optional<RememberMe> optionalRememberMe = getAnnotation(beanManager, interceptedBean.getBeanClass(), RememberMe.class);
         if (optionalRememberMe.isPresent()) {
-            return optionalRememberMe.get();
+            return RememberMeAnnotationLiteral.eval(optionalRememberMe.get(), elProcessor);
         }
         
         throw new IllegalStateException("@RememberMe not present on " + interceptedBean.getBeanClass());
@@ -207,7 +205,6 @@ public class RememberMeInterceptor implements Serializable {
         ELProcessor elProcessor = new ELProcessor();
         
         elProcessor.getELManager().addELResolver(beanManager.getELResolver());
-        elProcessor.defineBean("this", invocationContext.getTarget()); // deprecate/remove, not compatible with Apache EL
         elProcessor.defineBean("self", invocationContext.getTarget());
         elProcessor.defineBean("httpMessageContext", httpMessageContext);
         

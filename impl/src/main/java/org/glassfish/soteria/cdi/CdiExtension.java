@@ -60,7 +60,13 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
-import javax.security.enterprise.authentication.mechanism.http.*;
+import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
+import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.CustomFormAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import javax.security.enterprise.authentication.mechanism.http.RememberMe;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
@@ -71,6 +77,7 @@ import org.glassfish.soteria.identitystores.DatabaseIdentityStore;
 import org.glassfish.soteria.identitystores.EmbeddedIdentityStore;
 import org.glassfish.soteria.identitystores.LdapIdentityStore;
 import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
+import org.glassfish.soteria.identitystores.hash.PlaintextPasswordHashImpl;
 import org.glassfish.soteria.mechanisms.BasicAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.CustomFormAuthenticationMechanism;
 import org.glassfish.soteria.mechanisms.FormAuthenticationMechanism;
@@ -88,13 +95,14 @@ public class CdiExtension implements Extension {
 
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
         addAnnotatedTypes(beforeBean, beanManager,
-                AutoApplySessionInterceptor.class,
-                RememberMeInterceptor.class,
-                LoginToContinueInterceptor.class,
-                FormAuthenticationMechanism.class,
-                CustomFormAuthenticationMechanism.class,
-                SecurityContextImpl.class,
-                IdentityStoreHandler.class
+            AutoApplySessionInterceptor.class,
+            RememberMeInterceptor.class,
+            LoginToContinueInterceptor.class,
+            FormAuthenticationMechanism.class,
+            CustomFormAuthenticationMechanism.class,
+            SecurityContextImpl.class,
+            IdentityStoreHandler.class,
+            PlaintextPasswordHashImpl.class
         );
     }
 
@@ -125,7 +133,9 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, DatabaseIdentityStore.class)
                     .addToId(DatabaseIdentityStoreDefinition.class)
-                    .create(e -> new DatabaseIdentityStore(dataBaseIdentityStoreDefinition))
+                    .create(e -> new DatabaseIdentityStore(
+                        DatabaseIdentityStoreDefinitionAnnotationLiteral.eval(
+                            dataBaseIdentityStoreDefinition)))
             );
         });
 
@@ -138,7 +148,9 @@ public class CdiExtension implements Extension {
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class, LdapIdentityStore.class)
                     .addToId(LdapIdentityStoreDefinition.class)
-                    .create(e -> new LdapIdentityStore(ldapIdentityStoreDefinition))
+                    .create(e -> new LdapIdentityStore(
+                        LdapIdentityStoreDefinitionAnnotationLiteral.eval(
+                            ldapIdentityStoreDefinition)))
             );
         });
 
@@ -151,7 +163,9 @@ public class CdiExtension implements Extension {
                     .beanClass(BasicAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class, BasicAuthenticationMechanism.class)
                     .addToId(BasicAuthenticationMechanismDefinition.class)
-                    .create(e -> new BasicAuthenticationMechanism(basicAuthenticationMechanismDefinition.realmName()));
+                    .create(e -> new BasicAuthenticationMechanism(
+                        BasicAuthenticationMechanismDefinitionAnnotationLiteral.eval(
+                            basicAuthenticationMechanismDefinition)));
         });
 
         Optional<FormAuthenticationMechanismDefinition> optionalFormMechanism = getAnnotation(beanManager, event.getAnnotated(), FormAuthenticationMechanismDefinition.class);
@@ -164,14 +178,12 @@ public class CdiExtension implements Extension {
                     .types(Object.class, HttpAuthenticationMechanism.class)
                     .addToId(FormAuthenticationMechanismDefinition.class)
                     .create(e -> {
-                        FormAuthenticationMechanism formAuthenticationMechanism = CDI.current()
+                        return CDI.current()
                                 .select(FormAuthenticationMechanism.class)
-                                .get();
-
-                        formAuthenticationMechanism.setLoginToContinue(
-                                formAuthenticationMechanismDefinition.loginToContinue());
-
-                        return formAuthenticationMechanism;
+                                .get()
+                                .loginToContinue(
+                                    LoginToContinueAnnotationLiteral.eval(
+                                        formAuthenticationMechanismDefinition.loginToContinue()));
                     });
         });
 
@@ -185,14 +197,13 @@ public class CdiExtension implements Extension {
                     .types(Object.class, HttpAuthenticationMechanism.class)
                     .addToId(CustomFormAuthenticationMechanismDefinition.class)
                     .create(e -> {
-                        CustomFormAuthenticationMechanism customFormAuthenticationMechanism = CDI.current()
-                                .select(CustomFormAuthenticationMechanism.class)
-                                .get();
+                        return CDI.current()
+                                  .select(CustomFormAuthenticationMechanism.class)
+                                  .get()
+                                  .loginToContinue(
+                                      LoginToContinueAnnotationLiteral.eval(
+                                        customFormAuthenticationMechanismDefinition.loginToContinue()));
 
-                        customFormAuthenticationMechanism.setLoginToContinue(
-                                customFormAuthenticationMechanismDefinition.loginToContinue());
-
-                        return customFormAuthenticationMechanism;
                     });
         });
 

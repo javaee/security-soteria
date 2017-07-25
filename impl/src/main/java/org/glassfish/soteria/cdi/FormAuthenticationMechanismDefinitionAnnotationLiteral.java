@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.cdi;
 
-import java.io.IOException;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 /**
- * Servlet that is invoked when it's determined that the caller needs to authenticate/login.
- *
+ * An annotation literal for <code>@FormAuthenticationMechanismDefinition</code>.
+ * 
  */
-@WebServlet({"/login-servlet"})
-public class LoginServlet extends HttpServlet {
-
+@SuppressWarnings("all")
+public class FormAuthenticationMechanismDefinitionAnnotationLiteral extends AnnotationLiteral<FormAuthenticationMechanismDefinition> implements FormAuthenticationMechanismDefinition {
     private static final long serialVersionUID = 1L;
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.getWriter().write(
-            "<html><body> Login to continue \n" +
-                "<form method=\"POST\" action=\"j_security_check\">" +
-                    "<p><strong>Username </strong>" +
-                    "<input type=\"text\" name=\"j_username\">" +
-                    
-                    "<p><strong>Password </strong>" +
-                    "<input type=\"password\" name=\"j_password\">" +
-                    "<p>" +
-                    "<input type=\"submit\" value=\"Submit\">" +
-                "</form>" +
-            "</body></html>");
+    
+    private final LoginToContinue loginToContinue;
+    
+    public FormAuthenticationMechanismDefinitionAnnotationLiteral(LoginToContinue loginToContinue) {
+        this.loginToContinue = loginToContinue;
     }
-
+    
+    @Override
+    public LoginToContinue loginToContinue() {
+        return loginToContinue;
+    }
 }

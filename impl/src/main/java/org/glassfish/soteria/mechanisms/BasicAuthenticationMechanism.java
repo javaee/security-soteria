@@ -47,6 +47,7 @@ import static org.glassfish.soteria.Utils.isEmpty;
 import javax.enterprise.inject.spi.CDI;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.credential.Password;
@@ -64,14 +65,11 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public class BasicAuthenticationMechanism implements HttpAuthenticationMechanism {
+    
+    private final BasicAuthenticationMechanismDefinition basicAuthenticationMechanismDefinition;
 
-    private String basicHeaderValue;
-
-    public BasicAuthenticationMechanism() {
-    }
-
-    public BasicAuthenticationMechanism(String realmName) {
-        this.basicHeaderValue = format("Basic realm=\"%s\"", realmName);
+    public BasicAuthenticationMechanism(BasicAuthenticationMechanismDefinition basicAuthenticationMechanismDefinition) {
+        this.basicAuthenticationMechanismDefinition = basicAuthenticationMechanismDefinition;
     }
 
 	@Override
@@ -92,7 +90,7 @@ public class BasicAuthenticationMechanism implements HttpAuthenticationMechanism
 		}
 
 		if (httpMsgContext.isProtected()) {
-			response.setHeader("WWW-Authenticate", basicHeaderValue);
+			response.setHeader("WWW-Authenticate", format("Basic realm=\"%s\"", basicAuthenticationMechanismDefinition.realmName()));
 			return httpMsgContext.responseUnauthorized();
 		}
 
