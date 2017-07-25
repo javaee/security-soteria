@@ -37,53 +37,63 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.authorization.spi.impl;
+package org.glassfish.soteria.cdi;
 
-import org.glassfish.soteria.authorization.JACC;
-import org.glassfish.soteria.authorization.spi.CallerDetailsResolver;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
-import javax.security.auth.Subject;
-import java.security.Principal;
-import java.util.Set;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 
-import static java.util.Collections.emptyList;
-import static javax.security.jacc.PolicyContext.getContextID;
+/**
+ * An annotation literal for <code>@BasicAuthenticationMechanismDefinition</code>.
+ * 
+ */
+@SuppressWarnings("all")
+public class BasicAuthenticationMechanismDefinitionAnnotationLiteral extends AnnotationLiteral<BasicAuthenticationMechanismDefinition> implements BasicAuthenticationMechanismDefinition {
+    
+    private static final long serialVersionUID = 1L;
 
-public class ReflectionAndJaccCallerDetailsResolver implements CallerDetailsResolver {
+    private final String realmName;
+    
+    private boolean hasDeferredExpressions;
 
-    @Override
-    public Principal getCallerPrincipal() {
-        Subject subject = JACC.getSubject();
-
-        if (subject == null) {
-            return null;
+    public BasicAuthenticationMechanismDefinitionAnnotationLiteral(String realmName) {
+        this.realmName = realmName;
+    }
+    
+    public static BasicAuthenticationMechanismDefinition eval(BasicAuthenticationMechanismDefinition in) {
+        if (!hasAnyELExpression(in)) {
+            return in;
         }
-
-        SubjectParser subjectParser = new SubjectParser(getContextID(), emptyList());
-
-        return subjectParser.getCallerPrincipalFromPrincipals(subject.getPrincipals());
+        
+        BasicAuthenticationMechanismDefinitionAnnotationLiteral out =
+            new BasicAuthenticationMechanismDefinitionAnnotationLiteral(
+                    evalImmediate(in.realmName()));
+        
+        out.setHasDeferredExpressions(hasAnyELExpression(out));
+        
+        return out;
+    }
+    
+    public static boolean hasAnyELExpression(BasicAuthenticationMechanismDefinition in) {
+        return AnnotationELPProcessor.hasAnyELExpression(
+                in.realmName());
     }
 
     @Override
-    public <T extends Principal> Set<T> getPrincipalsByType(Class<T> pType) {
-        Subject subject = JACC.getSubject();
-
-        if (subject == null) {
-            // Ensure behavior exactly matches that of Subject
-            // when returning an empty Set, and when pType == null.
-            subject = new Subject();
-        }
-        return subject.getPrincipals(pType);
+    public String realmName() {
+        return hasDeferredExpressions? evalELExpression(realmName) : realmName;
+    }
+    
+    public boolean isHasDeferredExpressions() {
+        return hasDeferredExpressions;
     }
 
-    @Override
-    public boolean isCallerInRole(String role) {
-        return JACC.isCallerInRole(role);
+    public void setHasDeferredExpressions(boolean hasDeferredExpressions) {
+        this.hasDeferredExpressions = hasDeferredExpressions;
     }
+    
 
-    @Override
-    public Set<String> getAllDeclaredCallerRoles() {
-        return JACC.getAllDeclaredCallerRoles();
-    }
-
+    
 }

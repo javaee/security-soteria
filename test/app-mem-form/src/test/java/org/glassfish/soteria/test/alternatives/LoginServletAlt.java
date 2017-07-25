@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.test.alternatives;
 
 import java.io.IOException;
 
@@ -51,15 +51,15 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet that is invoked when it's determined that the caller needs to authenticate/login.
  *
  */
-@WebServlet({"/login-servlet"})
-public class LoginServlet extends HttpServlet {
+@WebServlet({"/login-servlet-alt"})
+public class LoginServletAlt extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.getWriter().write(
-            "<html><body> Login to continue \n" +
+            "<html><body> Login to continue ALT \n" +
                 "<form method=\"POST\" action=\"j_security_check\">" +
                     "<p><strong>Username </strong>" +
                     "<input type=\"text\" name=\"j_username\">" +

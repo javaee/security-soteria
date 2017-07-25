@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.test;
+package org.glassfish.soteria.test.alternatives;
 
-import java.io.IOException;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
+import javax.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-/**
- * Servlet that is invoked when it's determined that the caller needs to authenticate/login.
- *
- */
-@WebServlet({"/login-servlet"})
-public class LoginServlet extends HttpServlet {
-
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.getWriter().write(
-            "<html><body> Login to continue \n" +
-                "<form method=\"POST\" action=\"j_security_check\">" +
-                    "<p><strong>Username </strong>" +
-                    "<input type=\"text\" name=\"j_username\">" +
-                    
-                    "<p><strong>Password </strong>" +
-                    "<input type=\"password\" name=\"j_password\">" +
-                    "<p>" +
-                    "<input type=\"submit\" value=\"Submit\">" +
-                "</form>" +
-            "</body></html>");
+@FormAuthenticationMechanismDefinition(
+    loginToContinue = @LoginToContinue(
+        loginPage="${applicationConfigImmediate.loginPage}",
+        useForwardToLoginExpression="${false}",
+        errorPage="/login-error-servlet"
+    )
+)
+@ApplicationScoped
+@Named
+public class ApplicationConfigImmediate {
+    
+    public String getLoginPage() {
+        System.out.print("returning servlet");
+        return "/login-servlet-alt";
     }
 
 }

@@ -53,6 +53,8 @@ import static javax.security.enterprise.identitystore.IdentityStore.ValidationTy
 import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -116,9 +118,15 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
 
         // Ask all stores that were configured for group providing only to get the groups for the
         // authenticated caller
-        for (IdentityStore authorizationIdentityStore : authorizationIdentityStores) {
-            groups.addAll(authorizationIdentityStore.getCallerGroups(validationResult));
-        }
+        CredentialValidationResult finalResult = validationResult; // compiler didn't like validationResult in the enclosed scope
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                for (IdentityStore authorizationIdentityStore : authorizationIdentityStores) {
+                    groups.addAll(authorizationIdentityStore.getCallerGroups(finalResult));
+                }
+                return null;
+            }
+        });
 
         return new CredentialValidationResult(callerPrincipal, groups);
     }

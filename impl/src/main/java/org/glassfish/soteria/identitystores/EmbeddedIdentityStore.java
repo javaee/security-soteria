@@ -56,6 +56,7 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.IdentityStorePermission;
 
 import org.glassfish.soteria.identitystores.annotation.Credentials;
 import org.glassfish.soteria.identitystores.annotation.EmbeddedIdentityStoreDefinition;
@@ -100,6 +101,12 @@ public class EmbeddedIdentityStore implements IdentityStore {
     
     @Override
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(new IdentityStorePermission("getGroups"));
+        }
+
         Credentials credentials = callerToCredentials.get(validationResult.getCallerPrincipal().getName());
 
         return credentials != null ? new HashSet<>(asList(credentials.groups())) : emptySet();
