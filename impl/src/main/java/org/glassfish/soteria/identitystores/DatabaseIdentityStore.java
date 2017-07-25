@@ -46,6 +46,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
@@ -56,16 +57,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.PasswordHash;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.sql.DataSource;
 
 public class DatabaseIdentityStore implements IdentityStore {
@@ -73,20 +74,22 @@ public class DatabaseIdentityStore implements IdentityStore {
     private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
-    private final Map<String, String> hashAlgorithmParameters;
+    private final PasswordHash hashAlgorithm; // Note: effectively application scoped, no support for @PreDestroy now
 
     public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
-        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
         
-        hashAlgorithmParameters = 
+        validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
+        hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        hashAlgorithm.initialize(
             unmodifiableMap(
-                stream(
-                    dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
-                .collect(toMap(
-                    s -> s.substring(0, s.indexOf('=')) , 
-                    s -> s.substring(s.indexOf('=') + 1)
-                )));
+                    stream(
+                        dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
+                    .flatMap(s -> toStream(evalImmediate(s, (Object)s)))
+                    .collect(toMap(
+                        s -> s.substring(0, s.indexOf('=')) , 
+                        s -> evalImmediate(s.substring(s.indexOf('=') + 1))
+                    ))));
     }
 
     @Override
@@ -111,8 +114,6 @@ public class DatabaseIdentityStore implements IdentityStore {
         if (passwords.isEmpty()) {
             return INVALID_RESULT;
         }
-        
-        PasswordHash hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
         
         if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             return new CredentialValidationResult(
@@ -167,6 +168,18 @@ public class DatabaseIdentityStore implements IdentityStore {
     @Override
     public Set<ValidationType> validationTypes() {
         return validationTypes;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private Stream<String> toStream(Object raw) {
+        if (raw instanceof String[]) {
+            return stream((String[])raw);
+        }
+        if (raw instanceof Stream<?>) {
+            return ((Stream<String>) raw).map(s -> s.toString());
+        }
+        
+        return asList(raw.toString()).stream();
     }
    
 }
