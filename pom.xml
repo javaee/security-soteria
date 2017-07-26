@@ -54,9 +54,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/javaee-security-spec/soteria.git</connection>
-        <developerConnection>scm:git:https://github.com/javaee-security-spec/soteria.git</developerConnection>
-        <url>https://github.com/javaee-security-spec/soteria</url>
+        <connection>scm:git:https://github.com/javaee/security-soteria.git</connection>
+        <developerConnection>scm:git:https://github.com/javaee/security-soteria.git</developerConnection>
+        <url>https://github.com/javaee/security-soteria</url>
         <tag>HEAD</tag>
     </scm>
 
