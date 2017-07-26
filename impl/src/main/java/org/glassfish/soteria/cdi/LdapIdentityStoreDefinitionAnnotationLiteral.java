@@ -120,7 +120,7 @@ public class LdapIdentityStoreDefinitionAnnotationLiteral extends AnnotationLite
         this.callerSearchScopeExpression = callerSearchScopeExpression;
         this.groupMemberAttribute = groupMemberAttribute;
         this.groupMemberOfAttribute = groupMemberOfAttribute;
-        this.groupNameAttribute = groupMemberOfAttribute;
+        this.groupNameAttribute = groupNameAttribute;
         this.groupSearchBase = groupSearchBase;
         this.groupSearchFilter = groupSearchFilter;
         this.groupSearchScope = groupSearchScope;
