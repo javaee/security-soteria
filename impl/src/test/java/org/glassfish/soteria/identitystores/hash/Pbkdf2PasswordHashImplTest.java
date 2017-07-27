@@ -39,7 +39,6 @@
  */
 package org.glassfish.soteria.identitystores.hash;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +48,7 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 
 /**
  *
@@ -131,10 +131,7 @@ public class Pbkdf2PasswordHashImplTest {
     }
 
     private String encodedPassword(byte[] encodedHash, byte[] salt, String algo, int iterations) {
-        String result = algo + ":" + iterations + ":" + Base64.encode(salt) + ":" + Base64.encode(encodedHash);
-        // base64 adds line breaks every 76 characters. But this breaks the verification.
-        // generation can be omitted true XmlUtils but this is JVM specific.
-        return result.replaceAll("\n", "");
+       return algo + ":" + iterations + ":" + Base64.getEncoder().encodeToString(salt) + ":" + Base64.getEncoder().encodeToString(encodedHash);
     }
 
     private byte[] createHash(char[] password, byte[] salt, String algorithm, int iterations, int keySizeBytes) {
