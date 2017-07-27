@@ -9,7 +9,7 @@
 
     <groupId>org.glassfish.soteria</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0-b08-SNAPSHOT</version>
+    <version>1.0-b11-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <inceptionYear>2015</inceptionYear>
@@ -37,14 +37,14 @@
 
         <spec_version>0.0</spec_version>
         <new_spec_version>1.0</new_spec_version>
-        <spec_build>06</spec_build>
-        <spec_impl_version>1.0-b06</spec_impl_version>
+        <spec_build>10</spec_build>
+        <spec_impl_version>1.0-b10-SNAPSHOT</spec_impl_version>
 
         <api_dependency_version>${spec_impl_version}</api_dependency_version>
 
         <impl_version>0.0</impl_version>
         <new_impl_version>1.0</new_impl_version>
-        <impl_build>08</impl_build>
+        <impl_build>11</impl_build>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -54,9 +54,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/javaee-security-spec/soteria.git</connection>
-        <developerConnection>scm:git:https://github.com/javaee-security-spec/soteria.git</developerConnection>
-        <url>https://github.com/javaee-security-spec/soteria</url>
+        <connection>scm:git:https://github.com/javaee/security-soteria.git</connection>
+        <developerConnection>scm:git:https://github.com/javaee/security-soteria.git</developerConnection>
+        <url>https://github.com/javaee/security-soteria</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -68,6 +68,16 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <repositories>
+       <repository>
+          <id>jvnet-nexus-snapshots</id>
+          <url>${jvnetDistMgmtSnapshotsUrl}</url>
+          <snapshots>
+              <enabled>true</enabled>
+          </snapshots>
+       </repository>
+     </repositories>
+
 
     <build>
         <pluginManagement>

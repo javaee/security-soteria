@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,14 @@
 package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toMap;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
+import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
 import static org.glassfish.soteria.cdi.CdiUtils.jndiLookup;
 
 import java.sql.Connection;
@@ -53,24 +58,39 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.DataBaseIdentityStoreDefinition;
+import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.IdentityStorePermission;
+import javax.security.enterprise.identitystore.PasswordHash;
 import javax.sql.DataSource;
 
-public class DataBaseIdentityStore implements IdentityStore {
+public class DatabaseIdentityStore implements IdentityStore {
 
-    private final DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
+    private final DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition;
 
     private final Set<ValidationType> validationTypes;
+    private final PasswordHash hashAlgorithm; // Note: effectively application scoped, no support for @PreDestroy now
 
-    public DataBaseIdentityStore(DataBaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
+    public DatabaseIdentityStore(DatabaseIdentityStoreDefinition dataBaseIdentityStoreDefinition) {
         this.dataBaseIdentityStoreDefinition = dataBaseIdentityStoreDefinition;
+        
         validationTypes = unmodifiableSet(new HashSet<>(asList(dataBaseIdentityStoreDefinition.useFor())));
+        hashAlgorithm = getBeanReference(dataBaseIdentityStoreDefinition.hashAlgorithm());
+        hashAlgorithm.initialize(
+            unmodifiableMap(
+                    stream(
+                        dataBaseIdentityStoreDefinition.hashAlgorithmParameters())
+                    .flatMap(s -> toStream(evalImmediate(s, (Object)s)))
+                    .collect(toMap(
+                        s -> s.substring(0, s.indexOf('=')) , 
+                        s -> evalImmediate(s.substring(s.indexOf('=') + 1))
+                    ))));
     }
 
     @Override
@@ -90,10 +110,13 @@ public class DataBaseIdentityStore implements IdentityStore {
             dataSource, 
             dataBaseIdentityStoreDefinition.callerQuery(),
             usernamePasswordCredential.getCaller()
-        ); 
+        );
         
-        // TODO Support for hashed passwords.
-        if (!passwords.isEmpty() && usernamePasswordCredential.getPassword().compareTo(passwords.get(0))) {
+        if (passwords.isEmpty()) {
+            return INVALID_RESULT;
+        }
+        
+        if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
             return new CredentialValidationResult(
                 new CallerPrincipal(usernamePasswordCredential.getCaller()), 
                 new HashSet<>(executeQuery(
@@ -109,7 +132,12 @@ public class DataBaseIdentityStore implements IdentityStore {
     
     @Override
     public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
-        
+
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(new IdentityStorePermission("getGroups"));
+        }
+
         DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
         
         return new HashSet<>(executeQuery(
@@ -147,4 +175,17 @@ public class DataBaseIdentityStore implements IdentityStore {
     public Set<ValidationType> validationTypes() {
         return validationTypes;
     }
+    
+    @SuppressWarnings("unchecked")
+    private Stream<String> toStream(Object raw) {
+        if (raw instanceof String[]) {
+            return stream((String[])raw);
+        }
+        if (raw instanceof Stream<?>) {
+            return ((Stream<String>) raw).map(s -> s.toString());
+        }
+        
+        return asList(raw.toString()).stream();
+    }
+   
 }

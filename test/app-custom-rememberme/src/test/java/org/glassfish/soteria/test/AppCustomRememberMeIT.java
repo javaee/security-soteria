@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,9 @@ package org.glassfish.soteria.test;
 import static org.glassfish.soteria.test.Assert.assertDefaultAuthenticated;
 import static org.glassfish.soteria.test.Assert.assertDefaultNotAuthenticated;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.glassfish.soteria.test.ArquillianBase;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -60,6 +60,20 @@ public class AppCustomRememberMeIT extends ArquillianBase {
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
         return mavenWar();
+    }
+    
+    @Test
+    public void testHttpOnlyIsFalse() {
+        readFromServer("/servlet?name=reza&password=secret1&rememberme=true");
+        
+        assertTrue(getWebClient().getCookieManager().getCookie("JREMEMBERMEID").isHttpOnly());
+    }
+    
+    @Test
+    public void testSecureOnlyIsFalse() {
+        readFromServer("/servlet?name=reza&password=secret1&rememberme=true");
+        
+        assertFalse(getWebClient().getCookieManager().getCookie("JREMEMBERMEID").isSecure());
     }
 
     @Test

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,12 +48,13 @@ import org.glassfish.soteria.Utils;
 
 public class CookieHandler {
 
-	public static void saveCookie(HttpServletRequest request, HttpServletResponse response, String name, String value, Integer maxAge) {
+	public static void saveCookie(HttpServletRequest request, HttpServletResponse response, String name, String value, Integer maxAge, boolean secureOnly, boolean HttpOnly) {
 		Cookie cookie = new Cookie(name, value);
 		if (maxAge != null) {
 			cookie.setMaxAge(maxAge);
 		}
-		cookie.setHttpOnly(true);
+		cookie.setSecure(secureOnly);
+		cookie.setHttpOnly(HttpOnly);
 		cookie.setPath(Utils.isEmpty(request.getContextPath())? "/" : request.getContextPath());
 
 		response.addCookie(cookie);

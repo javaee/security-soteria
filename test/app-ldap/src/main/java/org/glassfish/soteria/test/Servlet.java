@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,13 +52,12 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
- * 
  *
  */
 @LdapIdentityStoreDefinition(
     url = "ldap://localhost:33389/",
     callerBaseDn = "ou=caller,dc=jsr375,dc=net",
-    groupBaseDn  = "ou=group,dc=jsr375,dc=net"
+    groupSearchBase = "ou=group,dc=jsr375,dc=net"
 )
 @DeclareRoles({ "foo", "bar", "kaz" })
 @WebServlet("/servlet")

@@ -55,6 +55,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,7 +70,9 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.el.ELProcessor;
 import javax.interceptor.InvocationContext;
+import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
@@ -174,6 +177,35 @@ public final class Utils {
 		}
 	}
 	
+	public static ELProcessor getELProcessor(String name, Object bean) {
+	    ELProcessor elProcessor = new ELProcessor();
+        elProcessor.defineBean(name, bean);
+        return elProcessor;
+	}
+	
+	public static ELProcessor getELProcessor(String name1, Object bean1, String name2, Object bean2) {
+        ELProcessor elProcessor = new ELProcessor();
+        elProcessor.defineBean(name1, bean1);
+        elProcessor.defineBean(name2, bean2);
+        return elProcessor;
+    }
+	
+    public static ELProcessor getELProcessor(String name1, Object bean1, String name2, Object bean2, String name3, Object bean3) {
+        ELProcessor elProcessor = new ELProcessor();
+        elProcessor.defineBean(name1, bean1);
+        elProcessor.defineBean(name2, bean2);
+        elProcessor.defineBean(name3, bean3);
+        return elProcessor;
+    }
+	
+    public static CallerPrincipal toCallerPrincipal(Principal principal) {
+        if (principal instanceof CallerPrincipal) {
+            return (CallerPrincipal) principal;
+        }
+        
+        return new WrappingCallerPrincipal(principal);
+    }
+    
 	public static void redirect(HttpServletRequest request, HttpServletResponse response, String location) {
 		try {
 			if (isFacesAjaxRequest(request)) {

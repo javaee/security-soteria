@@ -39,28 +39,32 @@
  */
 package org.glassfish.soteria.mechanisms;
 
-import org.glassfish.soteria.Utils;
-import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
+import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_CONTINUE;
+import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
-import javax.security.enterprise.AuthenticationStatus;
-import javax.security.enterprise.CallerPrincipal;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Set;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthException;
 import javax.security.auth.message.MessageInfo;
+import javax.security.enterprise.AuthenticationStatus;
+import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Set;
 
-import static javax.security.enterprise.AuthenticationStatus.*;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import org.glassfish.soteria.Utils;
+import org.glassfish.soteria.mechanisms.jaspic.Jaspic;
 
 /**
  * A convenience context that provides access to JASPIC Servlet Profile specific types
@@ -75,7 +79,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     private Subject clientSubject;
     private AuthenticationParameters authParameters;
 
-    private CallerPrincipal callerPrincipal;
+    private Principal callerPrincipal;
     private Set<String> groups;
 
     public HttpMessageContextImpl(CallbackHandler handler, MessageInfo messageInfo, Subject clientSubject) {
@@ -215,7 +219,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
      * @see javax.security.authenticationmechanism.http.HttpMessageContext#responseUnAuthorized()
      */
     @Override
-    public AuthenticationStatus responseUnAuthorized() {
+    public AuthenticationStatus responseUnauthorized() {
         try {
             getResponse().sendError(SC_UNAUTHORIZED);
         } catch (IOException e) {
@@ -253,19 +257,19 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
 
     @Override
-    public AuthenticationStatus notifyContainerAboutLogin(CredentialValidationResult result) throws AuthException {
+    public AuthenticationStatus notifyContainerAboutLogin(CredentialValidationResult result) {
         if (result.getStatus() == VALID) {
             return notifyContainerAboutLogin(
                     result.getCallerPrincipal(),
                     result.getCallerGroups());
 
-        } else {
-            throw new AuthException("Authentication failed with status" + result.getStatus());
-        }
+        } 
+            
+        return SEND_FAILURE;
     }
 
     @Override
-    public AuthenticationStatus notifyContainerAboutLogin(CallerPrincipal callerPrincipal, Set<String> groups) {
+    public AuthenticationStatus notifyContainerAboutLogin(Principal callerPrincipal, Set<String> groups) {
         this.callerPrincipal = callerPrincipal;
         if (callerPrincipal != null) {
             this.groups = groups;
@@ -296,7 +300,7 @@ public class HttpMessageContextImpl implements HttpMessageContext {
     }
 
     @Override
-    public CallerPrincipal getCallerPrincipal() {
+    public Principal getCallerPrincipal() {
         return callerPrincipal;
     }
 

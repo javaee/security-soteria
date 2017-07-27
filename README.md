@@ -1,6 +1,6 @@
 # Soteria
 
-[![Build Status](https://travis-ci.org/javaee-security-spec/soteria.svg?branch=master)](https://travis-ci.org/javaee-security-spec/soteria)
+[![Build Status](https://travis-ci.org/javaee/security-soteria.svg?branch=master)](https://travis-ci.org/javaee/security-soteria)
 
 Java EE Security (JSR 375) upstream API and RI
 
@@ -45,6 +45,8 @@ Testing against any of these is done by activating the maven profile with the sa
 
 ``mvn clean install -Ptomee,bundled``
 
+Testing against glassfish (which provides soteria integration):
+``mvn clean verify -Pglassfish,provided``
 
 Compatibility
 -------------

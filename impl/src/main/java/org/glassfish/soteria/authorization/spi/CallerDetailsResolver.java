@@ -46,6 +46,8 @@ public interface CallerDetailsResolver {
 
     Principal getCallerPrincipal();
 
+    <T extends Principal> Set<T> getPrincipalsByType(Class<T> pType);
+
     boolean isCallerInRole(String role);
 
     Set<String> getAllDeclaredCallerRoles();

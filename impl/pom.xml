@@ -4,10 +4,10 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-b08-SNAPSHOT</version>
+       <version>1.0-b11-SNAPSHOT</version>
     </parent>
 
-    <artifactId>${api_package}</artifactId>
+    <artifactId>javax.security.enterprise</artifactId>
     <packaging>bundle</packaging>
 
     <name>Soteria ${project.version} Java EE Security RI</name>

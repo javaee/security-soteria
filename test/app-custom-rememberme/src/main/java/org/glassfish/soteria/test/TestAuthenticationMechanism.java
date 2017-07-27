@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@ package org.glassfish.soteria.test;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.security.auth.message.AuthException;
+import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
@@ -58,7 +58,8 @@ import static javax.security.enterprise.identitystore.CredentialValidationResult
 
 @RememberMe(
     cookieMaxAgeSeconds = 3600,
-    isRememberMeExpression ="self.isRememberMe(httpMessageContext)"
+    cookieSecureOnly = false, // normally not recommended, but easier for dev/test
+    isRememberMeExpression ="#{self.isRememberMe(httpMessageContext)}"
 )
 @RequestScoped
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
@@ -67,7 +68,7 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
     private IdentityStoreHandler identityStoreHandler;
 
     @Override
-    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthException {
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
 
         request.setAttribute("authentication-mechanism-called", "true");
         
@@ -93,7 +94,7 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
                 return httpMessageContext.notifyContainerAboutLogin(
                     result.getCallerPrincipal(), result.getCallerGroups());
             } else {
-                return httpMessageContext.responseUnAuthorized();
+                return httpMessageContext.responseUnauthorized();
             }
         } 
 
@@ -104,10 +105,10 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
         return httpMessageContext.getRequest().getParameter("rememberme") != null;
     }
     
-    // Workaround for possible CDI bug; at least in Weld 2.3.2 default methods don't seem to be intercepted
+    // Workaround for Weld bug; at least in Weld 2.3.2 default methods are not intercepted
     @Override
     public void cleanSubject(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
-    	HttpAuthenticationMechanism.super.cleanSubject(request, response, httpMessageContext);
+    	    HttpAuthenticationMechanism.super.cleanSubject(request, response, httpMessageContext);
     }
     
 }
