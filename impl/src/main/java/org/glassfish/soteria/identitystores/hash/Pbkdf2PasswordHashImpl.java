@@ -51,10 +51,10 @@ import java.util.Set;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.security.enterprise.identitystore.Pbkdf2PasswordHash;
 
-@ApplicationScoped
+@Dependent
 public class Pbkdf2PasswordHashImpl implements Pbkdf2PasswordHash {
 
     private static final Set<String> SUPPORTED_ALGORITHMS = unmodifiableSet(new HashSet<>(asList(

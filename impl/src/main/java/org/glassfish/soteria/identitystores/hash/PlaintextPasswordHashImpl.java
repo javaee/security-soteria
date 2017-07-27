@@ -39,13 +39,12 @@
  */
 package org.glassfish.soteria.identitystores.hash;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.security.enterprise.identitystore.PasswordHash;
 
-@ApplicationScoped
+@Dependent
 public class PlaintextPasswordHashImpl implements PasswordHash {
 
     @Override
