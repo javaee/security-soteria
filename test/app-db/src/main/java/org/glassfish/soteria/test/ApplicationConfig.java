@@ -42,13 +42,12 @@ package org.glassfish.soteria.test;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
-import javax.security.enterprise.identitystore.PlaintextPasswordHash;
 
 @DatabaseIdentityStoreDefinition(
     dataSourceLookup="${'java:global/MyDS'}", 
     callerQuery="#{'select password from caller where name = ?'}",
     groupsQuery="select group_name from caller_groups where caller_name = ?",
-    hashAlgorithm = PlaintextPasswordHash.class,
+    hashAlgorithm = TestPlaintextPasswordHash.class,
     hashAlgorithmParameters = {
         "foo=bar", 
         "kax=zak", 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.soteria.identitystores.hash;
+package org.glassfish.soteria.test;
 
 import java.util.Map;
 
@@ -45,7 +45,7 @@ import javax.enterprise.context.Dependent;
 import javax.security.enterprise.identitystore.PasswordHash;
 
 @Dependent
-public class PlaintextPasswordHashImpl implements PasswordHash {
+public class TestPlaintextPasswordHash implements PasswordHash {
 
     @Override
     public void initialize(Map<String, String> parameters) {
