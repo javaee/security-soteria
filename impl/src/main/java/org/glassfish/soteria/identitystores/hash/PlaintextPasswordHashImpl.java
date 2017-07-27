@@ -43,10 +43,10 @@ import java.util.Arrays;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.identitystore.PlaintextPasswordHash;
+import javax.security.enterprise.identitystore.PasswordHash;
 
 @ApplicationScoped
-public class PlaintextPasswordHashImpl implements PlaintextPasswordHash {
+public class PlaintextPasswordHashImpl implements PasswordHash {
 
     @Override
     public void initialize(Map<String, String> parameters) {
@@ -60,6 +60,10 @@ public class PlaintextPasswordHashImpl implements PlaintextPasswordHash {
 
     @Override
     public boolean verify(char[] password, String hashedPassword) {
-        return PasswordHashCompare.compareChars(password, hashedPassword.toCharArray());
+        // don't bother with constant time comparison; more portable
+        // this way, and algorithm will be used only for testing.
+        return (password != null && password.length > 0 &&
+                hashedPassword != null && hashedPassword.length() > 0 &&
+                hashedPassword.equals(new String(password)));
     }
 }

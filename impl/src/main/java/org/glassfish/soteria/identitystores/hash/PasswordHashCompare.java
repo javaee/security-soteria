@@ -9,8 +9,7 @@ public class PasswordHashCompare {
      * to guess passwords.
      * <p>
      * The two hashes can be different lengths if the hash algorithm
-     * or parameters used to generate them weren't the same, or if comparing
-     * plaintext passwords.
+     * or parameters used to generate them weren't the same.
      * <p>
      * Use the length of the first parameter (hash of the password being verified)
      * to determine how many bytes are compared, so that the comparison time
@@ -35,6 +34,11 @@ public class PasswordHashCompare {
 
     /**
      * Compare two passwords, represented as character arrays.
+     * <p>
+     * Note that passwords should never be stored as plaintext,
+     * but this method may be useful for, e.g., verifying a
+     * password stored in encrypted form in a database, and
+     * decrypted for comparison.
      * <p>
      * Behavior and theory operation are the same as for
      * {@link #compareBytes(byte[], byte[]) compareBytes},
