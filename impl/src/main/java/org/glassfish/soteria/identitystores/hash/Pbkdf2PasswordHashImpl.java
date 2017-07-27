@@ -51,7 +51,6 @@ import java.util.Set;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.security.enterprise.identitystore.Pbkdf2PasswordHash;
 
