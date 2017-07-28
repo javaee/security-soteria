@@ -60,10 +60,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.ejb.EJBContext;
+import javax.enterprise.inject.spi.CDI;
 
 import javax.security.auth.Subject;
+import javax.security.enterprise.CallerPrincipal;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
+import javax.servlet.http.HttpServletRequest;
+import org.glassfish.soteria.authorization.EJB;
  
 public class SubjectParser {
      
@@ -490,11 +495,25 @@ public class SubjectParser {
                         } catch (Exception e) {
                             
                         }
-                        break;
-                // TODO: depend on this directly later 
-                case "javax.security.enterprise.CallerPrincipal":
-                    return principal;
+                    break;
             }
+
+            if (CallerPrincipal.class.isAssignableFrom(principal.getClass())) {
+                return principal;
+            }
+
+            try {
+                return CDI.current().select(HttpServletRequest.class).get().getUserPrincipal();
+            } catch (Exception e) {
+                // Not inside an HttpServletRequest
+            }
+
+            EJBContext ejbContext = EJB.getEJBContext();
+            if (ejbContext != null) {
+                return ejbContext.getCallerPrincipal();
+            }
+
+            return null;
         }
         
         return null;
