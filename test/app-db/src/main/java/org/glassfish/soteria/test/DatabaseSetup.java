@@ -76,7 +76,7 @@ public class DatabaseSetup {
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller");
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller_groups");
         
-        executeUpdate(dataSource, "CREATE TABLE IF NOT EXISTS caller(name VARCHAR(64) PRIMARY KEY, password VARCHAR(64))");
+        executeUpdate(dataSource, "CREATE TABLE IF NOT EXISTS caller(name VARCHAR(64) PRIMARY KEY, password VARCHAR(255))");
         executeUpdate(dataSource, "CREATE TABLE IF NOT EXISTS caller_groups(caller_name VARCHAR(64), group_name VARCHAR(64))");
         
         executeUpdate(dataSource, "INSERT INTO caller VALUES('reza', '" + passwordHash.generate("secret1".toCharArray()) + "')");
