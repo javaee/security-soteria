@@ -44,18 +44,8 @@
 <glassfish-web-app>
 
     <security-role-mapping>
-        <role-name>foo</role-name>
-        <group-name>foo</group-name>
-    </security-role-mapping>
-    
-    <security-role-mapping>
-        <role-name>bar</role-name>
-        <group-name>bar</group-name>
-    </security-role-mapping>
-    
-    <security-role-mapping>
-        <role-name>kaz</role-name>
-        <group-name>kaz</group-name>
+        <role-name>admin</role-name>
+        <group-name>admin</group-name>
     </security-role-mapping>
 
     <parameter-encoding default-charset="UTF-8" />
