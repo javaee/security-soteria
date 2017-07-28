@@ -70,7 +70,7 @@ public class AppSecurityContextCallerPrincipalIT extends ArquillianBase {
     }
 
     @Test
-    public void testEjbCallerPrincipal() {
+    public void testEjbCustomPrincipal() {
         assertTrue(readFromServer("/ejb-servlet")
                 .contains("org.glassfish.soteria.test.CustomPrincipal"));
     }
