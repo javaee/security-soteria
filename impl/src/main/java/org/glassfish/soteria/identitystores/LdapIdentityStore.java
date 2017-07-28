@@ -154,16 +154,15 @@ public class LdapIdentityStore implements IdentityStore {
                     return INVALID_RESULT;
                 }
 
-                Set<String> groups =
-                        (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() && ldapIdentityStoreDefinition.groupSearchBase().isEmpty()) ?
-                        retrieveGroupInformationMemberOf(callerDn, ldapContext) : retrieveGroupInformation(callerDn, ldapContext);
+                Set<String> groups = emptySet();
+                if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+                    groups = (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() && ldapIdentityStoreDefinition.groupSearchBase().isEmpty())
+                            ? retrieveGroupInformationMemberOf(callerDn, ldapContext) : retrieveGroupInformation(callerDn, ldapContext);
+                }
 
                 closeContext(ldapContext);
 
-                return new CredentialValidationResult(
-                    new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                    groups
-                );
+                return new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), groups);
             } catch (IllegalStateException e) {
                 return NOT_VALIDATED_RESULT;
             }
@@ -207,9 +206,12 @@ public class LdapIdentityStore implements IdentityStore {
             return INVALID_RESULT;
         }
 
-        Set<String> groups =
-                (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() && ldapIdentityStoreDefinition.groupSearchBase().isEmpty()) ?
-                retrieveGroupInformationMemberOf(callerDn, ldapContext) : retrieveGroupInformation(callerDn, ldapContext);
+        
+        Set<String> groups = emptySet();
+        if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+            groups = (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() && ldapIdentityStoreDefinition.groupSearchBase().isEmpty())
+                    ? retrieveGroupInformationMemberOf(callerDn, ldapContext) : retrieveGroupInformation(callerDn, ldapContext);
+        }
 
         closeContext(ldapContext);
 

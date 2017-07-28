@@ -41,6 +41,7 @@ package org.glassfish.soteria.identitystores;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
@@ -117,14 +118,12 @@ public class DatabaseIdentityStore implements IdentityStore {
         }
         
         if (hashAlgorithm.verify(usernamePasswordCredential.getPassword().getValue(), passwords.get(0))) {
-            return new CredentialValidationResult(
-                new CallerPrincipal(usernamePasswordCredential.getCaller()), 
-                new HashSet<>(executeQuery(
-                    dataSource,
-                    dataBaseIdentityStoreDefinition.groupsQuery(),
-                    usernamePasswordCredential.getCaller()
-                ))
-            );
+            Set<String> groups = emptySet();
+            if (validationTypes.contains(ValidationType.PROVIDE_GROUPS)) {
+                groups = new HashSet<>(executeQuery(dataSource, dataBaseIdentityStoreDefinition.groupsQuery(), usernamePasswordCredential.getCaller()));
+            }
+
+            return new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), groups);
         }
 
         return INVALID_RESULT;
