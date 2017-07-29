@@ -42,8 +42,6 @@ package org.glassfish.soteria.test;
 import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.authentication.mechanism.http.CustomFormAuthenticationMechanismDefinition;
-import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -56,13 +54,6 @@ import javax.servlet.http.HttpServletResponse;
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
  */
-@CustomFormAuthenticationMechanismDefinition(
-    loginToContinue = @LoginToContinue(
-        loginPage="/login.jsf",
-        errorPage="" // DRAFT API - must be set to empty for now
-    )
-)
-
 @WebServlet("/servlet")
 @DeclareRoles({ "foo", "bar", "kaz" })
 @ServletSecurity(@HttpConstraint(rolesAllowed = "foo"))
