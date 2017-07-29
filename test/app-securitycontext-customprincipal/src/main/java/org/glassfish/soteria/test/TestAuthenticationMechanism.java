@@ -41,7 +41,7 @@ package org.glassfish.soteria.test;
 
 import static java.util.Collections.singleton;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
@@ -49,7 +49,7 @@ import javax.security.enterprise.authentication.mechanism.http.HttpMessageContex
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@RequestScoped
+@ApplicationScoped
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
 
     @Override
