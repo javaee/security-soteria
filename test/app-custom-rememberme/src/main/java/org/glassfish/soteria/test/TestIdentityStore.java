@@ -45,13 +45,13 @@ import static javax.security.enterprise.identitystore.CredentialValidationResult
 
 import java.util.HashSet;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 
-@RequestScoped
+@ApplicationScoped
 public class TestIdentityStore implements IdentityStore {
 
     @Override
