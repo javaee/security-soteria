@@ -100,7 +100,8 @@ public class CdiExtension implements Extension {
             FormAuthenticationMechanism.class,
             CustomFormAuthenticationMechanism.class,
             SecurityContextImpl.class,
-            IdentityStoreHandler.class
+            IdentityStoreHandler.class,
+            IdentityStoreInstantiator.class
         );
     }
 
