@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -222,7 +223,15 @@ public class CdiExtension implements Extension {
         }
 
         if (authenticationMechanismBean != null) {
-            afterBeanDiscovery.addBean(authenticationMechanismBean);
+            Set<Bean<?>> beans = beanManager.getBeans(HttpAuthenticationMechanism.class);
+            if (beans.isEmpty()) {
+                afterBeanDiscovery.addBean(authenticationMechanismBean);
+            } else {
+                LOGGER.log(Level.INFO, "Ignoring configured {0} HttpAuthenticationMechanism since the application already provided another at least another one: {1}", new Object[]{
+                    authenticationMechanismBean.getBeanClass().getName(), 
+                    beans.iterator().next().getClass().getName()
+                });
+            }
         }
 
         afterBeanDiscovery.addBean(
