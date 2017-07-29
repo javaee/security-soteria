@@ -48,14 +48,14 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 
 /**
  *
  */
-@RequestScoped
+@ApplicationScoped
 public class AuthorizationIdentityStore implements IdentityStore {
 
     private Map<String, Set<String>> authorization;

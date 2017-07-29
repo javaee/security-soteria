@@ -40,6 +40,7 @@
 package org.glassfish.soteria.test;
 
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationException;
@@ -61,7 +62,7 @@ import static javax.security.enterprise.identitystore.CredentialValidationResult
     cookieSecureOnly = false, // normally not recommended, but easier for dev/test
     isRememberMeExpression ="#{self.isRememberMe(httpMessageContext)}"
 )
-@RequestScoped
+@ApplicationScoped
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
     
     @Inject
