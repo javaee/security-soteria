@@ -39,8 +39,9 @@
  */
 package org.glassfish.soteria.test;
 
-import javax.enterprise.inject.spi.DefinitionException;
 import static org.glassfish.soteria.test.ShrinkWrap.mavenWar;
+
+import javax.enterprise.inject.spi.DefinitionException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.ShouldThrowException;
@@ -56,7 +57,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class AppMultipleAuthenticationMechanismsIT {
 
-    @ShouldThrowException(Exception.class)
+    @ShouldThrowException(DefinitionException.class)
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
         return mavenWar();

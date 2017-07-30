@@ -7,11 +7,11 @@
         <version>1.0-b11-SNAPSHOT</version>
     </parent>
 
-    <artifactId>app-multipleauthenticationmechanisms</artifactId>
+    <artifactId>app-multiple-authenticationmechanisms</artifactId>
     <packaging>war</packaging>
 
     <build>
-        <finalName>app-multipleauthenticationmechanisms</finalName>
+        <finalName>app-multiple-authenticationmechanisms</finalName>
     </build>
 
     <properties>

@@ -52,7 +52,7 @@
 
         <module>app-jaxrs</module>
         
-        <module>app-multipleauthenticationmechanisms</module>
+        <module>app-multiple-authenticationmechanisms</module>
     </modules>
 
     <dependencyManagement>
