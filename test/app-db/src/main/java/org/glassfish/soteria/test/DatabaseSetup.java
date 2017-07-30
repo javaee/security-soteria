@@ -49,7 +49,9 @@ import javax.annotation.Resource;
 import javax.annotation.sql.DataSourceDefinition;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.inject.Inject;
 import javax.sql.DataSource;
+import javax.security.enterprise.identitystore.Pbkdf2PasswordHash;
 
 @DataSourceDefinition(
     // global to circumvent https://java.net/jira/browse/GLASSFISH-21447
@@ -65,19 +67,22 @@ public class DatabaseSetup {
     @Resource(lookup="java:global/MyDS")
     private DataSource dataSource;
 
+    @Inject
+    private Pbkdf2PasswordHash passwordHash;
+    
     @PostConstruct
     public void init() {
         
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller");
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller_groups");
         
-        executeUpdate(dataSource, "CREATE TABLE IF NOT EXISTS caller(name VARCHAR(64) PRIMARY KEY, password VARCHAR(64))");
+        executeUpdate(dataSource, "CREATE TABLE IF NOT EXISTS caller(name VARCHAR(64) PRIMARY KEY, password VARCHAR(255))");
         executeUpdate(dataSource, "CREATE TABLE IF NOT EXISTS caller_groups(caller_name VARCHAR(64), group_name VARCHAR(64))");
         
-        executeUpdate(dataSource, "INSERT INTO caller VALUES('reza', 'secret1')");
-        executeUpdate(dataSource, "INSERT INTO caller VALUES('alex', 'secret2')");
-        executeUpdate(dataSource, "INSERT INTO caller VALUES('arjan', 'secret2')");
-        executeUpdate(dataSource, "INSERT INTO caller VALUES('werner', 'secret2')");
+        executeUpdate(dataSource, "INSERT INTO caller VALUES('reza', '" + passwordHash.generate("secret1".toCharArray()) + "')");
+        executeUpdate(dataSource, "INSERT INTO caller VALUES('alex', '" + passwordHash.generate("secret2".toCharArray()) + "')");
+        executeUpdate(dataSource, "INSERT INTO caller VALUES('arjan', '" + passwordHash.generate("secret2".toCharArray()) + "')");
+        executeUpdate(dataSource, "INSERT INTO caller VALUES('werner', '" + passwordHash.generate("secret2".toCharArray()) + "')");
         
         executeUpdate(dataSource, "INSERT INTO caller_groups VALUES('reza', 'foo')");
         executeUpdate(dataSource, "INSERT INTO caller_groups VALUES('reza', 'bar')");
