@@ -51,6 +51,8 @@
         <module>app-custom-identity-store-handler</module>
 
         <module>app-jaxrs</module>
+        
+        <module>app-multipleauthenticationmechanisms</module>
     </modules>
 
     <dependencyManagement>
