@@ -42,7 +42,7 @@ package org.glassfish.soteria.test;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
 import static org.glassfish.soteria.test.Utils.notNull;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
@@ -55,7 +55,7 @@ import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@RequestScoped
+@ApplicationScoped
 public class TestAuthenticationMechanism implements HttpAuthenticationMechanism {
     
     @Inject

@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
@@ -59,7 +59,7 @@ import javax.security.enterprise.identitystore.IdentityStore;
 /**
  *
  */
-@RequestScoped
+@ApplicationScoped
 public class AuthenticationIdentityStore implements IdentityStore {
 
     private Map<String, String> callerToPassword;
