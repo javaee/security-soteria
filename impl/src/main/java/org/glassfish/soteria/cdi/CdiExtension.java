@@ -218,7 +218,7 @@ public class CdiExtension implements Extension {
     }
 
     public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
-        if(httpAuthenticationMechanisms.size()> 1) {
+        if (httpAuthenticationMechanisms.size() > 1) {
             // Note: for now use the highlander rule: "there can be only one" for
             // authentication mechanisms.
             // This could be extended later to support multiple
