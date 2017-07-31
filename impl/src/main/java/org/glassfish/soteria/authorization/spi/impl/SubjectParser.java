@@ -505,7 +505,10 @@ public class SubjectParser {
             // Check first if we are inside an EJB as it is more specific than a Servlet 
             EJBContext ejbContext = EJB.getEJBContext();
             if (ejbContext != null) {
-                return ejbContext.getCallerPrincipal();
+                String principalName = ejbContext.getCallerPrincipal().getName();
+             
+                // EJBs return empty/null name for unauthenticated callers
+                return principalName != null && !principalName.isEmpty() ? ejbContext.getCallerPrincipal() : null;
             }
             
             try {
