@@ -501,20 +501,19 @@ public class SubjectParser {
             if (CallerPrincipal.class.isAssignableFrom(principal.getClass())) {
                 return principal;
             }
-
-            // Check first if we are inside an EJB as it is more specific than a Servlet 
+            
+            try {
+                return CDI.current().select(HttpServletRequest.class).get().getUserPrincipal();
+            } catch (Exception e) {
+                // Not inside an HttpServletRequest
+            }
+         
             EJBContext ejbContext = EJB.getEJBContext();
             if (ejbContext != null) {
                 String principalName = ejbContext.getCallerPrincipal().getName();
              
                 // EJBs return empty/null name for unauthenticated callers
                 return principalName != null && !principalName.isEmpty() ? ejbContext.getCallerPrincipal() : null;
-            }
-            
-            try {
-                return CDI.current().select(HttpServletRequest.class).get().getUserPrincipal();
-            } catch (Exception e) {
-                // Not inside an HttpServletRequest
             }
 
             return null;
