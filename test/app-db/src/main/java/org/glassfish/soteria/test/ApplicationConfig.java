@@ -45,24 +45,21 @@ import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.Pbkdf2PasswordHash;
 
 @DatabaseIdentityStoreDefinition(
-    dataSourceLookup="${'java:global/MyDS'}", 
-    callerQuery="#{'select password from caller where name = ?'}",
-    groupsQuery="select group_name from caller_groups where caller_name = ?",
+    dataSourceLookup = "${'java:global/MyDS'}",
+    callerQuery = "#{'select password from caller where name = ?'}",
+    groupsQuery = "select group_name from caller_groups where caller_name = ?",
     hashAlgorithm = Pbkdf2PasswordHash.class,
     hashAlgorithmParameters = {
-        "foo=bar", 
-        "kax=zak", 
-        "foox=${'iop'}",
+        "Pbkdf2PasswordHash.Iterations=3072",
         "${applicationConfig.dyna}"
-        
     } // just for test / example
 )
 @ApplicationScoped
 @Named
 public class ApplicationConfig {
-    
+
     public String[] getDyna() {
-        return new String[] {"dyn=1","dyna=2","dynam=3"};
+        return new String[]{"Pbkdf2PasswordHash.Algorithm=PBKDF2WithHmacSHA512", "Pbkdf2PasswordHash.SaltSizeBytes=64"};
     }
-    
+
 }
