@@ -29,6 +29,7 @@
 
         <module>app-securitycontext</module>
         <module>app-securitycontext-auth</module>
+        <module>app-securitycontext-customprincipal</module>
 
         <!-- app-[identity-store] -->
         <module>app-mem</module>
