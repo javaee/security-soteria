@@ -162,7 +162,13 @@ public class LdapIdentityStore implements IdentityStore {
 
                 closeContext(ldapContext);
 
-                return new CredentialValidationResult(new CallerPrincipal(usernamePasswordCredential.getCaller()), groups);
+                return new CredentialValidationResult(
+                        null, // store id
+                        usernamePasswordCredential.getCaller(),
+                        callerDn,
+                        null, // caller unique id
+                        groups);
+
             } catch (IllegalStateException e) {
                 return NOT_VALIDATED_RESULT;
             }
@@ -216,9 +222,11 @@ public class LdapIdentityStore implements IdentityStore {
         closeContext(ldapContext);
 
         return new CredentialValidationResult(
-                new CallerPrincipal(usernamePasswordCredential.getCaller()),
-                groups
-        );
+                null, // store id
+                usernamePasswordCredential.getCaller(),
+                callerDn,
+                null, // caller unique id
+                groups);
     }
 
     private void closeContext(LdapContext ldapContext) {
