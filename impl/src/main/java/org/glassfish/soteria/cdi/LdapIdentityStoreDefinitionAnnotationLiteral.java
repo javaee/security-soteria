@@ -42,6 +42,7 @@ package org.glassfish.soteria.cdi;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 
 import javax.enterprise.util.AnnotationLiteral;
+import javax.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import javax.security.enterprise.identitystore.IdentityStore.ValidationType;
 import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
@@ -138,6 +139,8 @@ public class LdapIdentityStoreDefinitionAnnotationLiteral extends AnnotationLite
     }
     
     public static LdapIdentityStoreDefinition eval(LdapIdentityStoreDefinition in) {
+        validateExpressionProperties(in);
+        
         if (!hasAnyELExpression(in)) {
             return in;
         }
@@ -179,6 +182,17 @@ public class LdapIdentityStoreDefinitionAnnotationLiteral extends AnnotationLite
             
             throw t;
         }
+    }
+    
+    public static void validateExpressionProperties(LdapIdentityStoreDefinition in) {
+        AnnotationELPProcessor.validateExpressions(
+                in.callerSearchScopeExpression(),
+                in.groupSearchScopeExpression(),
+                in.maxResultsExpression(),
+                in.priorityExpression(),
+                in.readTimeoutExpression(),
+                in.useForExpression()
+        );
     }
     
     public static boolean hasAnyELExpression(LdapIdentityStoreDefinition in) {

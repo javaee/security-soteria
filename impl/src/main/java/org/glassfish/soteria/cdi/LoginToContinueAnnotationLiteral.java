@@ -45,6 +45,7 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 
 import javax.enterprise.util.AnnotationLiteral;
 import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
 /**
  * An annotation literal for <code>@LoginToContinue</code>.
@@ -70,6 +71,8 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
     }
     
     public static LoginToContinue eval(LoginToContinue in) {
+        validateExpressionProperties(in);
+        
         if (!hasAnyELExpression(in)) {
             return in;
         }
@@ -91,6 +94,12 @@ public class LoginToContinueAnnotationLiteral extends AnnotationLiteral<LoginToC
             
             throw t;
         }
+    }
+    
+    public static void validateExpressionProperties(LoginToContinue in) {
+        AnnotationELPProcessor.validateExpressions(
+                in.useForwardToLoginExpression()
+        );
     }
     
     public static boolean hasAnyELExpression(LoginToContinue in) {
