@@ -107,7 +107,6 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
             return validationResult;
         }
 
-        CallerPrincipal callerPrincipal = validationResult.getCallerPrincipal();
         Set<String> groups = new HashSet<>();
 
         // Take the groups from the identity store that validated the credentials only
@@ -128,7 +127,12 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
             }
         });
 
-        return new CredentialValidationResult(callerPrincipal, groups);
+        return new CredentialValidationResult(
+                validationResult.getIdentityStoreId(),
+                validationResult.getCallerPrincipal(),
+                validationResult.getCallerDn(),
+                validationResult.getCallerUniqueId(),
+                groups);
     }
 
 }
