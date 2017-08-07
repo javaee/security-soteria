@@ -74,13 +74,6 @@ public class DatabaseSetup {
     
     @PostConstruct
     public void init() {
-        
-        Map<String, String> parameters= new HashMap<>();
-        parameters.put("Pbkdf2PasswordHash.Iterations", "3072");
-        parameters.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA512");
-        parameters.put("Pbkdf2PasswordHash.SaltSizeBytes", "64");
-        passwordHash.initialize(parameters);
-        
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller");
         executeUpdate(dataSource, "DROP TABLE IF EXISTS caller_groups");
         
