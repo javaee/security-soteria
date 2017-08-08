@@ -493,6 +493,8 @@ public class SubjectParser {
         switch (principal.getClass().getName()) {
             case "org.glassfish.security.common.PrincipalImpl": // GlassFish/Payara
                 return getAuthenticatedPrincipal(principal, "ANONYMOUS", isEjb);
+            case "weblogic.security.principal.WLSUserImpl": // WebLogic
+                return getAuthenticatedPrincipal(principal, "<anonymous>", isEjb);
             case "com.ibm.ws.security.authentication.principals.WSPrincipal": // Liberty
                 return getAuthenticatedPrincipal(principal, "UNAUTHENTICATED", isEjb);
             // JBoss EAP/WildFly convention 1 - single top level principal of the below type
