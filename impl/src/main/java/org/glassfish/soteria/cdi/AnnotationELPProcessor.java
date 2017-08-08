@@ -195,7 +195,7 @@ public class AnnotationELPProcessor {
     public static void validateExpressions(String... expressions) {
         // This method should create real Expressions to verify correctness. Do a basic syntax check for now.
         for (String expression : expressions) {
-            if (!isELExpression(expression)) {
+            if (!"".equals(expression) && !isELExpression(expression)) {
                 throw new IllegalArgumentException(expression + " is not a valid EL expression");
             }
         }
