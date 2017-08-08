@@ -89,7 +89,7 @@ public class AnnotationELPProcessor {
             return defaultValue;
         }
         
-        return (Integer) getELProcessor(getELProcessor).eval(toRawExpression(expression));
+        return (Integer) getELProcessor(getELProcessor).getValue(toRawExpression(expression), Integer.class);
     }
     
     @SuppressWarnings("unchecked")
@@ -176,7 +176,7 @@ public class AnnotationELPProcessor {
             return defaultValue;
         }
         
-        return (Integer) getELProcessor(getELProcessor).eval(toRawExpression(expression));
+        return (Integer) getELProcessor(getELProcessor).getValue(toRawExpression(expression), Integer.class);
     }
     
     @SafeVarargs
