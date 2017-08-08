@@ -114,16 +114,32 @@ public class LdapIdentityStore implements IdentityStore {
             try {
                 if (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() &&
                         ldapIdentityStoreDefinition.groupSearchBase().isEmpty() &&
-                        !validationResult.getCallerDn().isEmpty()) {
+                        validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
                     return new HashSet<>(retrieveGroupInformationMemberOf(validationResult.getCallerDn(), ldapContext));
                 }
-                return new HashSet<>(retrieveGroupInformation(validationResult.getCallerPrincipal().getName(), ldapContext));
+                String callerDn = getCallerDn(validationResult, ldapContext);
+                if (callerDn != null) {
+                    return new HashSet<>(retrieveGroupInformation(callerDn, ldapContext));
+                }
             } finally {
                 closeContext(ldapContext);
             }
         }
 
         return emptySet();
+    }
+
+    private String getCallerDn(CredentialValidationResult validationResult, LdapContext ldapContext) {
+        if (validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
+            // it was handed to us
+            return validationResult.getCallerDn();
+        }
+        // we need to go look for it -- this will only work if we're configured with searchBase and searchFilter
+        if (!ldapIdentityStoreDefinition.callerSearchBase().isEmpty() && !ldapIdentityStoreDefinition.callerSearchFilter().isEmpty()) {
+            return searchCaller(ldapContext, ldapIdentityStoreDefinition.callerSearchBase(),
+                    format(ldapIdentityStoreDefinition.callerSearchFilter(), validationResult.getCallerPrincipal().getName()));
+        }
+        return null;
     }
 
     private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential) {
