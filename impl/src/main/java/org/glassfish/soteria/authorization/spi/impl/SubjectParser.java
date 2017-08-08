@@ -472,11 +472,6 @@ public class SubjectParser {
         }
 
         for (Principal principal : principals) {
-            // If the principal is a standard one, assume it's the "application" caller principal and return it
-            if (CallerPrincipal.class.isAssignableFrom(principal.getClass())) {
-                return principal;
-            }
-
             // Do some checks to determine it from vendor specific data
             Principal vendorCallerPrincipal = getVendorCallerPrincipal(principal, false);
             if (vendorCallerPrincipal != null) {
@@ -497,12 +492,12 @@ public class SubjectParser {
     private Principal getVendorCallerPrincipal(Principal principal, boolean isEjb) {
         switch (principal.getClass().getName()) {
             case "org.glassfish.security.common.PrincipalImpl": // GlassFish/Payara
-                return isEjb ? getAuthenticatedPrincipal(principal, "ANONYMOUS") : principal;
+                return getAuthenticatedPrincipal(principal, "ANONYMOUS", isEjb);
             case "com.ibm.ws.security.authentication.principals.WSPrincipal": // Liberty
-                return isEjb ? getAuthenticatedPrincipal(principal, "UNAUTHENTICATED") : principal;
+                return getAuthenticatedPrincipal(principal, "UNAUTHENTICATED", isEjb);
             // JBoss EAP/WildFly convention 1 - single top level principal of the below type
             case "org.jboss.security.SimplePrincipal":
-                return isEjb ? getAuthenticatedPrincipal(principal, "anonymous") : principal;
+                return getAuthenticatedPrincipal(principal, "anonymous", isEjb);
             // JBoss EAP/WildFly convention 2 - the one and only principal in group called CallerPrincipal
             case "org.jboss.security.SimpleGroup":
                 if (principal.getName().equals("CallerPrincipal") && principal instanceof Group) {
@@ -510,7 +505,7 @@ public class SubjectParser {
                     Enumeration<? extends Principal> groupMembers = ((Group) principal).members();
 
                     if (groupMembers.hasMoreElements()) {
-                        return isEjb ? getAuthenticatedPrincipal(groupMembers.nextElement(), "anonymous") : principal;
+                        return getAuthenticatedPrincipal(groupMembers.nextElement(), "anonymous", isEjb);
                     }
                 }
                 break;
@@ -523,18 +518,26 @@ public class SubjectParser {
                                             .getMethod("getTomcatPrincipal")
                                             .invoke(principal));
 
-                    return isEjb ? getAuthenticatedPrincipal(tomeePrincipal, "guest") : tomeePrincipal;
+                    return getAuthenticatedPrincipal(tomeePrincipal, "guest", isEjb);
                 } catch (Exception e) {
 
                 }
                 break;
         }
 
+        if (CallerPrincipal.class.isAssignableFrom(principal.getClass())) {
+            return principal;
+        }
+
         return null;
     }
 
-    private Principal getAuthenticatedPrincipal(Principal principal, String anonymousCallerName) {
-        return !anonymousCallerName.equals(principal.getName()) ? principal : null;
+    private Principal getAuthenticatedPrincipal(Principal principal, String anonymousCallerName, boolean isEjb) {
+        if (isEjb && anonymousCallerName.equals(principal.getName())) {
+            return null;
+        }
+        return principal;
+
     }
 
     public boolean principalToGroups(Principal principal, List<String> groups) {
