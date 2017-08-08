@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,42 +39,15 @@
  */
 package org.glassfish.soteria.test;
 
-import static java.util.Arrays.asList;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-
-import java.util.HashSet;
-
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.credential.Credential;
-import javax.security.enterprise.credential.UsernamePasswordCredential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
+import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
+@LdapIdentityStoreDefinition(
+    url = "ldap://localhost:33389/",
+    callerBaseDn = "ou=caller,dc=jsr375,dc=net",
+    groupSearchBase = "ou=group,dc=jsr375,dc=net"
+)
 @ApplicationScoped
-public class TestIdentityStore implements IdentityStore {
+public class ApplicationConfig {
 
-    @Override
-    public CredentialValidationResult validate(Credential credential) {
-        if (credential instanceof UsernamePasswordCredential) {
-            return validate((UsernamePasswordCredential) credential);
-        }
-
-        return NOT_VALIDATED_RESULT;
-    }
-
-    public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
-
-        if (usernamePasswordCredential.getCaller().equals("reza") &&
-                usernamePasswordCredential.getPassword().compareTo("secret1")) {
-
-            return new CredentialValidationResult("reza", new HashSet<>(asList("foo", "bar")));
-        }
-
-        return INVALID_RESULT;
-    }
-
-    public int priority() {
-        return 10;
-    }
 }

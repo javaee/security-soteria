@@ -40,7 +40,6 @@
 package org.glassfish.soteria.test;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -52,14 +51,6 @@ import java.io.IOException;
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
  */
-@LdapIdentityStoreDefinition(
-    url = "ldap://localhost:33389/",
-    bindDn = "uid=ldap,ou=apps,dc=jsr375,dc=net",
-    bindDnPassword = "changeOnInstall",
-    callerSearchBase = "dc=jsr375,dc=net",
-    callerSearchFilter = "(&(uid=%s)(objectClass=person))",
-    groupSearchBase = "ou=group,dc=jsr375,dc=net"
-)
 @DeclareRoles({"foo", "bar", "kaz"})
 @WebServlet("/servlet")
 public class Servlet extends HttpServlet {

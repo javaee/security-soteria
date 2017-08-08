@@ -42,7 +42,6 @@ package test;
 import java.io.IOException;
 
 import javax.annotation.security.DeclareRoles;
-import javax.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -55,10 +54,6 @@ import javax.servlet.http.HttpServletResponse;
  * Test Servlet that prints out the name of the authenticated caller and whether
  * this caller is in any of the roles {foo, bar, kaz}
  */
-@BasicAuthenticationMechanismDefinition(
-    realmName="${'test realm'}" // Doesn't need to be expression, just for example
-)
-
 @WebServlet("/servlet")
 @DeclareRoles({ "foo", "bar", "kaz" })
 @ServletSecurity(@HttpConstraint(rolesAllowed = "foo"))
