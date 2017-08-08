@@ -114,16 +114,32 @@ public class LdapIdentityStore implements IdentityStore {
             try {
                 if (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() &&
                         ldapIdentityStoreDefinition.groupSearchBase().isEmpty() &&
-                        !validationResult.getCallerDn().isEmpty()) {
+                        validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
                     return new HashSet<>(retrieveGroupInformationMemberOf(validationResult.getCallerDn(), ldapContext));
                 }
-                return new HashSet<>(retrieveGroupInformation(validationResult.getCallerPrincipal().getName(), ldapContext));
+                String callerDn = getCallerDn(validationResult, ldapContext);
+                if (callerDn != null) {
+                    return new HashSet<>(retrieveGroupInformation(callerDn, ldapContext));
+                }
             } finally {
                 closeContext(ldapContext);
             }
         }
 
         return emptySet();
+    }
+
+    private String getCallerDn(CredentialValidationResult validationResult, LdapContext ldapContext) {
+        if (validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
+            // it was handed to us
+            return validationResult.getCallerDn();
+        }
+        // we need to go look for it -- this will only work if we're configured with searchBase and searchFilter
+        if (!ldapIdentityStoreDefinition.callerSearchBase().isEmpty() && !ldapIdentityStoreDefinition.callerSearchFilter().isEmpty()) {
+            return searchCaller(ldapContext, ldapIdentityStoreDefinition.callerSearchBase(),
+                    format(ldapIdentityStoreDefinition.callerSearchFilter(), validationResult.getCallerPrincipal().getName()));
+        }
+        return null;
     }
 
     private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential) {
@@ -244,6 +260,7 @@ public class LdapIdentityStore implements IdentityStore {
         List<SearchResult> searchResults = search(
                 ldapContext,
                 ldapIdentityStoreDefinition.groupSearchBase(),
+                ldapIdentityStoreDefinition.groupSearchFilter(),
                 ldapIdentityStoreDefinition.groupMemberAttribute(),
                 callerDn,
                 ldapIdentityStoreDefinition.groupNameAttribute(),
@@ -344,21 +361,33 @@ public class LdapIdentityStore implements IdentityStore {
         return environment;
     }
 
-    private static List<SearchResult> search(LdapContext ldapContext, String searchBase, 
-            String filterAttribute, String filterValue, String returnAttribute, SearchControls controls) {
+    private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchFilter,
+            String groupMemberAttribute, String callerDn, String groupNameAttribute, SearchControls controls) {
         
-        controls.setReturningAttributes(new String[]{returnAttribute}); // e.g. cn
+        controls.setReturningAttributes(new String[]{groupNameAttribute}); // e.g. cn
+
+        String filter;
+        if (searchFilter != null && !searchFilter.trim().isEmpty()) {
+            filter = format(ensureFilterHasParens(searchFilter), callerDn);  // e.g., expression must have %s where callerDn goes
+        }
+        else {
+            filter = format("(&(%s=%s)(|(objectclass=group)(objectclass=groupofnames)(objectclass=groupofuniquenames)))",
+                    groupMemberAttribute, callerDn); // e.g., (member=uid=reza,ou=caller,dc=jsr375,dc=net)
+        }
 
         try {
-            return list(ldapContext.search(
-                    searchBase,                             // e.g. ou=group,dc=jsr375,dc=net
-                    format("(%s={0})", filterAttribute),    // e.g. (member={0})
-                    new Object[]{filterValue},              // e.g. uid=reza,ou=caller,dc=jsr375,dc=net
-                    controls
-            ));
+            return list(ldapContext.search(searchBase, filter, controls));
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static String ensureFilterHasParens(String filter) {
+        String filterString = filter.trim();
+        if (!filterString.startsWith("(") || !filterString.endsWith(")")) {
+            return "(" + filterString + ")";
+        }
+        return filterString;
     }
 
     private static List<SearchResult> search(LdapContext ldapContext, String searchBase,
