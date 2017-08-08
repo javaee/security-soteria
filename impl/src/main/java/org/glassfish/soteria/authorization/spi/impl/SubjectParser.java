@@ -457,33 +457,31 @@ public class SubjectParser {
     }
 
     private Principal doGetCallerPrincipalFromPrincipals(Iterable<Principal> principals) {
+        // Check for Servlet
+        try {
+            return CDI.current().select(HttpServletRequest.class).get().getUserPrincipal();
+        } catch (Exception e) {
+            // Not inside an HttpServletRequest
+        }
+
+        // Check for EJB
+        EJBContext ejbContext = EJB.getEJBContext();
+        if (ejbContext != null) {
+            // The EJB returned value must be verified for its "unauthenticated name" since it's vendor specific
+            return getVendorCallerPrincipal(ejbContext.getCallerPrincipal(), true);
+        }
+
         for (Principal principal : principals) {
-            // If the principal is a standard one, return it
+            // If the principal is a standard one, assume it's the "application" caller principal and return it
             if (CallerPrincipal.class.isAssignableFrom(principal.getClass())) {
                 return principal;
             }
 
             // Do some checks to determine it from vendor specific data
-            Principal vendorCallerPrincipal = getVendorCallerPrincipal(principal);
+            Principal vendorCallerPrincipal = getVendorCallerPrincipal(principal, false);
             if (vendorCallerPrincipal != null) {
                 return vendorCallerPrincipal;
             }
-
-            // Check for Servlet
-            try {
-                return CDI.current().select(HttpServletRequest.class).get().getUserPrincipal();
-            } catch (Exception e) {
-                // Not inside an HttpServletRequest
-            }
-
-            // Check for EJB
-            EJBContext ejbContext = EJB.getEJBContext();
-            if (ejbContext != null) {
-                // The EJB returned value must be verified for its "authenticated name" since it's vendor specific
-                return getVendorCallerPrincipal(ejbContext.getCallerPrincipal());
-            }
-
-            return null;
         }
 
         return null;
@@ -496,15 +494,15 @@ public class SubjectParser {
      * @param principal
      * @return
      */
-    private Principal getVendorCallerPrincipal(Principal principal) {
+    private Principal getVendorCallerPrincipal(Principal principal, boolean isEjb) {
         switch (principal.getClass().getName()) {
             case "org.glassfish.security.common.PrincipalImpl": // GlassFish/Payara
-                return getPrincipalOrNull(principal, "ANONYMOUS");
+                return isEjb ? getAuthenticatedPrincipal(principal, "ANONYMOUS") : principal;
             case "com.ibm.ws.security.authentication.principals.WSPrincipal": // Liberty
-                return getPrincipalOrNull(principal, "UNAUTHENTICATED");
+                return isEjb ? getAuthenticatedPrincipal(principal, "UNAUTHENTICATED") : principal;
             // JBoss EAP/WildFly convention 1 - single top level principal of the below type
             case "org.jboss.security.SimplePrincipal":
-                return getPrincipalOrNull(principal, "anonymous");
+                return isEjb ? getAuthenticatedPrincipal(principal, "anonymous") : principal;
             // JBoss EAP/WildFly convention 2 - the one and only principal in group called CallerPrincipal
             case "org.jboss.security.SimpleGroup":
                 if (principal.getName().equals("CallerPrincipal") && principal instanceof Group) {
@@ -512,19 +510,20 @@ public class SubjectParser {
                     Enumeration<? extends Principal> groupMembers = ((Group) principal).members();
 
                     if (groupMembers.hasMoreElements()) {
-                        return getPrincipalOrNull(groupMembers.nextElement(), "anonymous");
+                        return isEjb ? getAuthenticatedPrincipal(groupMembers.nextElement(), "anonymous") : principal;
                     }
                 }
                 break;
             case "org.apache.tomee.catalina.TomcatSecurityService$TomcatUser": // TomEE
                 try {
-                    getPrincipalOrNull(
-                            (Principal) Class.forName("org.apache.catalina.realm.GenericPrincipal")
-                                    .getMethod("getUserPrincipal")
-                                    .invoke(
-                                            Class.forName("org.apache.tomee.catalina.TomcatSecurityService$TomcatUser")
-                                                    .getMethod("getTomcatPrincipal")
-                                                    .invoke(principal)), "guest");
+                    Principal tomeePrincipal = (Principal) Class.forName("org.apache.catalina.realm.GenericPrincipal")
+                            .getMethod("getUserPrincipal")
+                            .invoke(
+                                    Class.forName("org.apache.tomee.catalina.TomcatSecurityService$TomcatUser")
+                                            .getMethod("getTomcatPrincipal")
+                                            .invoke(principal));
+
+                    return isEjb ? getAuthenticatedPrincipal(tomeePrincipal, "guest") : tomeePrincipal;
                 } catch (Exception e) {
 
                 }
@@ -534,9 +533,8 @@ public class SubjectParser {
         return null;
     }
 
-    private Principal getPrincipalOrNull(Principal principal, String anonymousCallerName) {
-        EJBContext ejbContext = EJB.getEJBContext();
-        return !(ejbContext == null && anonymousCallerName.equals(principal.getName())) ? principal : null;
+    private Principal getAuthenticatedPrincipal(Principal principal, String anonymousCallerName) {
+        return !anonymousCallerName.equals(principal.getName()) ? principal : null;
     }
 
     public boolean principalToGroups(Principal principal, List<String> groups) {
