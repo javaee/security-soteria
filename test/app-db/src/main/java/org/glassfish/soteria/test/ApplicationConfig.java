@@ -49,6 +49,7 @@ import javax.security.enterprise.identitystore.Pbkdf2PasswordHash;
     callerQuery = "#{'select password from caller where name = ?'}",
     groupsQuery = "select group_name from caller_groups where caller_name = ?",
     hashAlgorithm = Pbkdf2PasswordHash.class,
+    priorityExpression = "#{100}",
     hashAlgorithmParameters = {
         "Pbkdf2PasswordHash.Iterations=3072",
         "${applicationConfig.dyna}"
