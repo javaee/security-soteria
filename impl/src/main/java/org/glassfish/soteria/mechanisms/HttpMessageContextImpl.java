@@ -248,12 +248,12 @@ public class HttpMessageContextImpl implements HttpMessageContext {
      */
     @Override
     public AuthenticationStatus notifyContainerAboutLogin(String callerName, Set<String> groups) {
-        CallerPrincipal callerPrincipal = null;
+        NameHolderPrincipal nameHolder = null;
         if (callerName != null) {
-            callerPrincipal = new CallerPrincipal(callerName); // TODO: or store username separately?
+            nameHolder = new NameHolderPrincipal(callerName);
         }
 
-        return notifyContainerAboutLogin(callerPrincipal, groups);
+        return notifyContainerAboutLogin(nameHolder, groups);
     }
 
     @Override
@@ -277,7 +277,12 @@ public class HttpMessageContextImpl implements HttpMessageContext {
             this.groups = null;
         }
 
-        Jaspic.notifyContainerAboutLogin(clientSubject, handler, callerPrincipal, groups);
+        if (this.callerPrincipal instanceof NameHolderPrincipal) {
+            Jaspic.notifyContainerAboutLogin(clientSubject, handler, this.callerPrincipal.getName(), this.groups);
+        }
+        else {
+            Jaspic.notifyContainerAboutLogin(clientSubject, handler, this.callerPrincipal, this.groups);
+        }
 
         // Explicitly set a flag that we did authentication, so code can check that this happened
         // TODO: or throw CDI event here?
@@ -301,12 +306,26 @@ public class HttpMessageContextImpl implements HttpMessageContext {
 
     @Override
     public Principal getCallerPrincipal() {
+        // This will be a NameHolderPrincipal if String callerName passed to notifyContainerAboutLogin().
         return callerPrincipal;
     }
 
     @Override
     public Set<String> getGroups() {
         return groups;
+    }
+
+    /**
+     * Private Principal type used to hold a caller name in the case that
+     * notifyContainerAboutLogin() is called with a string name, rather than
+     * a Principal or a CredentialValidationResult. HttpMessageContext unfortunately
+     * doesn't have a getCallerName() method, so if string is passed we need some
+     * way to store and return the caller's name; this is it.
+     */
+    private static class NameHolderPrincipal extends CallerPrincipal {
+        NameHolderPrincipal(String name) {
+            super(name);
+        }
     }
 
 }
