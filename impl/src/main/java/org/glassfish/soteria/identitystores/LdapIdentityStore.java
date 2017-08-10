@@ -185,10 +185,20 @@ public class LdapIdentityStore implements IdentityStore {
                         null, // caller unique id
                         groups);
 
-            } catch (IllegalStateException e) {
-                return NOT_VALIDATED_RESULT;
+            } catch (Exception e) {
+                if (e instanceof AuthenticationException) {
+                  LOGGER.log(Level.SEVERE, "Error validating credential " + e);
+                  return INVALID_RESULT; 
+                }
+                //TBD according to configuration error or runtime error, return NOT_VALIDATED_RESULT or let exception propagate
+                else if (e instanceof IllegalStateException) {
+                  LOGGER.log(Level.SEVERE, "Error validating credential " + e);
+                  return NOT_VALIDATED_RESULT;
+                }
+                else {
+                  LOGGER.log(Level.SEVERE, "Error validating credential " + e);
+                }
             }
-
         }
 
         return INVALID_RESULT;
@@ -218,11 +228,24 @@ public class LdapIdentityStore implements IdentityStore {
         );
 
         // If this doesn't throw an exception internally, the caller dn exists and the password is correct
-        LdapContext ldapContext = createLdapContext(
+        LdapContext ldapContext = null;
+        try {
+          ldapContext = createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 callerDn,
                 new String(usernamePasswordCredential.getPassword().getValue())
-        );
+          );
+        } catch (Exception e) {
+          if (e instanceof AuthenticationException) {
+            LOGGER.log(Level.SEVERE, "Error validating credential " + e);
+            return INVALID_RESULT;
+          }
+          // TBD depends on InvalidConfigurationException or RuntimeErrorException, let the exception propagate or return NOT_VALIDATED_RESULT
+          else if (e instanceof IllegalStateException) {
+            LOGGER.log(Level.SEVERE, "Error validating credential " + e);
+            return NOT_VALIDATED_RESULT;
+          }
+        }
 
         if (ldapContext == null) {
             return INVALID_RESULT;
@@ -331,20 +354,30 @@ public class LdapIdentityStore implements IdentityStore {
     }
 
     private LdapContext createDefaultLdapContext() {
-        return createLdapContext(
+        try {
+          return createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.bindDn(),
                 ldapIdentityStoreDefinition.bindDnPassword());
+        } catch (Exception e) {
+          LOGGER.log(Level.SEVERE, "Error creating default ldap context " + e);
+        }
+        return null;
     }
 
-    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) {
+    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws Exception {
         try {
             return new InitialLdapContext(getConnectionEnvironment(url, bindDn, bindCredential), null);
         } catch (AuthenticationException e) {
             return null;
         } catch (NamingException e) {
-            throw new IllegalStateException(e);
+            try {
+              processNamingException(e);
+            } catch (Exception newe) {
+              throw newe;
+            }
         }
+        return null;
     }
 
     private static Hashtable<String, String> getConnectionEnvironment(String url, String bindDn, String bindCredential) {
@@ -410,6 +443,24 @@ public class LdapIdentityStore implements IdentityStore {
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static void processNamingException(NamingException e) throws Exception {
+      String exString = e.toString();
+      if (exString !=null && exString.indexOf("LDAP: error code 48") >= 0) {
+        AuthenticationException ae = new AuthenticationException(e.getMessage());
+        ae.initCause(e);
+        throw ae;
+      }
+      // TBD add other cases which also belong to config error.
+      else if (exString !=null && exString.indexOf("LDAP: error code 32") >= 0) {
+        InvalidConfigurationException ice = new InvalidConfigurationException(e);
+        throw ice;
+      }
+      else {
+        RuntimeErrorException re = new RuntimeErrorException(e);
+        throw re;
+      }
     }
 
     @Override
