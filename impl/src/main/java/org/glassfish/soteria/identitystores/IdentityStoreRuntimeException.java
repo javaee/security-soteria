@@ -39,17 +39,17 @@
  */
 package org.glassfish.soteria.identitystores;
 
-public class RuntimeErrorException extends IllegalStateException {
+public class IdentityStoreRuntimeException extends IdentityStoreException {
 
-  public RuntimeErrorException(String message, Throwable cause) {
+  public IdentityStoreRuntimeException(String message, Throwable cause) {
     super(message,cause);
   }
 
-  public RuntimeErrorException(Throwable cause) {
+  public IdentityStoreRuntimeException(Throwable cause) {
     super(cause);
   }
 
-  public RuntimeErrorException(String message) {
+  public IdentityStoreRuntimeException(String message) {
     super(message);
   }
 }

@@ -39,8 +39,11 @@
  */
 package org.glassfish.soteria.identitystores;
 
-import javax.naming.AuthenticationException;
+import javax.naming.CommunicationException;
+import javax.naming.InterruptedNamingException;
 import javax.naming.NamingException;
+import javax.naming.NamingSecurityException;
+import javax.naming.NameNotFoundException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
@@ -158,7 +161,7 @@ public class LdapIdentityStore implements IdentityStore {
                 if (callerDn != null) {
                     // If this doesn't throw an exception internally, the password is correct
 
-                    ldapContextCaller = createLdapContext(
+                    ldapContextCaller = createCallerLdapContext(
                         ldapIdentityStoreDefinition.url(),
                         callerDn,
                         new String(usernamePasswordCredential.getPassword().getValue())
@@ -185,19 +188,10 @@ public class LdapIdentityStore implements IdentityStore {
                         null, // caller unique id
                         groups);
 
-            } catch (Exception e) {
-                if (e instanceof AuthenticationException) {
-                  LOGGER.log(Level.SEVERE, "Error validating credential " + e);
-                  return INVALID_RESULT; 
-                }
-                //TBD according to configuration error or runtime error, return NOT_VALIDATED_RESULT or let exception propagate
-                else if (e instanceof IllegalStateException) {
-                  LOGGER.log(Level.SEVERE, "Error validating credential " + e);
-                  return NOT_VALIDATED_RESULT;
-                }
-                else {
-                  LOGGER.log(Level.SEVERE, "Error validating credential " + e);
-                }
+            }
+            // More refine work needed for IllegalStateException, IdentityStoreRuntimeException will propagate 
+            catch (IllegalStateException | IdentityStoreConfigException e) {
+              return NOT_VALIDATED_RESULT;
             }
         }
 
@@ -228,24 +222,11 @@ public class LdapIdentityStore implements IdentityStore {
         );
 
         // If this doesn't throw an exception internally, the caller dn exists and the password is correct
-        LdapContext ldapContext = null;
-        try {
-          ldapContext = createLdapContext(
+        LdapContext ldapContext = createCallerLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 callerDn,
                 new String(usernamePasswordCredential.getPassword().getValue())
-          );
-        } catch (Exception e) {
-          if (e instanceof AuthenticationException) {
-            LOGGER.log(Level.SEVERE, "Error validating credential " + e);
-            return INVALID_RESULT;
-          }
-          // TBD depends on InvalidConfigurationException or RuntimeErrorException, let the exception propagate or return NOT_VALIDATED_RESULT
-          else if (e instanceof IllegalStateException) {
-            LOGGER.log(Level.SEVERE, "Error validating credential " + e);
-            return NOT_VALIDATED_RESULT;
-          }
-        }
+        );
 
         if (ldapContext == null) {
             return INVALID_RESULT;
@@ -359,29 +340,30 @@ public class LdapIdentityStore implements IdentityStore {
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.bindDn(),
                 ldapIdentityStoreDefinition.bindDnPassword());
-        } catch (Exception e) {
-          LOGGER.log(Level.SEVERE, "Error creating default ldap context " + e);
+        } catch (CommunicationException | InterruptedNamingException ce) {
+          IdentityStoreRuntimeException isre = new IdentityStoreRuntimeException(ce.getMessage(), ce);
+          throw isre;
+        } catch (NamingException ne) {
+          IdentityStoreConfigException isce = new IdentityStoreConfigException(ne.getMessage(), ne);
+          throw isce;
         }
-        return null;
     }
 
-    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws Exception {
-        try {
-            return new InitialLdapContext(getConnectionEnvironment(url, bindDn, bindCredential), null);
-        } catch (AuthenticationException e) {
-            return null;
-        } catch (NamingException e) {
-            try {
-              processNamingException(e);
-            } catch (Exception newe) {
-              throw newe;
-            }
-        }
+    private LdapContext createCallerLdapContext(String url, String bindDn, String bindCredential) {
+      try {
+        return createLdapContext(url, bindDn, bindCredential);
+      } catch (NamingSecurityException | NameNotFoundException e) {
         return null;
+      } catch (CommunicationException | InterruptedNamingException ce) {
+        IdentityStoreRuntimeException isre = new IdentityStoreRuntimeException(ce.getMessage(), ce);
+        throw isre;
+      } catch (NamingException ne) {
+        IdentityStoreConfigException isce = new IdentityStoreConfigException(ne.getMessage(), ne);
+        throw isce;
+      }
     }
 
-    private static Hashtable<String, String> getConnectionEnvironment(String url, String bindDn, String bindCredential) {
-
+    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws NamingException {
         Hashtable<String, String> environment = new Hashtable<>();
 
         environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -391,7 +373,11 @@ public class LdapIdentityStore implements IdentityStore {
         environment.put(SECURITY_PRINCIPAL, bindDn);
         environment.put(SECURITY_CREDENTIALS, bindCredential);
 
-        return environment;
+        try {
+            return new InitialLdapContext(environment, null);
+        } catch (NamingException e) {
+            throw e;
+        }
     }
 
     private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchFilter,
@@ -443,24 +429,6 @@ public class LdapIdentityStore implements IdentityStore {
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    private static void processNamingException(NamingException e) throws Exception {
-      String exString = e.toString();
-      if (exString !=null && exString.indexOf("LDAP: error code 48") >= 0) {
-        AuthenticationException ae = new AuthenticationException(e.getMessage());
-        ae.initCause(e);
-        throw ae;
-      }
-      // TBD add other cases which also belong to config error.
-      else if (exString !=null && exString.indexOf("LDAP: error code 32") >= 0) {
-        InvalidConfigurationException ice = new InvalidConfigurationException(e);
-        throw ice;
-      }
-      else {
-        RuntimeErrorException re = new RuntimeErrorException(e);
-        throw re;
-      }
     }
 
     @Override
