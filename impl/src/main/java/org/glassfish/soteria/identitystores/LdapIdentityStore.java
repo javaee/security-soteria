@@ -373,11 +373,7 @@ public class LdapIdentityStore implements IdentityStore {
         environment.put(SECURITY_PRINCIPAL, bindDn);
         environment.put(SECURITY_CREDENTIALS, bindCredential);
 
-        try {
-            return new InitialLdapContext(environment, null);
-        } catch (NamingException e) {
-            throw e;
-        }
+        return new InitialLdapContext(environment, null);
     }
 
     private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchFilter,
