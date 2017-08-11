@@ -39,8 +39,11 @@
  */
 package org.glassfish.soteria.identitystores;
 
-import javax.naming.AuthenticationException;
+import javax.naming.CommunicationException;
+import javax.naming.InterruptedNamingException;
 import javax.naming.NamingException;
+import javax.naming.NamingSecurityException;
+import javax.naming.NameNotFoundException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
@@ -158,7 +161,7 @@ public class LdapIdentityStore implements IdentityStore {
                 if (callerDn != null) {
                     // If this doesn't throw an exception internally, the password is correct
 
-                    ldapContextCaller = createLdapContext(
+                    ldapContextCaller = createCallerLdapContext(
                         ldapIdentityStoreDefinition.url(),
                         callerDn,
                         new String(usernamePasswordCredential.getPassword().getValue())
@@ -185,10 +188,11 @@ public class LdapIdentityStore implements IdentityStore {
                         null, // caller unique id
                         groups);
 
-            } catch (IllegalStateException e) {
-                return NOT_VALIDATED_RESULT;
             }
-
+            // More refine work needed for IllegalStateException, IdentityStoreRuntimeException will propagate 
+            catch (IllegalStateException | IdentityStoreConfigException e) {
+              return NOT_VALIDATED_RESULT;
+            }
         }
 
         return INVALID_RESULT;
@@ -218,7 +222,7 @@ public class LdapIdentityStore implements IdentityStore {
         );
 
         // If this doesn't throw an exception internally, the caller dn exists and the password is correct
-        LdapContext ldapContext = createLdapContext(
+        LdapContext ldapContext = createCallerLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 callerDn,
                 new String(usernamePasswordCredential.getPassword().getValue())
@@ -331,24 +335,35 @@ public class LdapIdentityStore implements IdentityStore {
     }
 
     private LdapContext createDefaultLdapContext() {
-        return createLdapContext(
+        try {
+          return createLdapContext(
                 ldapIdentityStoreDefinition.url(),
                 ldapIdentityStoreDefinition.bindDn(),
                 ldapIdentityStoreDefinition.bindDnPassword());
-    }
-
-    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) {
-        try {
-            return new InitialLdapContext(getConnectionEnvironment(url, bindDn, bindCredential), null);
-        } catch (AuthenticationException e) {
-            return null;
-        } catch (NamingException e) {
-            throw new IllegalStateException(e);
+        } catch (CommunicationException | InterruptedNamingException ce) {
+          IdentityStoreRuntimeException isre = new IdentityStoreRuntimeException(ce.getMessage(), ce);
+          throw isre;
+        } catch (NamingException ne) {
+          IdentityStoreConfigException isce = new IdentityStoreConfigException(ne.getMessage(), ne);
+          throw isce;
         }
     }
 
-    private static Hashtable<String, String> getConnectionEnvironment(String url, String bindDn, String bindCredential) {
+    private LdapContext createCallerLdapContext(String url, String bindDn, String bindCredential) {
+      try {
+        return createLdapContext(url, bindDn, bindCredential);
+      } catch (NamingSecurityException | NameNotFoundException e) {
+        return null;
+      } catch (CommunicationException | InterruptedNamingException ce) {
+        IdentityStoreRuntimeException isre = new IdentityStoreRuntimeException(ce.getMessage(), ce);
+        throw isre;
+      } catch (NamingException ne) {
+        IdentityStoreConfigException isce = new IdentityStoreConfigException(ne.getMessage(), ne);
+        throw isce;
+      }
+    }
 
+    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws NamingException {
         Hashtable<String, String> environment = new Hashtable<>();
 
         environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -358,7 +373,7 @@ public class LdapIdentityStore implements IdentityStore {
         environment.put(SECURITY_PRINCIPAL, bindDn);
         environment.put(SECURITY_CREDENTIALS, bindCredential);
 
-        return environment;
+        return new InitialLdapContext(environment, null);
     }
 
     private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchFilter,
