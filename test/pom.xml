@@ -36,6 +36,7 @@
         <module>app-db</module>
         <module>app-ldap</module>
         <module>app-ldap2</module>
+        <module>app-ldap3</module>
         <module>app-custom</module>
         <module>app-multiple-store</module>
         <module>app-multiple-store-backup</module>

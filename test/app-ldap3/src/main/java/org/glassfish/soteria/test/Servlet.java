@@ -58,9 +58,7 @@ import java.io.IOException;
     bindDnPassword = "changeOnInstall",
     callerSearchBase = "dc=jsr375,dc=net",
     callerSearchFilter = "(&(uid=%s)(objectClass=person))",
-    groupMemberOfAttribute = "isMemberOf"
-    //groupSearchBase = "ou=group,dc=jsr375,dc=net",
-    //groupSearchFilter = "(&(member=%s)(objectClass=groupOfNames))"
+    groupMemberOfAttribute = "seeAlso"
 )
 @DeclareRoles({"foo", "bar", "kaz"})
 @WebServlet("/servlet")

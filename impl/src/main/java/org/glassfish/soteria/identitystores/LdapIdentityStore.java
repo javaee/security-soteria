@@ -55,6 +55,7 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
@@ -68,6 +69,7 @@ import java.util.logging.Logger;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.logging.Level.FINER;
 import static javax.naming.Context.*;
 import static javax.naming.directory.SearchControls.ONELEVEL_SCOPE;
 import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
@@ -80,7 +82,20 @@ public class LdapIdentityStore implements IdentityStore {
     private static final String DEFAULT_USER_FILTER = "(&(%s=%s)(|(objectclass=user)(objectclass=person)(objectclass=inetOrgPerson)(objectclass=organizationalPerson))(!(objectclass=computer)))";
     private static final String DEFAULT_GROUP_FILTER = "(&(%s=%s)(|(objectclass=group)(objectclass=groupofnames)(objectclass=groupofuniquenames)))";
 
-    private static final Logger LOGGER = Logger.getLogger(LdapIdentityStore.class.getName());
+    private static final Logger LOGGER = Logger.getLogger("LDAP_IDSTORE_DEBUG");
+
+    static {
+        LOGGER.setLevel(FINER);
+    }
+
+    private static void debug(String method, String message, Throwable thrown) {
+        if (thrown != null) {
+            LOGGER.logp(FINER, LdapIdentityStore.class.getName(), method, message, thrown);
+        }
+        else {
+            LOGGER.logp(FINER, LdapIdentityStore.class.getName(), method, message);
+        }
+    }
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
     private final Set<ValidationType> validationTypes;
@@ -266,28 +281,51 @@ public class LdapIdentityStore implements IdentityStore {
 
     private Set<String> retrieveGroupInformationMemberOf(String callerDn, LdapContext ldapContext) {
         // Look up the memberOf attribute for the specified DN
+        debug("retrieveGroupInformatinMemberOf", "CallerDn is '" + callerDn + "'", null);
+        debug("retrieveGroupInformatinMemberOf", "memberOf attribute is '" + ldapIdentityStoreDefinition.groupMemberOfAttribute() + "'", null);
+
         List<?> memberOfValues = null;
         try {
             Attributes attributes = ldapContext.getAttributes(callerDn,
                     new String[] { ldapIdentityStoreDefinition.groupMemberOfAttribute() });
             Attribute memberOfAttribute = attributes.get(ldapIdentityStoreDefinition.groupMemberOfAttribute());
-            memberOfValues = list(memberOfAttribute.getAll());
 
-            // Collect the groups from the memberOf attribute
-            Set<String> groups = new HashSet<>();
-            for (Object group : memberOfValues) {
-                groups.add(getNameFromDn(group.toString(), ldapIdentityStoreDefinition.groupMemberOfAttribute()));
+            debug("retrieveGroupInformatinMemberOf", "memberOfAttributes is " + (memberOfAttribute == null ? "null" : "not null"), null);
+
+            if (memberOfAttribute != null) {
+                memberOfValues = list(memberOfAttribute.getAll());
+                debug("retrieveGroupInformatinMemberOf", "memberOfValues is " + (memberOfAttribute == null ? "null" : "not null"), null);
+                debug("retrieveGroupInformatinMemberOf", "memberOfValues is " + (memberOfAttribute.size() <= 0 ? "empty" : "not empty"), null);
+                // Collect the groups from the memberOf attribute
+                Set<String> groups = new HashSet<>();
+                for (Object group : memberOfValues) {
+                    debug("retrieveGroupInformatinMemberOf", "Got group: " + group, null);
+                    if (group != null ) {
+                        String groupName = getNameFromDn(group.toString(), ldapIdentityStoreDefinition.groupNameAttribute());
+                        if (groupName != null) {
+                            groups.add(groupName);
+                        }
+                    }
+                }
+                return groups;
             }
-            return groups;
         }
-        catch (NameNotFoundException nnfe) {
-
+        catch (NameNotFoundException e) {
+            debug("retrieveGroupInformatinMemberOf", "Caught NameNotFoundException", e);
+            throw new IdentityStoreException(e);
         }
-        catch (NoSuchAttributeException nsae) {
+        catch (NoSuchAttributeException e) {
+            debug("retrieveGroupInformatinMemberOf", "Caught NoSuchAttributeException", e);
+            throw new IdentityStoreException(e);
 
         }
         catch (NamingException e) {
-            throw new IllegalStateException(e);
+            debug("retrieveGroupInformatinMemberOf", "Caught NamingException", e);
+            throw new IdentityStoreException(e);
+        }
+        catch (Exception e) {
+            debug("retrieveGroupInformatinMemberOf", "Caught Exception", e);
+            throw new IdentityStoreException(e);
         }
 
         return emptySet();
@@ -435,9 +473,15 @@ public class LdapIdentityStore implements IdentityStore {
         return list(attribute.getAll());
     }
 
-    private static String getNameFromDn(String dnString, String attributeName) throws NamingException {
+    private static String getNameFromDn(String dnString, String nameAttribute) throws NamingException {
+        debug("getNameFromDn", "dnString is '" + dnString + "', nameAttribute is '" + nameAttribute + "'", null);
         LdapName dn = new LdapName(dnString);
-        return dn.getRdn(dn.size()-1).toAttributes().get(attributeName).get().toString();
+        Rdn rdn = dn.getRdn(dn.size()-1);
+        Attributes attributes = rdn.toAttributes();
+        Attribute attribute = attributes.get(nameAttribute);
+        String name = attribute.get().toString();
+        return name;
+        //return dn.getRdn(dn.size()-1).toAttributes().get(nameAttribute).get().toString();
     }
 
     @Override
