@@ -48,7 +48,9 @@ import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.INVALID;
 import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.PROVIDE_GROUPS;
 import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static org.glassfish.soteria.cdi.CdiUtils.getBeanReferencesByType;
@@ -87,6 +89,7 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
 
         CredentialValidationResult validationResult = null;
         IdentityStore identityStore = null;
+        boolean isGotAnInvalidResult = false;
 
         // Check stores to authenticate until one succeeds.
         for (IdentityStore authenticationIdentityStore : authenticationIdentityStores) {
@@ -95,16 +98,20 @@ public class DefaultIdentityStoreHandler implements IdentityStoreHandler {
                 identityStore = authenticationIdentityStore;
                 break;
             }
+            else if (validationResult.getStatus() == INVALID) {
+                isGotAnInvalidResult = true;
+            }
         }
 
-        if (validationResult == null) {
-            // No authentication store at all
-            return INVALID_RESULT;
-        }
-
-        if (validationResult.getStatus() != VALID) {
-            // No store authenticated, no need to continue
-            return validationResult;
+        if (validationResult == null || validationResult.getStatus() != VALID) {
+            // Didn't get a VALID result. If we got an INVALID result at any point,
+            // return INVALID_RESULT. Otherwise, return NOT_VALIDATED_RESULT.
+            if (isGotAnInvalidResult) {
+                return INVALID_RESULT;
+            }
+            else {
+                return NOT_VALIDATED_RESULT;
+            }
         }
 
         Set<String> groups = new HashSet<>();
