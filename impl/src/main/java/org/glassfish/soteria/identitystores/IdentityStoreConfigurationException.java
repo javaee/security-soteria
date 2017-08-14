@@ -39,17 +39,17 @@
  */
 package org.glassfish.soteria.identitystores;
 
-public class IdentityStoreConfigException extends IdentityStoreException {
+public class IdentityStoreConfigurationException extends IdentityStoreException {
 
-  public IdentityStoreConfigException(String message, Throwable cause) {
+  public IdentityStoreConfigurationException(String message, Throwable cause) {
     super(message,cause);
   }
 
-  public IdentityStoreConfigException(Throwable cause) {
+  public IdentityStoreConfigurationException(Throwable cause) {
     super(cause);
   }
 
-  public IdentityStoreConfigException(String message) {
+  public IdentityStoreConfigurationException(String message) {
     super(message);
   }
 }

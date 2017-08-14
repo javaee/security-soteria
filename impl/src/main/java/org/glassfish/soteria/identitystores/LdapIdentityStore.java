@@ -210,7 +210,7 @@ public class LdapIdentityStore implements IdentityStore {
 
             }
             // More refine work needed for IllegalStateException, IdentityStoreRuntimeException will propagate 
-            catch (IllegalStateException | IdentityStoreConfigException e) {
+            catch (IllegalStateException | IdentityStoreConfigurationException e) {
               return NOT_VALIDATED_RESULT;
             }
         }
@@ -349,7 +349,7 @@ public class LdapIdentityStore implements IdentityStore {
                     ldapIdentityStoreDefinition.bindDnPassword());
         }
         catch (AuthenticationException e) {
-            throw new IdentityStoreConfigException("Bad bindDn or bindPassword for: " + ldapIdentityStoreDefinition.bindDn(), e);
+            throw new IdentityStoreConfigurationException("Bad bindDn or bindPassword for: " + ldapIdentityStoreDefinition.bindDn(), e);
         }
     }
 
@@ -379,7 +379,7 @@ public class LdapIdentityStore implements IdentityStore {
             throw e;
         }
         catch (CommunicationException e) {
-            throw new IdentityStoreConfigException("Bad connection URL: " + url, e);
+            throw new IdentityStoreConfigurationException("Bad connection URL: " + url, e);
         }
         catch (Exception e) {
             throw new IdentityStoreRuntimeException(e);
@@ -434,13 +434,13 @@ public class LdapIdentityStore implements IdentityStore {
             return list(ldapContext.search(searchBase, searchFilter, controls));
         }
         catch (NameNotFoundException e) {
-            throw new IdentityStoreConfigException("Invalid searchBase", e);
+            throw new IdentityStoreConfigurationException("Invalid searchBase", e);
         }
         catch (InvalidSearchFilterException e) {
-            throw new IdentityStoreConfigException("Invalid search filter", e);
+            throw new IdentityStoreConfigurationException("Invalid search filter", e);
         }
         catch (InvalidSearchControlsException e) {
-            throw new IdentityStoreConfigException("Invalid search controls", e);
+            throw new IdentityStoreConfigurationException("Invalid search controls", e);
         }
         catch (Exception e) {
             throw new IdentityStoreRuntimeException(e);
@@ -460,7 +460,7 @@ public class LdapIdentityStore implements IdentityStore {
         Attribute attribute = dn.getRdn(dn.size()-1).toAttributes().get(nameAttribute);
         if (attribute == null) {
             // We were configured with the wrong name attribute (group name, or caller name)
-            throw new IdentityStoreConfigException("Name attribute '" + nameAttribute + "' not found for DN: " + dnString);
+            throw new IdentityStoreConfigurationException("Name attribute '" + nameAttribute + "' not found for DN: " + dnString);
         }
         return attribute.get(0).toString();
     }
