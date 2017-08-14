@@ -39,25 +39,32 @@
  */
 package org.glassfish.soteria.identitystores;
 
+
+import javax.naming.AuthenticationException;
 import javax.naming.CommunicationException;
 import javax.naming.InterruptedNamingException;
+import javax.naming.InvalidNameException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NamingSecurityException;
 import javax.naming.NameNotFoundException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.InvalidSearchControlsException;
+import javax.naming.directory.InvalidSearchFilterException;
+import javax.naming.directory.NoSuchAttributeException;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import javax.security.enterprise.CallerPrincipal;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.UsernamePasswordCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.IdentityStorePermission;
 import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
-import static javax.security.enterprise.identitystore.LdapIdentityStoreDefinition.LdapSearchScope;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,15 +72,33 @@ import java.util.logging.Logger;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.logging.Level.FINEST;
 import static javax.naming.Context.*;
 import static javax.naming.directory.SearchControls.ONELEVEL_SCOPE;
 import static javax.naming.directory.SearchControls.SUBTREE_SCOPE;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import static javax.security.enterprise.identitystore.LdapIdentityStoreDefinition.LdapSearchScope;
 
 public class LdapIdentityStore implements IdentityStore {
 
-    private static final Logger LOGGER = Logger.getLogger(LdapIdentityStore.class.getName());
+    private static final String DEFAULT_USER_FILTER = "(&(%s=%s)(|(objectclass=user)(objectclass=person)(objectclass=inetOrgPerson)(objectclass=organizationalPerson))(!(objectclass=computer)))";
+    private static final String DEFAULT_GROUP_FILTER = "(&(%s=%s)(|(objectclass=group)(objectclass=groupofnames)(objectclass=groupofuniquenames)))";
+
+    private static final Logger LOGGER = Logger.getLogger("LDAP_IDSTORE_DEBUG");
+
+//    static {
+//        LOGGER.setLevel(FINEST);
+//    }
+
+    private static void debug(String method, String message, Throwable thrown) {
+        if (thrown != null) {
+            LOGGER.logp(FINEST, LdapIdentityStore.class.getName(), method, message, thrown);
+        }
+        else {
+            LOGGER.logp(FINEST, LdapIdentityStore.class.getName(), method, message);
+        }
+    }
 
     private final LdapIdentityStoreDefinition ldapIdentityStoreDefinition;
     private final Set<ValidationType> validationTypes;
@@ -94,7 +119,7 @@ public class LdapIdentityStore implements IdentityStore {
 
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
 
-        if (ldapIdentityStoreDefinition.bindDn().isEmpty() &&
+        if (!ldapIdentityStoreDefinition.callerBaseDn().isEmpty() &&
                 ldapIdentityStoreDefinition.callerSearchBase().isEmpty()) {
             return checkDirectBinding(usernamePasswordCredential);
         } else {
@@ -139,8 +164,7 @@ public class LdapIdentityStore implements IdentityStore {
         }
         // we need to go look for it -- this will only work if we're configured with searchBase and searchFilter
         if (!ldapIdentityStoreDefinition.callerSearchBase().isEmpty() && !ldapIdentityStoreDefinition.callerSearchFilter().isEmpty()) {
-            return searchCaller(ldapContext, ldapIdentityStoreDefinition.callerSearchBase(),
-                    format(ldapIdentityStoreDefinition.callerSearchFilter(), validationResult.getCallerPrincipal().getName()));
+            return searchCaller(ldapContext, validationResult.getCallerPrincipal().getName());
         }
         return null;
     }
@@ -150,11 +174,7 @@ public class LdapIdentityStore implements IdentityStore {
         
         if (ldapContext != null) {
             try {
-                String callerDn = 
-                    searchCaller(
-                        ldapContext, 
-                        ldapIdentityStoreDefinition.callerSearchBase(),
-                        format(ldapIdentityStoreDefinition.callerSearchFilter(), usernamePasswordCredential.getCaller()));
+                String callerDn = searchCaller(ldapContext, usernamePasswordCredential.getCaller());
 
                 LdapContext ldapContextCaller = null;
 
@@ -190,27 +210,12 @@ public class LdapIdentityStore implements IdentityStore {
 
             }
             // More refine work needed for IllegalStateException, IdentityStoreRuntimeException will propagate 
-            catch (IllegalStateException | IdentityStoreConfigException e) {
+            catch (IllegalStateException | IdentityStoreConfigurationException e) {
               return NOT_VALIDATED_RESULT;
             }
         }
 
         return INVALID_RESULT;
-    }
-
-    private String searchCaller(LdapContext ldapContext, String searchBase, String searchExpression) {
-        String result = null;
-        List<SearchResult> callerDn = search(ldapContext, searchBase, searchExpression, getCallerSearchControls());
-
-        if (callerDn.size() > 1) {
-            // TODO User is found in multiple organizations
-
-        }
-        if (callerDn.size() == 1) {
-            result = callerDn.get(0).getNameInNamespace();  // get the fully qualified identification like uid=arjan,ou=caller,dc=jsr375,dc=net
-        }
-        return result;
-
     }
 
     private CredentialValidationResult checkDirectBinding(UsernamePasswordCredential usernamePasswordCredential) {
@@ -258,48 +263,49 @@ public class LdapIdentityStore implements IdentityStore {
     }
 
     private Set<String> retrieveGroupInformation(String callerDn, LdapContext ldapContext) {
-        // Search for the groups starting from the groupBaseDn,
-        // Search for groupCallerDnAttribute equal to callerDn
-        // Return groupNameAttribute
-        List<SearchResult> searchResults = search(
-                ldapContext,
-                ldapIdentityStoreDefinition.groupSearchBase(),
-                ldapIdentityStoreDefinition.groupSearchFilter(),
-                ldapIdentityStoreDefinition.groupMemberAttribute(),
-                callerDn,
-                ldapIdentityStoreDefinition.groupNameAttribute(),
-                getGroupSearchControls()
-        );
+        try {
+            List<SearchResult> searchResults = searchGroups(ldapContext, callerDn);
 
-        // Collect the groups from the search results
-        Set<String> groups = new HashSet<>();
-        for (SearchResult searchResult : searchResults) {
-            for (Object group : get(searchResult, ldapIdentityStoreDefinition.groupNameAttribute())) {
-                groups.add(group.toString());
+            // Collect the groups from the search results
+            Set<String> groups = new HashSet<>();
+            for (SearchResult searchResult : searchResults) {
+                for (Object group : getAttributeValuesFromSearchResult(searchResult, ldapIdentityStoreDefinition.groupNameAttribute())) {
+                    groups.add(group.toString());
+                }
             }
+            return groups;
         }
-        return groups;
+        catch (NamingException e) {
+
+        }
+
+        return emptySet();
     }
 
     private Set<String> retrieveGroupInformationMemberOf(String callerDn, LdapContext ldapContext) {
-        // Look up the memberOf attribute for the specified DN
-        List<?> memberOfValues = null;
         try {
-            Attributes attributes = ldapContext.getAttributes(callerDn,
-                    new String[] { ldapIdentityStoreDefinition.groupMemberOfAttribute() });
+            Attributes attributes = ldapContext.getAttributes(callerDn, new String[] { ldapIdentityStoreDefinition.groupMemberOfAttribute() });
             Attribute memberOfAttribute = attributes.get(ldapIdentityStoreDefinition.groupMemberOfAttribute());
-            memberOfValues = list(memberOfAttribute.getAll());
+
+            if (memberOfAttribute != null) {
+                List<?> memberOfValues = list(memberOfAttribute.getAll());
+                Set<String> groups = new HashSet<>();
+                for (Object group : memberOfValues) {
+                    if (group != null ) {
+                        String groupName = getNameFromDn(group.toString(), ldapIdentityStoreDefinition.groupNameAttribute());
+                        if (groupName != null) {
+                            groups.add(groupName);
+                        }
+                    }
+                }
+                return groups;
+            }
         }
         catch (NamingException e) {
-            throw new IllegalStateException(e);
+            throw new IdentityStoreRuntimeException(e);
         }
 
-        // Collect the groups from the memberOf attribute
-        Set<String> groups = new HashSet<>();
-        for (Object group : memberOfValues) {
-            groups.add(group.toString());
-        }
-        return groups;
+        return emptySet();
     }
 
     private static String createCallerDn(String callerNameAttribute, String callerName, String callerBaseDn) {
@@ -319,6 +325,7 @@ public class LdapIdentityStore implements IdentityStore {
         controls.setSearchScope(convertScopeValue(ldapIdentityStoreDefinition.groupSearchScope()));
         controls.setCountLimit((long)ldapIdentityStoreDefinition.maxResults());
         controls.setTimeLimit(ldapIdentityStoreDefinition.readTimeout());
+        controls.setReturningAttributes(new String[]{ldapIdentityStoreDefinition.groupNameAttribute()});
         return controls;
     }
 
@@ -336,34 +343,26 @@ public class LdapIdentityStore implements IdentityStore {
 
     private LdapContext createDefaultLdapContext() {
         try {
-          return createLdapContext(
-                ldapIdentityStoreDefinition.url(),
-                ldapIdentityStoreDefinition.bindDn(),
-                ldapIdentityStoreDefinition.bindDnPassword());
-        } catch (CommunicationException | InterruptedNamingException ce) {
-          IdentityStoreRuntimeException isre = new IdentityStoreRuntimeException(ce.getMessage(), ce);
-          throw isre;
-        } catch (NamingException ne) {
-          IdentityStoreConfigException isce = new IdentityStoreConfigException(ne.getMessage(), ne);
-          throw isce;
+            return createLdapContext(
+                    ldapIdentityStoreDefinition.url(),
+                    ldapIdentityStoreDefinition.bindDn(),
+                    ldapIdentityStoreDefinition.bindDnPassword());
+        }
+        catch (AuthenticationException e) {
+            throw new IdentityStoreConfigurationException("Bad bindDn or bindPassword for: " + ldapIdentityStoreDefinition.bindDn(), e);
         }
     }
 
-    private LdapContext createCallerLdapContext(String url, String bindDn, String bindCredential) {
-      try {
-        return createLdapContext(url, bindDn, bindCredential);
-      } catch (NamingSecurityException | NameNotFoundException e) {
-        return null;
-      } catch (CommunicationException | InterruptedNamingException ce) {
-        IdentityStoreRuntimeException isre = new IdentityStoreRuntimeException(ce.getMessage(), ce);
-        throw isre;
-      } catch (NamingException ne) {
-        IdentityStoreConfigException isce = new IdentityStoreConfigException(ne.getMessage(), ne);
-        throw isce;
-      }
+    private LdapContext createCallerLdapContext(String url, String bindDn, String bindDnPassword) {
+        try {
+            return createLdapContext(url, bindDn, bindDnPassword);
+        }
+        catch (AuthenticationException e) {
+            return null;
+        }
     }
 
-    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws NamingException {
+    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws AuthenticationException {
         Hashtable<String, String> environment = new Hashtable<>();
 
         environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -373,58 +372,97 @@ public class LdapIdentityStore implements IdentityStore {
         environment.put(SECURITY_PRINCIPAL, bindDn);
         environment.put(SECURITY_CREDENTIALS, bindCredential);
 
-        return new InitialLdapContext(environment, null);
+        try {
+            return new InitialLdapContext(environment, null);
+        }
+        catch (AuthenticationException e) {
+            throw e;
+        }
+        catch (CommunicationException e) {
+            throw new IdentityStoreConfigurationException("Bad connection URL: " + url, e);
+        }
+        catch (Exception e) {
+            throw new IdentityStoreRuntimeException(e);
+        }
     }
 
-    private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchFilter,
-            String groupMemberAttribute, String callerDn, String groupNameAttribute, SearchControls controls) {
-        
-        controls.setReturningAttributes(new String[]{groupNameAttribute}); // e.g. cn
+    private String searchCaller(LdapContext ldapContext, String callerName) {
 
-        String filter;
-        if (searchFilter != null && !searchFilter.trim().isEmpty()) {
-            filter = format(ensureFilterHasParens(searchFilter), callerDn);  // e.g., expression must have %s where callerDn goes
+        String filter = null;
+        if (ldapIdentityStoreDefinition.callerSearchFilter() != null &&
+                !ldapIdentityStoreDefinition.callerSearchFilter().trim().isEmpty()) {
+            // Filter should have exactly one "%s", where callerName will be substituted.
+            filter = format(ldapIdentityStoreDefinition.callerSearchFilter(), callerName);
         }
         else {
-            filter = format("(&(%s=%s)(|(objectclass=group)(objectclass=groupofnames)(objectclass=groupofuniquenames)))",
-                    groupMemberAttribute, callerDn); // e.g., (member=uid=reza,ou=caller,dc=jsr375,dc=net)
+            // Use groupMemberAttribute and callerDn to search for groups
+            filter = format(DEFAULT_USER_FILTER, ldapIdentityStoreDefinition.callerNameAttribute(), callerName);
         }
 
+        List <SearchResult> callerDn =
+                search(ldapContext, ldapIdentityStoreDefinition.callerSearchBase(), filter, getCallerSearchControls());
+
+        if (callerDn.size() > 1) {
+            // TODO User is found in multiple organizations
+        }
+        if (callerDn.size() == 1) {
+            // get the fully qualified identification like uid=arjan,ou=caller,dc=jsr375,dc=net
+            return callerDn.get(0).getNameInNamespace();
+        }
+
+        return null;
+    }
+
+    private List<SearchResult> searchGroups(LdapContext ldapContext, String callerDn) {
+
+        String filter = null;
+        if (ldapIdentityStoreDefinition.groupSearchFilter() != null &&
+                !ldapIdentityStoreDefinition.groupSearchFilter().trim().isEmpty()) {
+            // Filter should have exactly one "%s", where callerDn will be substituted.
+            filter = format(ldapIdentityStoreDefinition.groupSearchFilter(), callerDn);
+        }
+        else {
+            // Use groupMemberAttribute and callerDn to search for groups
+            filter = format(DEFAULT_GROUP_FILTER, ldapIdentityStoreDefinition.groupMemberAttribute(), callerDn);
+        }
+
+        return search(ldapContext, ldapIdentityStoreDefinition.groupSearchBase(), filter, getGroupSearchControls());
+    }
+
+    private static List<SearchResult> search(LdapContext ldapContext, String searchBase, String searchFilter, SearchControls controls) {
         try {
-            return list(ldapContext.search(searchBase, filter, controls));
-        } catch (NamingException e) {
-            throw new IllegalStateException(e);
+            return list(ldapContext.search(searchBase, searchFilter, controls));
+        }
+        catch (NameNotFoundException e) {
+            throw new IdentityStoreConfigurationException("Invalid searchBase", e);
+        }
+        catch (InvalidSearchFilterException e) {
+            throw new IdentityStoreConfigurationException("Invalid search filter", e);
+        }
+        catch (InvalidSearchControlsException e) {
+            throw new IdentityStoreConfigurationException("Invalid search controls", e);
+        }
+        catch (Exception e) {
+            throw new IdentityStoreRuntimeException(e);
         }
     }
 
-    private static String ensureFilterHasParens(String filter) {
-        String filterString = filter.trim();
-        if (!filterString.startsWith("(") || !filterString.endsWith(")")) {
-            return "(" + filterString + ")";
+    private static List<?> getAttributeValuesFromSearchResult(SearchResult searchResult, String attributeName) throws NamingException {
+        Attribute attribute = searchResult.getAttributes().get(attributeName);
+        if (attribute == null) {
+            return Collections.emptyList();
         }
-        return filterString;
+        return list(attribute.getAll());
     }
 
-    private static List<SearchResult> search(LdapContext ldapContext, String searchBase,
-            String searchExpression, SearchControls controls) {
-        try {
-            return list(ldapContext.search(searchBase, searchExpression, controls));
-        } catch (NamingException e) {
-            throw new IllegalStateException(e);
+    private static String getNameFromDn(String dnString, String nameAttribute) throws NamingException {
+        LdapName dn = new LdapName(dnString);  // may throw InvalidNameException
+        Attribute attribute = dn.getRdn(dn.size()-1).toAttributes().get(nameAttribute);
+        if (attribute == null) {
+            // We were configured with the wrong name attribute (group name, or caller name)
+            throw new IdentityStoreConfigurationException("Name attribute '" + nameAttribute + "' not found for DN: " + dnString);
         }
-    }
-
-    private static List<?> get(SearchResult searchResult, String attributeName) {
-        try {
-            Attribute attribute = searchResult.getAttributes().get(attributeName);
-            if (attribute == null) {
-                LOGGER.log(Level.WARNING, "Attribute name '{0}' is invalid, returning empty List", new Object[]{attributeName});
-                return Collections.emptyList();
-            }
-            return list(attribute.getAll());
-        } catch (NamingException e) {
-            throw new IllegalStateException(e);
-        }
+        return attribute.get(0).toString();
     }
 
     @Override
