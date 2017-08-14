@@ -128,47 +128,6 @@ public class LdapIdentityStore implements IdentityStore {
 
     }
 
-    @Override
-    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
-
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager != null) {
-            securityManager.checkPermission(new IdentityStorePermission("getGroups"));
-        }
-
-        LdapContext ldapContext = createDefaultLdapContext();
-
-        if (ldapContext != null) {
-            try {
-                if (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() &&
-                        ldapIdentityStoreDefinition.groupSearchBase().isEmpty() &&
-                        validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
-                    return new HashSet<>(retrieveGroupInformationMemberOf(validationResult.getCallerDn(), ldapContext));
-                }
-                String callerDn = getCallerDn(validationResult, ldapContext);
-                if (callerDn != null) {
-                    return new HashSet<>(retrieveGroupInformation(callerDn, ldapContext));
-                }
-            } finally {
-                closeContext(ldapContext);
-            }
-        }
-
-        return emptySet();
-    }
-
-    private String getCallerDn(CredentialValidationResult validationResult, LdapContext ldapContext) {
-        if (validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
-            // it was handed to us
-            return validationResult.getCallerDn();
-        }
-        // we need to go look for it -- this will only work if we're configured with searchBase and searchFilter
-        if (!ldapIdentityStoreDefinition.callerSearchBase().isEmpty() && !ldapIdentityStoreDefinition.callerSearchFilter().isEmpty()) {
-            return searchCaller(ldapContext, validationResult.getCallerPrincipal().getName());
-        }
-        return null;
-    }
-
     private CredentialValidationResult checkThroughSearch(UsernamePasswordCredential usernamePasswordCredential) {
         LdapContext ldapContext = createDefaultLdapContext();
         
@@ -254,12 +213,45 @@ public class LdapIdentityStore implements IdentityStore {
                 groups);
     }
 
-    private void closeContext(LdapContext ldapContext) {
-        try {
-            ldapContext.close();
-        } catch (NamingException e) {
-            // We can silently ignore this, no?
+    private String getCallerDn(CredentialValidationResult validationResult, LdapContext ldapContext) {
+        if (validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
+            // it was handed to us
+            return validationResult.getCallerDn();
         }
+        // we need to go look for it -- this will only work if we're configured with searchBase and searchFilter
+        if (!ldapIdentityStoreDefinition.callerSearchBase().isEmpty() && !ldapIdentityStoreDefinition.callerSearchFilter().isEmpty()) {
+            return searchCaller(ldapContext, validationResult.getCallerPrincipal().getName());
+        }
+        return null;
+    }
+
+    @Override
+    public Set<String> getCallerGroups(CredentialValidationResult validationResult) {
+
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(new IdentityStorePermission("getGroups"));
+        }
+
+        LdapContext ldapContext = createDefaultLdapContext();
+
+        if (ldapContext != null) {
+            try {
+                if (!ldapIdentityStoreDefinition.groupMemberOfAttribute().isEmpty() &&
+                        ldapIdentityStoreDefinition.groupSearchBase().isEmpty() &&
+                        validationResult.getCallerDn() != null && !validationResult.getCallerDn().isEmpty()) {
+                    return new HashSet<>(retrieveGroupInformationMemberOf(validationResult.getCallerDn(), ldapContext));
+                }
+                String callerDn = getCallerDn(validationResult, ldapContext);
+                if (callerDn != null) {
+                    return new HashSet<>(retrieveGroupInformation(callerDn, ldapContext));
+                }
+            } finally {
+                closeContext(ldapContext);
+            }
+        }
+
+        return emptySet();
     }
 
     private Set<String> retrieveGroupInformation(String callerDn, LdapContext ldapContext) {
@@ -312,78 +304,22 @@ public class LdapIdentityStore implements IdentityStore {
         return String.format("%s=%s,%s", callerNameAttribute, callerName, callerBaseDn);
     }
 
-    private SearchControls getCallerSearchControls() {
-        SearchControls controls = new SearchControls();
-        controls.setSearchScope(convertScopeValue(ldapIdentityStoreDefinition.callerSearchScope()));
-        controls.setCountLimit((long)ldapIdentityStoreDefinition.maxResults());
-        controls.setTimeLimit(ldapIdentityStoreDefinition.readTimeout());
-        return controls;
+    private static List<?> getAttributeValuesFromSearchResult(SearchResult searchResult, String attributeName) throws NamingException {
+        Attribute attribute = searchResult.getAttributes().get(attributeName);
+        if (attribute == null) {
+            return Collections.emptyList();
+        }
+        return list(attribute.getAll());
     }
 
-    private SearchControls getGroupSearchControls() {
-        SearchControls controls = new SearchControls();
-        controls.setSearchScope(convertScopeValue(ldapIdentityStoreDefinition.groupSearchScope()));
-        controls.setCountLimit((long)ldapIdentityStoreDefinition.maxResults());
-        controls.setTimeLimit(ldapIdentityStoreDefinition.readTimeout());
-        controls.setReturningAttributes(new String[]{ldapIdentityStoreDefinition.groupNameAttribute()});
-        return controls;
-    }
-
-    private int convertScopeValue(LdapSearchScope searchScope) {
-        if (searchScope == LdapSearchScope.ONE_LEVEL) {
-            return ONELEVEL_SCOPE;
+    private static String getNameFromDn(String dnString, String nameAttribute) throws NamingException {
+        LdapName dn = new LdapName(dnString);  // may throw InvalidNameException
+        Attribute attribute = dn.getRdn(dn.size()-1).toAttributes().get(nameAttribute);
+        if (attribute == null) {
+            // We were configured with the wrong name attribute (group name, or caller name)
+            throw new IdentityStoreConfigurationException("Name attribute '" + nameAttribute + "' not found for DN: " + dnString);
         }
-        else if (searchScope == LdapSearchScope.SUBTREE) {
-            return SUBTREE_SCOPE;
-        }
-        else {
-            return ONELEVEL_SCOPE;
-        }
-    }
-
-    private LdapContext createDefaultLdapContext() {
-        try {
-            return createLdapContext(
-                    ldapIdentityStoreDefinition.url(),
-                    ldapIdentityStoreDefinition.bindDn(),
-                    ldapIdentityStoreDefinition.bindDnPassword());
-        }
-        catch (AuthenticationException e) {
-            throw new IdentityStoreConfigurationException("Bad bindDn or bindPassword for: " + ldapIdentityStoreDefinition.bindDn(), e);
-        }
-    }
-
-    private LdapContext createCallerLdapContext(String url, String bindDn, String bindDnPassword) {
-        try {
-            return createLdapContext(url, bindDn, bindDnPassword);
-        }
-        catch (AuthenticationException e) {
-            return null;
-        }
-    }
-
-    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws AuthenticationException {
-        Hashtable<String, String> environment = new Hashtable<>();
-
-        environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        environment.put(PROVIDER_URL, url);
-
-        environment.put(SECURITY_AUTHENTICATION, "simple");
-        environment.put(SECURITY_PRINCIPAL, bindDn);
-        environment.put(SECURITY_CREDENTIALS, bindCredential);
-
-        try {
-            return new InitialLdapContext(environment, null);
-        }
-        catch (AuthenticationException e) {
-            throw e;
-        }
-        catch (CommunicationException e) {
-            throw new IdentityStoreConfigurationException("Bad connection URL: " + url, e);
-        }
-        catch (Exception e) {
-            throw new IdentityStoreRuntimeException(e);
-        }
+        return attribute.get(0).toString();
     }
 
     private String searchCaller(LdapContext ldapContext, String callerName) {
@@ -447,22 +383,86 @@ public class LdapIdentityStore implements IdentityStore {
         }
     }
 
-    private static List<?> getAttributeValuesFromSearchResult(SearchResult searchResult, String attributeName) throws NamingException {
-        Attribute attribute = searchResult.getAttributes().get(attributeName);
-        if (attribute == null) {
-            return Collections.emptyList();
-        }
-        return list(attribute.getAll());
+    private SearchControls getCallerSearchControls() {
+        SearchControls controls = new SearchControls();
+        controls.setSearchScope(convertScopeValue(ldapIdentityStoreDefinition.callerSearchScope()));
+        controls.setCountLimit((long)ldapIdentityStoreDefinition.maxResults());
+        controls.setTimeLimit(ldapIdentityStoreDefinition.readTimeout());
+        return controls;
     }
 
-    private static String getNameFromDn(String dnString, String nameAttribute) throws NamingException {
-        LdapName dn = new LdapName(dnString);  // may throw InvalidNameException
-        Attribute attribute = dn.getRdn(dn.size()-1).toAttributes().get(nameAttribute);
-        if (attribute == null) {
-            // We were configured with the wrong name attribute (group name, or caller name)
-            throw new IdentityStoreConfigurationException("Name attribute '" + nameAttribute + "' not found for DN: " + dnString);
+    private SearchControls getGroupSearchControls() {
+        SearchControls controls = new SearchControls();
+        controls.setSearchScope(convertScopeValue(ldapIdentityStoreDefinition.groupSearchScope()));
+        controls.setCountLimit((long)ldapIdentityStoreDefinition.maxResults());
+        controls.setTimeLimit(ldapIdentityStoreDefinition.readTimeout());
+        controls.setReturningAttributes(new String[]{ldapIdentityStoreDefinition.groupNameAttribute()});
+        return controls;
+    }
+
+    private static int convertScopeValue(LdapSearchScope searchScope) {
+        if (searchScope == LdapSearchScope.ONE_LEVEL) {
+            return ONELEVEL_SCOPE;
         }
-        return attribute.get(0).toString();
+        else if (searchScope == LdapSearchScope.SUBTREE) {
+            return SUBTREE_SCOPE;
+        }
+        else {
+            return ONELEVEL_SCOPE;
+        }
+    }
+
+    private LdapContext createDefaultLdapContext() {
+        try {
+            return createLdapContext(
+                    ldapIdentityStoreDefinition.url(),
+                    ldapIdentityStoreDefinition.bindDn(),
+                    ldapIdentityStoreDefinition.bindDnPassword());
+        }
+        catch (AuthenticationException e) {
+            throw new IdentityStoreConfigurationException("Bad bindDn or bindPassword for: " + ldapIdentityStoreDefinition.bindDn(), e);
+        }
+    }
+
+    private LdapContext createCallerLdapContext(String url, String bindDn, String bindDnPassword) {
+        try {
+            return createLdapContext(url, bindDn, bindDnPassword);
+        }
+        catch (AuthenticationException e) {
+            return null;
+        }
+    }
+
+    private static LdapContext createLdapContext(String url, String bindDn, String bindCredential) throws AuthenticationException {
+        Hashtable<String, String> environment = new Hashtable<>();
+
+        environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        environment.put(PROVIDER_URL, url);
+
+        environment.put(SECURITY_AUTHENTICATION, "simple");
+        environment.put(SECURITY_PRINCIPAL, bindDn);
+        environment.put(SECURITY_CREDENTIALS, bindCredential);
+
+        try {
+            return new InitialLdapContext(environment, null);
+        }
+        catch (AuthenticationException e) {
+            throw e;
+        }
+        catch (CommunicationException e) {
+            throw new IdentityStoreConfigurationException("Bad connection URL: " + url, e);
+        }
+        catch (Exception e) {
+            throw new IdentityStoreRuntimeException(e);
+        }
+    }
+
+    private static void closeContext(LdapContext ldapContext) {
+        try {
+            ldapContext.close();
+        } catch (NamingException e) {
+            // We can silently ignore this, no?
+        }
     }
 
     @Override
