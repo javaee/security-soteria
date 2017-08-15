@@ -184,6 +184,23 @@ public class AnnotationELPProcessor {
         return stream(expressions).anyMatch(expr -> isELExpression(expr));
     }
     
+    /**
+     * Verifies EL expression correctness. Only values that are known to be EL
+     * expressions should be passed as parameters to this method.
+     *
+     * @param expressions
+     * @throws IllegalArgumentException if any of the expressions is invalid
+     */
+    @SafeVarargs
+    public static void validateExpressions(String... expressions) {
+        // This method should create real Expressions to verify correctness. Do a basic syntax check for now.
+        for (String expression : expressions) {
+            if (!"".equals(expression) && !isELExpression(expression)) {
+                throw new IllegalArgumentException(expression + " is not a valid EL expression");
+            }
+        }
+    }
+    
     private static boolean isELExpression(String expression) {
         return !isEmpty(expression) && (isDeferredExpression(expression) || isImmediateExpression(expression));
     }

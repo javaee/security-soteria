@@ -46,6 +46,7 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 import javax.el.ELProcessor;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.security.enterprise.authentication.mechanism.http.RememberMe;
+import javax.security.enterprise.identitystore.LdapIdentityStoreDefinition;
 
 /**
  * An annotation literal for <code>@RememberMe</code>.
@@ -99,6 +100,8 @@ public class RememberMeAnnotationLiteral extends AnnotationLiteral<RememberMe> i
     }
     
     public static RememberMe eval(RememberMe in, ELProcessor elProcessor) {
+        validateExpressionProperties(in);
+        
         if (!hasAnyELExpression(in)) {
             return in;
         }
@@ -126,6 +129,15 @@ public class RememberMeAnnotationLiteral extends AnnotationLiteral<RememberMe> i
             
             throw t;
         }
+    }
+    
+    public static void validateExpressionProperties(RememberMe in) {
+        AnnotationELPProcessor.validateExpressions(
+                in.cookieMaxAgeSecondsExpression(),
+                in.cookieSecureOnlyExpression(),
+                in.cookieHttpOnlyExpression(),
+                in.isRememberMeExpression()
+        );
     }
     
     public static boolean hasAnyELExpression(RememberMe in) {

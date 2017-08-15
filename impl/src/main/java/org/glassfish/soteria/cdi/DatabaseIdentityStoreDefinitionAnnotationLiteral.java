@@ -96,6 +96,8 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
     }
     
     public static DatabaseIdentityStoreDefinition eval(DatabaseIdentityStoreDefinition in) {
+        validateExpressionProperties(in);
+        
         if (!hasAnyELExpression(in)) {
             return in;
         }
@@ -115,6 +117,13 @@ public class DatabaseIdentityStoreDefinitionAnnotationLiteral extends Annotation
         out.setHasDeferredExpressions(hasAnyELExpression(out));
         
         return out;
+    }
+    
+    public static void validateExpressionProperties(DatabaseIdentityStoreDefinition in) {
+        AnnotationELPProcessor.validateExpressions(
+                in.priorityExpression(),
+                in.useForExpression()
+        );
     }
     
     public static boolean hasAnyELExpression(DatabaseIdentityStoreDefinition in) {
