@@ -163,7 +163,7 @@ public class JACC {
             });
             return ctx;
         } catch (PrivilegedActionException e) {
-            throw new IllegalStateException(e.getException());
+            throw new IllegalStateException(e.getCause());
         }
     }
     

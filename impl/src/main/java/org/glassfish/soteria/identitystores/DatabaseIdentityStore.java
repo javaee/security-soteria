@@ -194,6 +194,8 @@ public class DatabaseIdentityStore implements IdentityStore {
             if (dataSource == null) {
                 throw new IdentityStoreConfigurationException("Jndi lookup failed for DataSource " + dataBaseIdentityStoreDefinition.dataSourceLookup());
             }
+        } catch (IdentityStoreConfigurationException e) {
+            throw e;
         } catch (Exception e) {
             throw new IdentityStoreRuntimeException(e);
         }
