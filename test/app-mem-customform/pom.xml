@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-b12</version>
+        <version>1.0-b13-SNAPSHOT</version>
     </parent>
 	
 	<artifactId>app-mem-customform</artifactId>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.glassfish.soteria.test</groupId>
             <artifactId>common</artifactId>
-            <version>1.0-b12</version>
+            <version>1.0-b13-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
