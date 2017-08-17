@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-b14-SNAPSHOT</version>
+        <version>1.0-b13</version>
     </parent>
     
     <artifactId>common</artifactId>
