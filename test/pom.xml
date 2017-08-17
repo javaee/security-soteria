@@ -5,7 +5,7 @@
     <parent>
        <groupId>org.glassfish.soteria</groupId>
        <artifactId>parent</artifactId>
-       <version>1.0-b13-SNAPSHOT</version>
+       <version>1.0-b12-SNAPSHOT</version>
     </parent>
 
     <groupId>org.glassfish.soteria.test</groupId>
@@ -153,7 +153,7 @@
                 <dependency>
                     <groupId>org.glassfish.soteria</groupId>
                     <artifactId>javax.security.enterprise</artifactId>
-                    <version>1.0-b13-SNAPSHOT</version>
+                    <version>1.0-b12-SNAPSHOT</version>
                 </dependency>
             </dependencies>
         </profile> 
