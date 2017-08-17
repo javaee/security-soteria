@@ -43,7 +43,9 @@ import static java.lang.Boolean.TRUE;
 import static org.glassfish.soteria.Utils.isEmpty;
 
 import java.io.IOException;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
 
@@ -255,12 +257,15 @@ public final class Jaspic {
 	public static String registerServerAuthModule(ServerAuthModule serverAuthModule, ServletContext servletContext) {
 		
 	    // Register the factory-factory-factory for the SAM
-	    String registrationId = AuthConfigFactory.getFactory().registerConfigProvider(
-            new DefaultAuthConfigProvider(serverAuthModule),
-            "HttpServlet", 
-            getAppContextID(servletContext), 
-            "Default single SAM authentication config provider"
-        );
+	    String registrationId = AccessController.doPrivileged(new PrivilegedAction<String>() {
+	        public String run() {
+	            return AuthConfigFactory.getFactory().registerConfigProvider(
+	                    new DefaultAuthConfigProvider(serverAuthModule),
+	                    "HttpServlet", 
+	                    getAppContextID(servletContext), 
+	                    "Default single SAM authentication config provider");
+	        }
+	    });
 		
 		// Remember the registration ID returned by the factory, so we can unregister the JASPIC module when the web module
 		// is undeployed. JASPIC being the low level API that it is won't do this automatically.
@@ -278,7 +283,11 @@ public final class Jaspic {
 	public static void deregisterServerAuthModule(ServletContext servletContext) {
 		String registrationId = (String) servletContext.getAttribute(CONTEXT_REGISTRATION_ID);
 		if (!isEmpty(registrationId)) {
-			AuthConfigFactory.getFactory().removeRegistration(registrationId);
+			AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+			    public Boolean run() {
+			        return AuthConfigFactory.getFactory().removeRegistration(registrationId);
+			    }
+			});
 		}
 	}
 	
