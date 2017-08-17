@@ -38,6 +38,7 @@
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>spec-version-maven-plugin</artifactId>
+                <version>1.2</version>
                 <configuration>
                     <spec>
                         <nonFinal>${non_final}</nonFinal>

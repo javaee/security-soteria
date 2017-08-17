@@ -37,6 +37,13 @@
 
         <spec_version>0.0</spec_version>
         <new_spec_version>1.0</new_spec_version>
+
+	<!--
+	    <spec_build> and <spec_impl_version> are overridden
+	    below for the "release" profile, and must be updated
+	    in both places when the release or build number of
+	    the dependency changes.
+	-->
         <spec_build>12</spec_build>
         <spec_impl_version>1.0-b12-SNAPSHOT</spec_impl_version>
 
@@ -52,6 +59,16 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+
+    <profiles>
+        <profile>
+	    <id>release</id>
+	    <properties>
+                <spec_build>11</spec_build>
+                <spec_impl_version>1.0-b11</spec_impl_version>
+	    </properties>
+	</profile>
+    </profiles>
 
     <scm>
         <connection>scm:git:https://github.com/javaee/security-soteria.git</connection>
@@ -69,14 +86,24 @@
         </dependency>
     </dependencies>
     <repositories>
-       <repository>
-          <id>jvnet-nexus-snapshots</id>
-          <url>${jvnetDistMgmtSnapshotsUrl}</url>
-          <snapshots>
-              <enabled>true</enabled>
-          </snapshots>
-       </repository>
-     </repositories>
+        <repository>
+            <id>glassfish Promoted</id>
+            <url>https://maven.java.net/content/repositories/promoted/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jvnet-nexus-snapshots</id>
+            <url>${jvnetDistMgmtSnapshotsUrl}</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 
     <build>
