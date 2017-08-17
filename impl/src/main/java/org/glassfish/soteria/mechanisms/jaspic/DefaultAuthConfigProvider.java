@@ -81,6 +81,9 @@ public class DefaultAuthConfigProvider implements AuthConfigProvider {
         // and especially "appContext" (3rd parameter) values have to come from
         // at this place.
         if (factory != null) {
+            // If this method ever gets called, it may throw a SecurityException.
+            // Don't bother with a PrivilegedAction as we don't expect to ever be
+            // constructed this way.
             factory.registerConfigProvider(this, null, null, "Auto registration");
         }
     }

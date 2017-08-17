@@ -44,10 +44,13 @@ import static java.util.Collections.list;
 import static org.glassfish.soteria.authorization.EJB.getCurrentEJBName;
 import static org.glassfish.soteria.authorization.EJB.getEJBContext;
 
+import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Principal;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
 import java.util.HashSet;
@@ -153,9 +156,14 @@ public class JACC {
     @SuppressWarnings("unchecked")
     public static <T> T getFromContext(String contextName) {
         try {
-            return (T) PolicyContext.getContext(contextName);
-        } catch (PolicyContextException e) {
-            throw new IllegalStateException(e);
+            T ctx = AccessController.doPrivileged(new PrivilegedExceptionAction<T>() {
+                public T run() throws PolicyContextException {
+                    return (T) PolicyContext.getContext(contextName);
+                }
+            });
+            return ctx;
+        } catch (PrivilegedActionException e) {
+            throw new IllegalStateException(e.getException());
         }
     }
     
