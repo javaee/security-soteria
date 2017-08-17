@@ -189,7 +189,8 @@ public class RememberMeInterceptor implements Serializable {
             // And remove the token (and with it the authenticated identity) from the store
             rememberMeIdentityStore.removeLoginToken(rememberMeCookie.getValue());
         }
-        
+
+        invocationContext.proceed();
     }
     
     private RememberMe getRememberMeFromIntercepted(ELProcessor elProcessor) {
