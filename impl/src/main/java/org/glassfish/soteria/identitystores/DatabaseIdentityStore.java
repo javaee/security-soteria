@@ -105,8 +105,8 @@ public class DatabaseIdentityStore implements IdentityStore {
 
     public CredentialValidationResult validate(UsernamePasswordCredential usernamePasswordCredential) {
 
-        DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
-        
+        DataSource dataSource = getDataSource();
+
         List<String> passwords = executeQuery(
             dataSource, 
             dataBaseIdentityStoreDefinition.callerQuery(),
@@ -137,8 +137,8 @@ public class DatabaseIdentityStore implements IdentityStore {
             securityManager.checkPermission(new IdentityStorePermission("getGroups"));
         }
 
-        DataSource dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
-        
+        DataSource dataSource = getDataSource();
+
         return new HashSet<>(executeQuery(
             dataSource,
             dataBaseIdentityStoreDefinition.groupsQuery(),
@@ -159,7 +159,7 @@ public class DatabaseIdentityStore implements IdentityStore {
                 }
             }
         } catch (SQLException e) {
-            throw new IllegalStateException(e);
+            throw new IdentityStoreConfigurationException(e.getMessage(), e);
         }
 
         return result;
@@ -186,5 +186,17 @@ public class DatabaseIdentityStore implements IdentityStore {
         
         return asList(raw.toString()).stream();
     }
-   
+
+    private DataSource getDataSource() {
+        DataSource dataSource = null;
+        try {
+            dataSource = jndiLookup(dataBaseIdentityStoreDefinition.dataSourceLookup());
+            if (dataSource == null) {
+                throw new IdentityStoreConfigurationException("Jndi lookup failed for DataSource " + dataBaseIdentityStoreDefinition.dataSourceLookup());
+            }
+        } catch (Exception e) {
+            throw new IdentityStoreRuntimeException(e);
+        }
+        return dataSource;
+    }
 }
