@@ -174,7 +174,7 @@ public class RememberMeInterceptor implements Serializable {
         return authstatus;
     }
     
-    private void cleanSubject(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
+    private void cleanSubject(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
     
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
         RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext));
@@ -189,7 +189,8 @@ public class RememberMeInterceptor implements Serializable {
             // And remove the token (and with it the authenticated identity) from the store
             rememberMeIdentityStore.removeLoginToken(rememberMeCookie.getValue());
         }
-        
+
+        invocationContext.proceed();
     }
     
     private RememberMe getRememberMeFromIntercepted(ELProcessor elProcessor) {
