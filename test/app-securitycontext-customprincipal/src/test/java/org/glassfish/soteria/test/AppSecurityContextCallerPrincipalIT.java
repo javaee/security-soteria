@@ -59,20 +59,29 @@ public class AppSecurityContextCallerPrincipalIT extends ArquillianBase {
 
     @Test
     public void testServletCustomPrincipal() {
-        assertTrue(readFromServer("/servlet")
-                .contains("org.glassfish.soteria.test.CustomPrincipal"));
+        String resp = readFromServer("/servlet");
+        assertTrue(isContainerPrincipalTypeInResponse(resp));
     }
 
     @Test
     public void testServletCustomCallerPrincipal() {
-        assertTrue(readFromServer("/servlet?useCallerPrincipal")
-                .contains("org.glassfish.soteria.test.CustomCallerPrincipal"));
+        String resp = readFromServer("/servlet?useCallerPrincipal");
+        assertTrue(isContainerPrincipalTypeInResponse(resp));
     }
 
     @Test
     public void testEjbCustomPrincipal() {
-        assertTrue(readFromServer("/ejb-servlet")
-                .contains("org.glassfish.soteria.test.CustomPrincipal"));
+        String resp = readFromServer("/ejb-servlet");
+        assertTrue(isContainerPrincipalTypeInResponse(resp));
     }
 
+    public boolean isContainerPrincipalTypeInResponse(String response) {
+        return response.contains("com.sun.enterprise.security.web.integration.WebPrincipal") ||
+                response.contains("weblogic.security.principal.WLSUserImpl") ||
+                response.contains("com.ibm.ws.security.authentication.principals.WSPrincipal") ||
+                response.contains("org.jboss.security.SimplePrincipal") ||
+                response.contains("org.jboss.security.SimpleGroup") ||
+                response.contains("org.apache.tomee.catalina.TomcatSecurityService$TomcatUser") ||
+                response.contains("org.glassfish.soteria.test.CustomPrincipal");
+    }
 }
