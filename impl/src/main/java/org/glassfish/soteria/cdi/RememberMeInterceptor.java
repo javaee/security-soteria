@@ -52,7 +52,9 @@ import static org.glassfish.soteria.servlet.CookieHandler.removeCookie;
 import static org.glassfish.soteria.servlet.CookieHandler.saveCookie;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Priority;
 import javax.el.ELProcessor;
@@ -115,7 +117,7 @@ public class RememberMeInterceptor implements Serializable {
     private AuthenticationStatus validateRequest(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
         
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get();
-        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext));
+        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext), invocationContext);
         
         Cookie rememberMeCookie = getCookie(request, rememberMeAnnotation.cookieName());
         
@@ -177,7 +179,7 @@ public class RememberMeInterceptor implements Serializable {
     private void cleanSubject(InvocationContext invocationContext, HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws Exception {
     
         RememberMeIdentityStore rememberMeIdentityStore = CDI.current().select(RememberMeIdentityStore.class).get(); // TODO ADD CHECKS
-        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext));
+        RememberMe rememberMeAnnotation = getRememberMeFromIntercepted(getElProcessor(invocationContext, httpMessageContext), invocationContext);
         
         Cookie rememberMeCookie = getCookie(request, rememberMeAnnotation.cookieName());
         
@@ -193,10 +195,23 @@ public class RememberMeInterceptor implements Serializable {
         invocationContext.proceed();
     }
     
-    private RememberMe getRememberMeFromIntercepted(ELProcessor elProcessor) {
+    private RememberMe getRememberMeFromIntercepted(ELProcessor elProcessor, InvocationContext invocationContext) {
         Optional<RememberMe> optionalRememberMe = getAnnotation(beanManager, interceptedBean.getBeanClass(), RememberMe.class);
         if (optionalRememberMe.isPresent()) {
             return RememberMeAnnotationLiteral.eval(optionalRememberMe.get(), elProcessor);
+        }
+        
+        @SuppressWarnings("unchecked")
+        Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
+        if (bindings != null) {
+            optionalRememberMe = bindings.stream()
+                    .filter(annotation -> annotation.annotationType().equals(RememberMe.class))
+                    .findAny()
+                    .map(annotation -> RememberMe.class.cast(annotation));
+            
+            if (optionalRememberMe.isPresent()) {
+                return RememberMeAnnotationLiteral.eval(optionalRememberMe.get(), elProcessor);
+            }
         }
         
         throw new IllegalStateException("@RememberMe not present on " + interceptedBean.getBeanClass());
