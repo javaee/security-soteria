@@ -44,6 +44,7 @@ import java.security.Principal;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.security.enterprise.SecurityContext;
+import java.util.Set;
 
 @Stateless
 public class Ejb {
@@ -53,5 +54,8 @@ public class Ejb {
 
     public Principal getPrincipal() {
         return sc.getCallerPrincipal();
+    }
+    public <T extends Principal> Set<T> getPrincipalsByType(Class<T> pType){
+        return sc.getPrincipalsByType(pType);
     }
 }
