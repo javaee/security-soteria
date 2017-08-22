@@ -51,6 +51,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.security.Principal;
 
 /**
  * Test Servlet that authenticates that authenticates the request and returns
@@ -71,7 +72,15 @@ public class EjbServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         securityContext.authenticate(request, response, withParams());
 
-        response.getWriter().write(ejb.getPrincipal().getClass().getName());
+        response.getWriter().write(ejb.getPrincipal().getClass().getName()+",");
+
+        Principal applicationPrincipal;
+        if (request.getParameter("useCallerPrincipal") != null) {
+            applicationPrincipal=ejb.getPrincipalsByType(CustomCallerPrincipal.class).toArray(new CustomCallerPrincipal[0])[0];
+        } else {
+            applicationPrincipal=ejb.getPrincipalsByType(CustomPrincipal.class).toArray(new CustomPrincipal[0])[0];
+        }
+        response.getWriter().write(applicationPrincipal.getClass().getName());
     }
 
 }

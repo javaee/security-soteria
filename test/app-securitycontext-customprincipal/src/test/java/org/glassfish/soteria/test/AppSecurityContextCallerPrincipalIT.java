@@ -59,20 +59,41 @@ public class AppSecurityContextCallerPrincipalIT extends ArquillianBase {
 
     @Test
     public void testServletCustomPrincipal() {
-        assertTrue(readFromServer("/servlet")
-                .contains("org.glassfish.soteria.test.CustomPrincipal"));
+        String resp = readFromServer("/servlet");
+        assertTrue(isContainerPrincipalTypeInResponse(resp,false));
     }
 
     @Test
     public void testServletCustomCallerPrincipal() {
-        assertTrue(readFromServer("/servlet?useCallerPrincipal")
-                .contains("org.glassfish.soteria.test.CustomCallerPrincipal"));
+        String resp = readFromServer("/servlet?useCallerPrincipal");
+        assertTrue(isContainerPrincipalTypeInResponse(resp,true));
     }
 
     @Test
     public void testEjbCustomPrincipal() {
-        assertTrue(readFromServer("/ejb-servlet")
-                .contains("org.glassfish.soteria.test.CustomPrincipal"));
+        String resp = readFromServer("/ejb-servlet");
+        assertTrue(isContainerPrincipalTypeInResponse(resp,false));
     }
 
+    @Test
+    public void testEjbCustomCallerPrincipal() {
+        String resp = readFromServer("/ejb-servlet?useCallerPrincipal");
+        assertTrue(isContainerPrincipalTypeInResponse(resp,true));
+    }
+
+    public boolean isContainerPrincipalTypeInResponse(String response, boolean isCallerPrincipalUsed) {
+        String[] principalArray = response.split(",");
+        String containerPrincipal = principalArray[0];
+        String applicationPrincipal = principalArray[1];
+        boolean isContainerPricipalCorrect = containerPrincipal.contains("com.sun.enterprise.security.web.integration.WebPrincipal") ||
+                containerPrincipal.contains("weblogic.security.principal.WLSUserImpl") ||
+                containerPrincipal.contains("com.ibm.ws.security.authentication.principals.WSPrincipal") ||
+                containerPrincipal.contains("org.jboss.security.SimplePrincipal") ||
+                containerPrincipal.contains("org.jboss.security.SimpleGroup") ||
+                containerPrincipal.contains("org.apache.tomee.catalina.TomcatSecurityService$TomcatUser") ||
+                containerPrincipal.contains("javax.security.enterprise.CallerPrincipal");
+
+        boolean isApplicationPrincipalCorrect = isCallerPrincipalUsed ? applicationPrincipal.contains("org.glassfish.soteria.test.CustomCallerPrincipal") : applicationPrincipal.contains("org.glassfish.soteria.test.CustomPrincipal");
+        return isContainerPricipalCorrect && isApplicationPrincipalCorrect;
+    }
 }
