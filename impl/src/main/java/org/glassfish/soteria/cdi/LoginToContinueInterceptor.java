@@ -51,7 +51,9 @@ import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 import static org.glassfish.soteria.servlet.RequestCopier.copy;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Priority;
 import javax.enterprise.inject.Intercepted;
@@ -330,6 +332,19 @@ public class LoginToContinueInterceptor implements Serializable {
         Optional<LoginToContinue> optionalLoginToContinue = getAnnotation(beanManager, interceptedBean.getBeanClass(), LoginToContinue.class);
         if (optionalLoginToContinue.isPresent()) {
             return optionalLoginToContinue.get();
+        }
+        
+        @SuppressWarnings("unchecked")
+        Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
+        if (bindings != null) {
+            optionalLoginToContinue = bindings.stream()
+                    .filter(annotation -> annotation.annotationType().equals(LoginToContinue.class))
+                    .findAny()
+                    .map(annotation -> LoginToContinue.class.cast(annotation));
+            
+            if (optionalLoginToContinue.isPresent()) {
+                return optionalLoginToContinue.get();
+            }
         }
         
         throw new IllegalStateException("@LoginToContinue not present on " + interceptedBean.getBeanClass());
