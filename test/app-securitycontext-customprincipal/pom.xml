@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.glassfish.soteria.test</groupId>
             <artifactId>common</artifactId>
-            <version>1.0-b14-SNAPSHOT</version>
+            <version>1.0-b15-SNAPSHOT</version>
         </dependency>
     </dependencies>
     
