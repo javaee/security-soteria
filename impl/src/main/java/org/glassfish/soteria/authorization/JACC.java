@@ -48,7 +48,9 @@ import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.security.Policy;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
@@ -119,11 +121,22 @@ public class JACC {
     }
 
     public static boolean hasPermission(Subject subject, Permission permission) {
-        return getPolicy().implies(fromSubject(subject), permission);
+        return getPolicyPrivileged().implies(fromSubject(subject), permission);
     }
 
     public static PermissionCollection getPermissionCollection(Subject subject) {
-        return getPolicy().getPermissions(fromSubject(subject));
+        // This may not be portable. According to the javadoc, "Applications are discouraged from
+        // calling this method since this operation may not be supported by all policy implementations.
+        // Applications should rely on the implies method to perform policy checks."
+        return getPolicyPrivileged().getPermissions(fromSubject(subject));
+    }
+
+    private static Policy getPolicyPrivileged() {
+        return (Policy) AccessController.doPrivileged(new PrivilegedAction<Policy>() {
+            public Policy run() {
+                return getPolicy();
+            }
+        });
     }
 
     public static Set<String> filterRoles(PermissionCollection permissionCollection) {

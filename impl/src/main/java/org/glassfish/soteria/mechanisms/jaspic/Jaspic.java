@@ -139,13 +139,18 @@ public final class Jaspic {
 			throw new IllegalArgumentException(e);
 		}
 	}
-	
+
 	public static void cleanSubject(Subject subject) {
 	    if (subject != null) {
-            subject.getPrincipals().clear();
-        }
+	        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+	            public Void run() {
+	                subject.getPrincipals().clear();
+	                return null;
+	            }
+	        });
+	    }
 	}
-	
+
 	public static boolean isRegisterSession(MessageInfo messageInfo) {
 		return Boolean.valueOf((String)messageInfo.getMap().get(REGISTER_SESSION));
 	}
