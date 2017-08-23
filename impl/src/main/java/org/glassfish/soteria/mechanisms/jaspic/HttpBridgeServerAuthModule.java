@@ -140,7 +140,7 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
                                 msgContext);
                 AuthStatus authStatus = fromAuthenticationStatus(status);
                 if (authStatus == AuthStatus.SUCCESS) {
-                    return AuthStatus.SEND_SUCESS;
+                    return AuthStatus.SEND_SUCCESS;
                 }
                 return authStatus;
             } catch (AuthenticationException e) {
