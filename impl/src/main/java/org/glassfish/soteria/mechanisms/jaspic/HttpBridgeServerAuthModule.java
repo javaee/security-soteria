@@ -133,11 +133,11 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
 
             try {
                 AuthenticationStatus status = CDI.current()
-                        .select(HttpAuthenticationMechanism.class).get()
-                        .secureResponse(
-                                msgContext.getRequest(), 
-                                msgContext.getResponse(), 
-                                msgContext);
+                                                 .select(HttpAuthenticationMechanism.class).get()
+                                                 .secureResponse(
+                                                     msgContext.getRequest(), 
+                                                     msgContext.getResponse(), 
+                                                     msgContext);
                 AuthStatus authStatus = fromAuthenticationStatus(status);
                 if (authStatus == AuthStatus.SUCCESS) {
                     return AuthStatus.SEND_SUCCESS;
