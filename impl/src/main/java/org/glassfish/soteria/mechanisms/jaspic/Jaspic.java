@@ -177,6 +177,12 @@ public final class Jaspic {
     }
 
 	private static void handleCallbacks(Subject clientSubject, CallbackHandler handler, CallerPrincipalCallback callerPrincipalCallback, Set<String> groups) {
+	    if (clientSubject == null) {
+	        throw new IllegalArgumentException("Null clientSubject!");
+	    }
+	    if (handler == null) {
+	        throw new IllegalArgumentException("Null callback handler!");
+	    }
 	    try {
 	        if (groups == null || isEmpty(groups) ||
 	                (callerPrincipalCallback.getPrincipal() == null && callerPrincipalCallback.getName() == null)) {

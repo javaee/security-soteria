@@ -130,15 +130,19 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
         @Override
         public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
             HttpMessageContext msgContext = new HttpMessageContextImpl(handler, messageInfo, null);
-        
+
             try {
                 AuthenticationStatus status = CDI.current()
-                                                 .select(HttpAuthenticationMechanism.class).get()
-                                                 .secureResponse(
-                                                     msgContext.getRequest(), 
-                                                     msgContext.getResponse(), 
-                                                     msgContext);
-                return fromAuthenticationStatus(status);
+                        .select(HttpAuthenticationMechanism.class).get()
+                        .secureResponse(
+                                msgContext.getRequest(), 
+                                msgContext.getResponse(), 
+                                msgContext);
+                AuthStatus authStatus = fromAuthenticationStatus(status);
+                if (authStatus == AuthStatus.SUCCESS) {
+                    return AuthStatus.SEND_SUCESS;
+                }
+                return authStatus;
             } catch (AuthenticationException e) {
                 throw (AuthException) new AuthException("Secure response failure in HttpAuthenticationMechanism").initCause(e);
             } finally {
@@ -146,7 +150,7 @@ public class HttpBridgeServerAuthModule implements ServerAuthModule {
                     cdiPerRequestInitializer.destroy(msgContext.getRequest());
                 }
             }
-            
+
         }
 
         /**
