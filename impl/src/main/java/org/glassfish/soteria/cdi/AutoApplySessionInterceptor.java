@@ -96,21 +96,9 @@ public class AutoApplySessionInterceptor implements Serializable {
         
         return invocationContext.proceed();
     }
-    
-    // TEMP workaround for https://github.com/payara/Payara/issues/290#issuecomment-207136005
-    // TODO: THIS HAS TO BE FIXED AND SHOULD NOT STAY IN THE CODE LIKE THIS
+
     private Principal getPrincipal(HttpServletRequest request) {
-        
-        try {
-            ELProcessor elProcessor = new ELProcessor();
-            elProcessor.defineBean("request", request);
-            return (Principal) elProcessor.eval("request.getUnwrappedCoyoteRequest().getUserPrincipal()");
-        } catch (Exception e) {
-            // ignore
-        }
-        
         return request.getUserPrincipal();
-        
     }
-    
+
 }
