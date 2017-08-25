@@ -16,11 +16,10 @@
 
     <licenses>
         <license>
-            <name>
-                Dual license consisting of the CDDL v1.1 and GPL v2
-            </name>
-            <url>https://glassfish.java.net/public/CDDL+GPL_1_1.html</url>
+            <name>CDDL + GPLv2 with Classpath Exception</name>
+            <url>https://oss.oracle.com/licenses/CDDL+GPL-1.1</url>
             <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
 
