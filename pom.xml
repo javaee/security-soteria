@@ -175,10 +175,16 @@
                     <javadocVersion>1.8</javadocVersion>
                     <notimestamp>true</notimestamp>
                     <splitindex>true</splitindex>
-                    <doctitle>Soteria API documentation</doctitle>
+                    <doctitle>${project.name} ${project.version}</doctitle>
                     <links>
                         <link>https://docs.oracle.com/javaee/7/api/</link>
                     </links>
+                    <bottom>
+<![CDATA[Copyright &#169; 2015-2017,
+    <a href="http://www.oracle.com">Oracle</a>
+    and/or its affiliates. All Rights Reserved.
+]]>
+                    </bottom>
                 </configuration>
                 <executions>
                     <execution>

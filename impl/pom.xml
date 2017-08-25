@@ -10,8 +10,8 @@
     <artifactId>javax.security.enterprise</artifactId>
     <packaging>bundle</packaging>
 
-    <name>Soteria ${project.version} Java EE Security RI</name>
-    <description>Java EE Security API Reference Implementation</description>
+    <name>Soteria Reference Implementation</name>
+    <description>Reference Implementation for Java EE Security API</description>
 
     <properties>
         <packages.export>

@@ -12,7 +12,7 @@
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>Soteria ${project.version} Integration tests and examples</name>
+    <name>Soteria Integration Tests and Examples</name>
 
     <properties>
         <!-- Test servers -->
