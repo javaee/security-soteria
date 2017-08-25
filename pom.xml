@@ -38,12 +38,12 @@
         <spec_version>0.0</spec_version>
         <new_spec_version>1.0</new_spec_version>
 
-	<!--
-	    <spec_build> and <spec_impl_version> are overridden
-	    below for the "release" profile, and must be updated
-	    in both places when the release or build number of
-	    the dependency changes.
-	-->
+        <!--
+            <spec_build> and <spec_impl_version> are overridden
+            below for the "release" profile, and must be updated
+            in both places when the release or build number of
+            the dependency changes.
+        -->
         <spec_build>12</spec_build>
         <spec_impl_version>1.0-b12-SNAPSHOT</spec_impl_version>
 
@@ -58,16 +58,17 @@
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <copyright-plugin.version>1.44</copyright-plugin.version>
     </properties>
 
     <profiles>
         <profile>
-	    <id>release</id>
-	    <properties>
+            <id>release</id>
+            <properties>
                 <spec_build>11</spec_build>
                 <spec_impl_version>1.0-b11</spec_impl_version>
-	    </properties>
-	</profile>
+            </properties>
+        </profile>
     </profiles>
 
     <scm>
@@ -121,40 +122,27 @@
                     <extensions>true</extensions>
                 </plugin>
                 <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>3.0</version>
+                    <groupId>org.glassfish.copyright</groupId>
+                    <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                    <version>${copyright-plugin.version}</version>
+                    <configuration>
+                        <scm>git</scm>
+                        <scmOnly>true</scmOnly>
+                        <exclude>
+                            <pattern>/LICENSE.txt</pattern>
+                            <pattern>/README.md</pattern>
+                        </exclude>
+                    </configuration>
                     <executions>
                         <execution>
+                            <id>check-copyright</id>
+                            <phase>process-test-sources</phase>
                             <goals>
+                                <goal>copyright</goal>
                                 <goal>check</goal>
                             </goals>
                         </execution>
                     </executions>
-                    <configuration>
-                        <header>src/license/header.txt</header>
-                        <properties>
-                            <owner>Oracle</owner>
-                            <currentYear>2016</currentYear>
-                        </properties>
-                        <excludes>
-                            <exclude>**/*.adoc</exclude>
-                            <exclude>**/*.launch</exclude>
-                            <exclude>**/*.sh</exclude>
-                            <exclude>**/pom.xml</exclude>
-                            <exclude>**/README</exclude>
-                            <exclude>**/settings.xml</exclude>
-                            <exclude>src/license/**</exclude>
-                            <exclude>src/test/resources/**</exclude>
-                            <exclude>src/main/resources/**</exclude>
-                        </excludes>
-                        <headerDefinitions>
-                            <headerDefinition>src/license/headers.xml</headerDefinition>
-                        </headerDefinitions>
-                        <mapping>
-                            <java>JAVA_STYLE</java>
-                        </mapping>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
