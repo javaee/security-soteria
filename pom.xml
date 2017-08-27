@@ -74,10 +74,10 @@
         <api_package>javax.security.enterprise</api_package>
         <impl_namespace>org.glassfish.soteria</impl_namespace>
 
-        <non_final>true</non_final>
+        <non_final>false</non_final>
 
-        <spec_version>0.0</spec_version>
-        <new_spec_version>1.0</new_spec_version>
+        <spec_version>1.0</spec_version>
+        <new_spec_version>1.1</new_spec_version>
 
         <!--
             <spec_build> and <spec_impl_version> are overridden
@@ -85,20 +85,21 @@
             in both places when the release or build number of
             the dependency changes.
         -->
-        <spec_build>12</spec_build>
-        <spec_impl_version>1.0-b12-SNAPSHOT</spec_impl_version>
+        <spec_build>01</spec_build>
+        <spec_impl_version>1.1-b01-SNAPSHOT</spec_impl_version>
 
         <api_dependency_version>${spec_impl_version}</api_dependency_version>
 
-        <impl_version>0.0</impl_version>
-        <new_impl_version>1.0</new_impl_version>
-        <impl_build>16</impl_build>
+        <impl_version>1.0</impl_version>
+        <new_impl_version>1.1</new_impl_version>
+        <impl_build>01</impl_build>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
         <copyright-plugin.version>1.44</copyright-plugin.version>
     </properties>
 
@@ -106,8 +107,8 @@
         <profile>
             <id>release</id>
             <properties>
-                <spec_build>11</spec_build>
-                <spec_impl_version>1.0-b11</spec_impl_version>
+                <spec_build>01</spec_build>
+                <spec_impl_version>1.0</spec_impl_version>
             </properties>
         </profile>
     </profiles>
