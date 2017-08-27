@@ -128,9 +128,9 @@
 
                             https://javaee.github.io/glassfish/wiki-archive/Maven%20Versioning%20Rules.html
 
-                            <Specification-Version>${spec_version}.99.${spec_build}</Specification-Version>
+                            <Specification-Version>${spec.specification.version}</Specification-Version>
                         -->
-                        <Specification-Version>${spec.specification.version}</Specification-Version>
+                        <Specification-Version>${spec_version}.99.${spec_build}</Specification-Version>
                         <Export-Package>${packages.export}</Export-Package>
                     </instructions>
                 </configuration>

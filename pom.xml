@@ -74,7 +74,7 @@
         <api_package>javax.security.enterprise</api_package>
         <impl_namespace>org.glassfish.soteria</impl_namespace>
 
-        <non_final>false</non_final>
+        <non_final>true</non_final>
 
         <spec_version>1.0</spec_version>
         <new_spec_version>1.1</new_spec_version>
