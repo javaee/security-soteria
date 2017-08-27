@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.soteria.test</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-b16-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     
     <artifactId>common</artifactId>
