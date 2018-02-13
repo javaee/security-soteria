@@ -364,9 +364,9 @@
             
             <dependencies>
                 <dependency>
-                    <groupId>org.omnifaces</groupId>
-                    <artifactId>arquillian-payara-server-4-remote</artifactId> 
-                    <version>1.0-beta-SNAPSHOT</version> 
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>arquillian-payara-server-4-managed</artifactId> 
+                    <version>1.0.Beta2</version> 
                     <scope>test</scope>
                 </dependency>
             </dependencies>
