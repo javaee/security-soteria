@@ -57,13 +57,6 @@ mvn clean install docker:build -Pwildfly,wildfly-docker
 docker run -it -p 8080:8080 soteria-samples/app-mem-basic:wildfly
 ```  
 
-### WebSphere Liberty
-```
-cd app-mem-basic
-mvn clean install docker:build -Pliberty,liberty-docker
-docker run -it -p 8080:9080 soteria-samples/app-mem-basic:liberty
-```  
-
 ### Payara
 ```
 cd app-mem-basic

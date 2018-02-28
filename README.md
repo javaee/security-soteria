@@ -31,7 +31,6 @@ There are 4 CI targets provided to test Soteria against:
 * payara
 * wildfly
 * tomee
-* liberty
 
 Testing against any of these is done by activating the maven profile with the same name. E.g.
 
